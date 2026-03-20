@@ -26,10 +26,11 @@ class IsarService {
         [
           MedicineEntitySchema,
           DoseLogEntitySchema,
-          MeasurementEntitySchema // 🚀 НОВАЯ ТАБЛИЦА ЗАРЕГИСТРИРОВАНА
+          MeasurementEntitySchema, // 🚀 НОВАЯ ТАБЛИЦА ЗАРЕГИСТРИРОВАНА
         ],
         directory: dir.path,
-        inspector: true, // Позволяет просматривать БД прямо в браузере при дебаге
+        inspector:
+            true, // Позволяет просматривать БД прямо в браузере при дебаге
       );
     }
     return Future.value(Isar.getInstance());
@@ -80,7 +81,9 @@ class IsarService {
   }
 
   /// Получить историю конкретного замера (например, только Давление) от новых к старым
-  Future<List<MeasurementEntity>> getMeasurementsByType(MeasurementTypeEnum type) async {
+  Future<List<MeasurementEntity>> getMeasurementsByType(
+    MeasurementTypeEnum type,
+  ) async {
     final isar = await db;
     return await isar.measurementEntitys
         .filter()

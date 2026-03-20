@@ -1,10 +1,11 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:neo_pill/features/home/presentation/widgets/pill_icon_widget.dart';
+
 import '../../../../data/local/entities/medicine_entity.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../providers/home_controller.dart';
 import '../../../medicine_management/presentation/add_medicine_screen.dart';
+import '../../providers/home_controller.dart';
 
 class SosPanel extends ConsumerWidget {
   const SosPanel({super.key});
@@ -14,154 +15,188 @@ class SosPanel extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final controller = ref.read(homeControllerProvider);
-
-    // Подписываемся на изменения экстренных лекарств
     final prnAsync = ref.watch(asNeededMedicinesProvider);
 
     return prnAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, stackTrace) => const SizedBox.shrink(),
       data: (prnMedicines) {
-        // Если экстренных лекарств нет, панель вообще не занимает место
         if (prnMedicines.isEmpty) return const SizedBox.shrink();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-              child: Text(
-                l10n.sosPanelTitle,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.error, // Красный оттенок для внимания
-                ),
+              padding: const EdgeInsets.only(
+                left: 24.0,
+                right: 24.0,
+                bottom: 12.0,
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.flash_on, color: theme.primaryColor, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.sosPanelTitle.toUpperCase(),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.primaryColor,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(
-              height: 140,
+              height: 64,
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
-                itemCount: prnMedicines.length + 1, // +1 для кнопки "Добавить"
+                itemCount: prnMedicines.length + 1,
                 itemBuilder: (context, index) {
-                  // КНОПКА ДОБАВЛЕНИЯ (Последний элемент)
                   if (index == prnMedicines.length) {
                     return _buildAddSosButton(context, theme, l10n);
                   }
-
-                  // КАРТОЧКА ПРЕПАРАТА
-                  final medicine = prnMedicines[index];
-                  return _buildSosCard(context, medicine, theme, l10n, controller);
+                  return _buildSleekSosCard(
+                    context,
+                    prnMedicines[index],
+                    theme,
+                    l10n,
+                    controller,
+                  );
                 },
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
           ],
         );
       },
     );
   }
 
-  Widget _buildSosCard(BuildContext context, MedicineEntity medicine, ThemeData theme, AppLocalizations l10n, HomeController controller) {
+  Widget _buildSleekSosCard(
+    BuildContext context,
+    MedicineEntity medicine,
+    ThemeData theme,
+    AppLocalizations l10n,
+    HomeController controller,
+  ) {
     return Container(
-      width: 120,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: theme.cardColor.withOpacity(0.8),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.error.withOpacity(0.3), width: 1.5),
+        border: Border.all(
+          color: theme.primaryColor.withValues(alpha: 0.2),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.error.withOpacity(0.05),
-            blurRadius: 10,
-            spreadRadius: 2,
-          )
+            color: theme.primaryColor.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildImageOrIcon(medicine, theme),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              medicine.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: PillIconWidget(
+                shape: medicine.pillShape,
+                colorHex: medicine.pillColor,
+                size: 24,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                medicine.name,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                '${medicine.dosage} ${medicine.dosageUnit}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.error.withOpacity(0.1),
-              foregroundColor: theme.colorScheme.error,
-              minimumSize: const Size(80, 30),
-              padding: EdgeInsets.zero,
+              backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
+              foregroundColor: theme.primaryColor,
               elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              minimumSize: const Size(60, 36),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            onPressed: () => controller.takeAsNeededDose(medicine, context, l10n),
-            child: Text(l10n.takeNowAction, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            onPressed: () =>
+                controller.takeAsNeededDose(medicine, context, l10n),
+            child: Text(
+              l10n.takeNowAction,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAddSosButton(BuildContext context, ThemeData theme, AppLocalizations l10n) {
+  Widget _buildAddSosButton(
+    BuildContext context,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const AddMedicineScreen()),
-        );
-      },
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const AddMedicineScreen())),
       child: Container(
-        width: 100,
-        margin: const EdgeInsets.symmetric(horizontal: 8),
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
-          color: theme.primaryColor.withOpacity(0.05),
+          color: theme.primaryColor.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: theme.primaryColor.withOpacity(0.2)),
+          border: Border.all(
+            color: theme.primaryColor.withValues(alpha: 0.2),
+            width: 1.5,
+          ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: theme.primaryColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.add, color: theme.primaryColor),
-            ),
-            const SizedBox(height: 8),
+            Icon(Icons.add_circle, color: theme.primaryColor, size: 24),
+            const SizedBox(width: 8),
             Text(
               l10n.addSosMedicine,
-              style: theme.textTheme.bodySmall?.copyWith(color: theme.primaryColor, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.primaryColor,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Widget _buildImageOrIcon(MedicineEntity medicine, ThemeData theme) {
-    if (medicine.pillImagePath != null && medicine.pillImagePath!.isNotEmpty) {
-      final file = File(medicine.pillImagePath!);
-      if (file.existsSync()) {
-        return Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: DecorationImage(image: FileImage(file), fit: BoxFit.cover),
-          ),
-        );
-      }
-    }
-    return Icon(Icons.medication, color: theme.colorScheme.error, size: 36);
   }
 }

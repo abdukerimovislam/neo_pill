@@ -209,7 +209,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get editCourse => 'Редактировать курс';
+  String get editCourse => 'Изменить курс';
 
   @override
   String get saveChanges => 'Сохранить изменения';
@@ -240,7 +240,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get sosPanelTitle => 'Экстренно (SOS)';
 
   @override
-  String get takeNowAction => 'Принять';
+  String get takeNowAction => 'ПРИНЯТЬ СЕЙЧАС';
 
   @override
   String get limitReachedAlert => 'Дневной лимит исчерпан! Обратитесь к врачу.';
@@ -297,4 +297,201 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get doseForStep => 'Доза для этого шага';
+
+  @override
+  String get whatWouldYouLikeToDo => 'Что бы вы хотели сделать?';
+
+  @override
+  String get scheduleNewTreatmentCourse => 'Запланировать новый курс лечения';
+
+  @override
+  String get logHealthMetricsSubtitle => 'Записать давление, пульс, вес';
+
+  @override
+  String get priorityAction => 'Приоритетное действие';
+
+  @override
+  String get skipDoseAction => 'Пропустить';
+
+  @override
+  String errorPrefix(String error) {
+    return 'Ошибка: $error';
+  }
+
+  @override
+  String get goodMorning => 'Доброе утро';
+
+  @override
+  String get goodAfternoon => 'Добрый день';
+
+  @override
+  String get goodEvening => 'Добрый вечер';
+
+  @override
+  String get dailyProgress => 'Прогресс за день';
+
+  @override
+  String get sosEmergency => 'Экстренная помощь';
+
+  @override
+  String get adherenceSubtitle => 'Обзор регулярности приема лекарств';
+
+  @override
+  String get healthCorrelationTitle => 'Связь со здоровьем';
+
+  @override
+  String get healthCorrelationSubtitle =>
+      'Сравните прием лекарств с показателями вашего здоровья';
+
+  @override
+  String get last7Days => 'Последние 7 дней';
+
+  @override
+  String get pillsTaken => 'Принято таблеток';
+
+  @override
+  String get overallAdherence => 'Общий показатель';
+
+  @override
+  String get statusGood => 'Отлично';
+
+  @override
+  String get statusNeedsAttention => 'Требует внимания';
+
+  @override
+  String get statTaken => 'Принято';
+
+  @override
+  String get statSkipped => 'Пропущено';
+
+  @override
+  String get statTotal => 'Всего';
+
+  @override
+  String get completedDosesSubtitle => 'Завершенные приемы';
+
+  @override
+  String get missedDosesSubtitle => 'Пропущенные приемы';
+
+  @override
+  String get noDataYet => 'Пока нет данных';
+
+  @override
+  String get noDataDescription =>
+      'Начните регулярно принимать лекарства и вносить измерения,\nчтобы увидеть аналитику здесь.';
+
+  @override
+  String get failedToLoadAdherence => 'Не удалось загрузить данные';
+
+  @override
+  String get failedToLoadChart => 'Не удалось загрузить график';
+
+  @override
+  String avgAdherence(String value) {
+    return 'Ср. показатель $value%';
+  }
+
+  @override
+  String avgMetric(String metricName, String value) {
+    return 'Ср. $metricName $value';
+  }
+
+  @override
+  String get addAction => 'Добавить';
+
+  @override
+  String get frequency => 'Частота';
+
+  @override
+  String get form => 'Форма';
+
+  @override
+  String get inventory => 'Запасы';
+
+  @override
+  String get lowStockAlert => 'МАЛО';
+
+  @override
+  String get asNeededFrequency => 'ПО ПОТРЕБНОСТИ';
+
+  @override
+  String get taperingFrequency => 'ТИТРАЦИЯ';
+
+  @override
+  String get customizePill => 'Настроить вид';
+
+  @override
+  String get customizePillTitle => 'Внешний вид';
+
+  @override
+  String get shape => 'Форма';
+
+  @override
+  String get color => 'Цвет';
+
+  @override
+  String get overview => 'Основное';
+
+  @override
+  String get scheduleAndRules => 'Расписание и правила';
+
+  @override
+  String get duration => 'Длительность';
+
+  @override
+  String get reminders => 'Напоминания';
+
+  @override
+  String get daysSuffix => 'дней';
+
+  @override
+  String get pcsSuffix => 'шт';
+
+  @override
+  String get details => 'Детали';
+
+  @override
+  String get settingsTitle => 'Настройки и профиль';
+
+  @override
+  String get personalInfo => 'Личная информация';
+
+  @override
+  String get appPreferences => 'Настройки приложения';
+
+  @override
+  String get darkMode => 'Темная тема';
+
+  @override
+  String get language => 'Язык';
+
+  @override
+  String get notifications => 'Уведомления';
+
+  @override
+  String get advancedFeatures => 'Продвинутые функции';
+
+  @override
+  String get caregivers => 'Мед-друзья и близкие';
+
+  @override
+  String get drugInteractions => 'Совместимость лекарств';
+
+  @override
+  String get comingSoon => 'СКОРО';
+
+  @override
+  String get supportAndAbout => 'Поддержка и инфо';
+
+  @override
+  String get contactSupport => 'Связаться с поддержкой';
+
+  @override
+  String get privacyPolicy => 'Политика конфиденциальности';
+
+  @override
+  String get logout => 'Выйти';
+
+  @override
+  String get tabSettings => 'Профиль';
 }

@@ -1,70 +1,120 @@
 import 'package:flutter/material.dart';
-import '../../features/home/presentation/home_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../features/analytics/presentation/analytics_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/settings/provider/settings_provider.dart';
 import '../../l10n/app_localizations.dart';
-// НОВЫЙ ИМПОРТ: Подключаем наше стекло
 import 'widgets/glass_container.dart';
 
-class MainNavigationScreen extends StatefulWidget {
+class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  ConsumerState<MainNavigationScreen> createState() =>
+      _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
+class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
     HomeScreen(),
     AnalyticsScreen(),
+    SettingsScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final comfortMode = ref.watch(comfortModeProvider);
+
+    final navigation = NavigationBar(
+      backgroundColor: Colors.transparent,
+      selectedIndex: _currentIndex,
+      onDestinationSelected: (index) {
+        setState(() => _currentIndex = index);
+      },
+      indicatorColor: theme.primaryColor.withValues(
+        alpha: comfortMode ? 0.18 : 0.15,
+      ),
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      destinations: [
+        NavigationDestination(
+          icon: Icon(
+            Icons.calendar_today_outlined,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+          ),
+          selectedIcon: Icon(
+            Icons.calendar_today_rounded,
+            color: theme.primaryColor,
+          ),
+          label: l10n.tabHome,
+        ),
+        NavigationDestination(
+          icon: Icon(
+            Icons.insights_outlined,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+          ),
+          selectedIcon: Icon(Icons.insights_rounded, color: theme.primaryColor),
+          label: l10n.tabAnalytics,
+        ),
+        NavigationDestination(
+          icon: Icon(
+            Icons.person_outline_rounded,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+          ),
+          selectedIcon: Icon(Icons.person_rounded, color: theme.primaryColor),
+          label: l10n.tabSettings,
+        ),
+      ],
+    );
 
     return Scaffold(
-      // КРИТИЧНО ВАЖНО: Это позволяет градиентам внутренних экранов растекаться ПОД навигацией
       extendBody: true,
       backgroundColor: Colors.transparent,
-
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-
-      // Делаем парящее стеклянное меню
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: SafeArea(
-        child: GlassContainer(
-          // Отступы, чтобы меню "парило" над нижним краем экрана
-          margin: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
-          padding: EdgeInsets.zero,
-          borderRadius: 32,
-          // Немного затемняем стекло для контраста иконок
-          color: theme.cardColor.withOpacity(0.6),
-          child: NavigationBar(
-            height: 65, // Делаем бар чуть изящнее
-            backgroundColor: Colors.transparent, // Фон обеспечивает GlassContainer
-            elevation: 0,
-            selectedIndex: _currentIndex,
-            onDestinationSelected: (index) {
-              setState(() => _currentIndex = index);
-            },
-            indicatorColor: theme.primaryColor.withOpacity(0.15),
-            destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.calendar_today_outlined),
-                selectedIcon: Icon(Icons.calendar_today, color: theme.primaryColor),
-                label: l10n.tabHome,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.insights_outlined),
-                selectedIcon: Icon(Icons.insights, color: theme.primaryColor),
-                label: l10n.tabAnalytics,
-              ),
-            ],
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: comfortMode ? 16 : 24,
+            right: comfortMode ? 16 : 24,
+            bottom: comfortMode ? 12 : 16,
+          ),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            child: comfortMode
+                ? Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: theme.dividerColor.withValues(alpha: 0.12),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(28),
+                      child: navigation,
+                    ),
+                  )
+                : GlassContainer(
+                    padding: EdgeInsets.zero,
+                    color: theme.colorScheme.surface.withValues(alpha: 0.82),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(32),
+                      child: navigation,
+                    ),
+                  ),
           ),
         ),
       ),

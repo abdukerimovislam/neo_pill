@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 
 enum MedicineForm { pill, capsule, liquid, injection, drops, ointment }
+
 enum FrequencyType { daily, asNeeded, specificDays }
 
 class Medicine {

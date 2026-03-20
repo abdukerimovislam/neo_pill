@@ -4,11 +4,11 @@ part 'measurement_entity.g.dart';
 
 enum MeasurementTypeEnum {
   bloodPressure, // Давление (120/80)
-  heartRate,     // Пульс (bpm)
-  bloodSugar,    // Сахар (ммоль/л или mg/dL)
-  weight,        // Вес (кг или фунты)
-  temperature,   // Температура (°C или °F)
-  mood           // Настроение (от 1 до 5)
+  heartRate, // Пульс (bpm)
+  bloodSugar, // Сахар (ммоль/л или mg/dL)
+  weight, // Вес (кг или фунты)
+  temperature, // Температура (°C или °F)
+  mood, // Настроение (от 1 до 5)
 }
 
 @collection

@@ -38,7 +38,8 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
           .findFirst();
 
       if (lastLog != null && lastLog.scheduledTime.isBefore(now)) {
-        final stableNotificationId = (med.id * 100) + lastLog.scheduledTime.hour;
+        final stableNotificationId =
+            (med.id * 100) + lastLog.scheduledTime.hour;
         await notificationService.cancelNotification(stableNotificationId);
       }
     }

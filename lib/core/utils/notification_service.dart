@@ -1,17 +1,20 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:isar/isar.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 
 import '../../data/local/entities/dose_log_entity.dart';
+import '../../data/local/entities/measurement_entity.dart';
 import '../../data/local/entities/medicine_entity.dart';
 
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) async {
+void notificationTapBackground(
+  NotificationResponse notificationResponse,
+) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final actionId = notificationResponse.actionId;
@@ -22,79 +25,170 @@ void notificationTapBackground(NotificationResponse notificationResponse) async 
   }
 }
 
-Future<void> _processDoseAction(String actionId, String medicineSyncId) async {
+enum NotificationPayloadKind { legacyMedicine, daily, log }
+
+class NotificationPayload {
+  final NotificationPayloadKind kind;
+  final String? medicineSyncId;
+  final String? logSyncId;
+  final int? hour;
+  final int? minute;
+
+  const NotificationPayload._({
+    required this.kind,
+    this.medicineSyncId,
+    this.logSyncId,
+    this.hour,
+    this.minute,
+  });
+
+  static String daily({
+    required String medicineSyncId,
+    required int hour,
+    required int minute,
+  }) => 'daily|$medicineSyncId|$hour|$minute';
+
+  static String log(String logSyncId) => 'log|$logSyncId';
+
+  static NotificationPayload parse(String raw) {
+    final parts = raw.split('|');
+    if (parts.length == 2 && parts.first == 'log') {
+      return NotificationPayload._(
+        kind: NotificationPayloadKind.log,
+        logSyncId: parts[1],
+      );
+    }
+    if (parts.length == 4 && parts.first == 'daily') {
+      return NotificationPayload._(
+        kind: NotificationPayloadKind.daily,
+        medicineSyncId: parts[1],
+        hour: int.tryParse(parts[2]),
+        minute: int.tryParse(parts[3]),
+      );
+    }
+    return NotificationPayload._(
+      kind: NotificationPayloadKind.legacyMedicine,
+      medicineSyncId: raw,
+    );
+  }
+}
+
+Future<void> _processDoseAction(String actionId, String rawPayload) async {
   try {
     Isar? isar = Isar.getInstance();
     if (isar == null) {
       final dir = await getApplicationDocumentsDirectory();
-      isar = await Isar.open(
-        [MedicineEntitySchema, DoseLogEntitySchema],
-        directory: dir.path,
-      );
+      isar = await Isar.open([
+        MedicineEntitySchema,
+        DoseLogEntitySchema,
+        MeasurementEntitySchema,
+      ], directory: dir.path);
     }
 
-    final Isar db = isar!;
+    final db = isar;
     final now = DateTime.now();
+    final parsedPayload = NotificationPayload.parse(rawPayload);
 
-    final medicine = await db.medicineEntitys.filter().syncIdEqualTo(medicineSyncId).findFirst();
+    DoseLogEntity? logToUpdate;
+
+    if (parsedPayload.kind == NotificationPayloadKind.log &&
+        parsedPayload.logSyncId != null) {
+      logToUpdate = await db.doseLogEntitys
+          .filter()
+          .syncIdEqualTo(parsedPayload.logSyncId!)
+          .findFirst();
+    } else if (parsedPayload.kind == NotificationPayloadKind.daily &&
+        parsedPayload.medicineSyncId != null &&
+        parsedPayload.hour != null &&
+        parsedPayload.minute != null) {
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+      final pendingLogs = await db.doseLogEntitys
+          .filter()
+          .medicineSyncIdEqualTo(parsedPayload.medicineSyncId!)
+          .statusEqualTo(DoseStatusEnum.pending)
+          .scheduledTimeBetween(startOfDay, endOfDay)
+          .findAll();
+
+      for (final log in pendingLogs) {
+        if (log.scheduledTime.hour == parsedPayload.hour &&
+            log.scheduledTime.minute == parsedPayload.minute) {
+          logToUpdate = log;
+          break;
+        }
+      }
+
+      logToUpdate ??= pendingLogs.isEmpty ? null : pendingLogs.first;
+    } else if (parsedPayload.medicineSyncId != null) {
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+      logToUpdate = await db.doseLogEntitys
+          .filter()
+          .medicineSyncIdEqualTo(parsedPayload.medicineSyncId!)
+          .statusEqualTo(DoseStatusEnum.pending)
+          .scheduledTimeBetween(startOfDay, endOfDay)
+          .sortByScheduledTime()
+          .findFirst();
+    }
+
+    if (logToUpdate == null) return;
+
+    final medicine = await db.medicineEntitys
+        .filter()
+        .syncIdEqualTo(logToUpdate.medicineSyncId)
+        .findFirst();
     if (medicine == null) return;
-
-    final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-    final pendingLogs = await db.doseLogEntitys.filter()
-        .medicineSyncIdEqualTo(medicineSyncId)
-        .statusEqualTo(DoseStatusEnum.pending)
-        .scheduledTimeBetween(startOfDay, endOfDay)
-        .sortByScheduledTime()
-        .findAll();
-
-    if (pendingLogs.isEmpty) return;
-
-    final logToUpdate = pendingLogs.first;
 
     await db.writeTxn(() async {
       if (actionId == NotificationService.actionTake) {
-        logToUpdate.status = DoseStatusEnum.taken;
+        logToUpdate!.status = DoseStatusEnum.taken;
         logToUpdate.actualTime = now;
 
         if (medicine.pillsRemaining > 0) {
           final oldStock = medicine.pillsRemaining;
-          medicine.pillsRemaining -= 1;
+          final deduction = logToUpdate.dosage > 0
+              ? logToUpdate.dosage.ceil()
+              : (medicine.dosage > 0 ? medicine.dosage.ceil() : 1);
+          medicine.pillsRemaining -= deduction;
+          if (medicine.pillsRemaining < 0) {
+            medicine.pillsRemaining = 0;
+          }
           await db.medicineEntitys.put(medicine);
 
           if (oldStock > medicine.refillAlertThreshold &&
               medicine.pillsRemaining <= medicine.refillAlertThreshold) {
             await NotificationService().showImmediateNotification(
               id: medicine.id * 1000,
-              title: '⚠️ Low Stock: ${medicine.name}',
-              body: 'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
+              title: 'Low Stock: ${medicine.name}',
+              body:
+                  'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
             );
           }
         }
       } else if (actionId == NotificationService.actionSkip) {
-        logToUpdate.status = DoseStatusEnum.skipped;
-
+        logToUpdate!.status = DoseStatusEnum.skipped;
       } else if (actionId == NotificationService.actionSnooze) {
-        // 🚀 НОВОЕ: Логика функции Отложить (Snooze)
         final snoozeTime = now.add(const Duration(minutes: 30));
-        logToUpdate.scheduledTime = snoozeTime; // Сдвигаем время в базе
+        logToUpdate!.scheduledTime = snoozeTime;
 
-        // Планируем новый пуш на 30 минут вперед
-        final stableNotificationId = (medicine.id * 100000) + snoozeTime.day * 1000 + snoozeTime.hour * 100 + snoozeTime.minute;
+        final stableNotificationId =
+            (medicine.id * 100000) +
+            snoozeTime.day * 1000 +
+            snoozeTime.hour * 100 +
+            snoozeTime.minute;
         await NotificationService().scheduleExactNotification(
           id: stableNotificationId,
           title: medicine.notificationTitle ?? 'Snoozed: ${medicine.name}',
           body: medicine.notificationBody ?? 'Time to take your medicine',
           scheduledTime: snoozeTime,
-          payload: medicine.syncId,
+          payload: NotificationPayload.log(logToUpdate.syncId),
         );
       }
 
-      await db.doseLogEntitys.put(logToUpdate);
+      await db.doseLogEntitys.put(logToUpdate!);
     });
 
-    debugPrint('Successfully processed action: $actionId for $medicineSyncId');
+    debugPrint('Successfully processed action: $actionId for $rawPayload');
   } catch (e) {
     debugPrint('Background Error: $e');
   }
@@ -109,11 +203,12 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   static const String actionTake = 'action_take';
   static const String actionSkip = 'action_skip';
-  static const String actionSnooze = 'action_snooze'; // 🚀 НОВАЯ КНОПКА
+  static const String actionSnooze = 'action_snooze';
   static const String categoryMedication = 'category_medication';
 
   Future<void> init() async {
@@ -122,14 +217,15 @@ class NotificationService {
     final String timeZoneName = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
 
-    const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
-    final List<DarwinNotificationCategory> iosCategories = [
+    final iosCategories = [
       DarwinNotificationCategory(
         categoryMedication,
         actions: [
           DarwinNotificationAction.plain(actionTake, 'Take'),
-          // 🚀 ДОБАВЛЯЕМ SNOOZE ДЛЯ iOS
           DarwinNotificationAction.plain(actionSnooze, 'Snooze 30m'),
           DarwinNotificationAction.plain(
             actionSkip,
@@ -142,17 +238,17 @@ class NotificationService {
         options: <DarwinNotificationCategoryOption>{
           DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
         },
-      )
+      ),
     ];
 
-    final DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+    final iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
       notificationCategories: iosCategories,
     );
 
-    final InitializationSettings initSettings = InitializationSettings(
+    final initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
     );
@@ -168,8 +264,11 @@ class NotificationService {
     final actionId = response.actionId;
     final payload = response.payload;
 
-    if (actionId != null && payload != null &&
-        (actionId == actionTake || actionId == actionSkip || actionId == actionSnooze)) {
+    if (actionId != null &&
+        payload != null &&
+        (actionId == actionTake ||
+            actionId == actionSkip ||
+            actionId == actionSnooze)) {
       await _processDoseAction(actionId, payload);
     } else {
       debugPrint('User simply tapped notification body: $payload');
@@ -178,16 +277,16 @@ class NotificationService {
 
   Future<void> requestPermissions() async {
     await _notificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.requestNotificationsPermission();
 
     await _notificationsPlugin
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
   AndroidNotificationDetails _buildAndroidDetails(String channelId) {
@@ -200,9 +299,16 @@ class NotificationService {
       icon: '@mipmap/ic_launcher',
       enableVibration: true,
       actions: [
-        const AndroidNotificationAction(actionTake, 'Take', showsUserInterface: false),
-        // 🚀 ДОБАВЛЯЕМ SNOOZE ДЛЯ ANDROID
-        const AndroidNotificationAction(actionSnooze, 'Snooze 30m', showsUserInterface: false),
+        const AndroidNotificationAction(
+          actionTake,
+          'Take',
+          showsUserInterface: false,
+        ),
+        const AndroidNotificationAction(
+          actionSnooze,
+          'Snooze 30m',
+          showsUserInterface: false,
+        ),
         const AndroidNotificationAction(
           actionSkip,
           'Skip',
@@ -243,11 +349,16 @@ class NotificationService {
     String? payload,
   }) async {
     await _notificationsPlugin.show(
-      id, title, body,
+      id,
+      title,
+      body,
       NotificationDetails(
         android: _buildBasicAndroidDetails('system_alerts_channel'),
         iOS: const DarwinNotificationDetails(
-          presentAlert: true, presentBadge: true, presentSound: true, interruptionLevel: InterruptionLevel.active,
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          interruptionLevel: InterruptionLevel.active,
         ),
       ),
       payload: payload,
@@ -264,14 +375,17 @@ class NotificationService {
     if (scheduledTime.isBefore(DateTime.now())) return;
 
     await _notificationsPlugin.zonedSchedule(
-      id, title, body,
+      id,
+      title,
+      body,
       tz.TZDateTime.from(scheduledTime, tz.local),
       NotificationDetails(
         android: _buildAndroidDetails('medication_exact_channel'),
         iOS: _buildIOSDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
     );
   }
@@ -284,21 +398,31 @@ class NotificationService {
     String? payload,
   }) async {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, time.hour, time.minute);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
 
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
     await _notificationsPlugin.zonedSchedule(
-      id, title, body,
+      id,
+      title,
+      body,
       scheduledDate,
       NotificationDetails(
         android: _buildAndroidDetails('medication_daily_channel'),
         iOS: _buildIOSDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: payload,
     );

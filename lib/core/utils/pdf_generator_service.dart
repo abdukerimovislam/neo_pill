@@ -1,64 +1,90 @@
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
+
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:intl/intl.dart';
-import '../../data/local/entities/medicine_entity.dart';
+
 import '../../data/local/entities/dose_log_entity.dart';
+import '../../data/local/entities/medicine_entity.dart';
+import '../../features/settings/provider/settings_provider.dart';
 import '../../l10n/app_localizations.dart';
 
 class PdfGeneratorService {
-
-  // Главный метод генерации и отправки отчета
   static Future<void> generateAndShareReport({
     required MedicineEntity medicine,
     required List<DoseLogEntity> logs,
     required AppLocalizations l10n,
+    required String patientName,
+    CaregiverProfile? caregiver,
   }) async {
     final pdf = pw.Document();
+    final isRussian = l10n.localeName.startsWith('ru');
 
-    // Сортируем логи от новых к старым
     logs.sort((a, b) => b.scheduledTime.compareTo(a.scheduledTime));
 
-    // Считаем статистику
     final takenCount = logs.where((l) => l.status == DoseStatusEnum.taken).length;
     final skippedCount = logs.where((l) => l.status == DoseStatusEnum.skipped).length;
+    final pendingCount = logs.where((l) => l.status == DoseStatusEnum.pending).length;
     final totalProcessed = takenCount + skippedCount;
-    final adherenceRate = totalProcessed > 0 ? (takenCount / totalProcessed * 100).toStringAsFixed(1) : '0.0';
+    final adherenceRate = totalProcessed > 0 ? (takenCount / totalProcessed * 100) : 0.0;
 
     final dateFormat = DateFormat('MMM dd, yyyy');
     final timeFormat = DateFormat('HH:mm');
 
-    // Формируем страницы PDF
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
           return [
-            _buildHeader(medicine, adherenceRate, l10n),
-            pw.SizedBox(height: 20),
-            _buildMedicineDetails(medicine, dateFormat, l10n),
-            pw.SizedBox(height: 20),
-            _buildLogsTable(logs, dateFormat, timeFormat, l10n),
+            _buildHeader(
+              isRussian: isRussian,
+              adherenceRate: adherenceRate,
+            ),
+            pw.SizedBox(height: 18),
+            _buildSummaryRow(
+              isRussian: isRussian,
+              takenCount: takenCount,
+              skippedCount: skippedCount,
+              pendingCount: pendingCount,
+            ),
+            pw.SizedBox(height: 18),
+            _buildCareProfile(
+              isRussian: isRussian,
+              patientName: patientName,
+              caregiver: caregiver,
+            ),
+            pw.SizedBox(height: 18),
+            _buildMedicineDetails(
+              isRussian: isRussian,
+              medicine: medicine,
+              dateFormat: dateFormat,
+            ),
+            pw.SizedBox(height: 18),
+            _buildLogsTable(
+              isRussian: isRussian,
+              logs: logs,
+              dateFormat: dateFormat,
+              timeFormat: timeFormat,
+            ),
           ];
         },
       ),
     );
 
-    // Сохраняем в байты
     final Uint8List pdfBytes = await pdf.save();
 
-    // Вызываем системное окно Share (Поделиться)
     await Printing.sharePdf(
       bytes: pdfBytes,
-      filename: 'Medical_Report_${medicine.name.replaceAll(' ', '_')}.pdf',
+      filename: 'NeoPill_Report_${medicine.name.replaceAll(' ', '_')}.pdf',
     );
   }
 
-  // Шапка документа
-  static pw.Widget _buildHeader(MedicineEntity medicine, String adherenceRate, AppLocalizations l10n) {
+  static pw.Widget _buildHeader({
+    required bool isRussian,
+    required double adherenceRate,
+  }) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -66,11 +92,15 @@ class PdfGeneratorService {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              'Patient Adherence Report', // В идеале перевести через l10n
-              style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.blue800),
+              isRussian ? 'Отчет по приему лекарств' : 'Medication Adherence Report',
+              style: pw.TextStyle(
+                fontSize: 24,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.blue800,
+              ),
             ),
             pw.Text(
-              'Date: ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+              '${isRussian ? 'Дата' : 'Date'}: ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
               style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey600),
             ),
           ],
@@ -86,8 +116,18 @@ class PdfGeneratorService {
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text('Overall Adherence Rate:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-              pw.Text('$adherenceRate%', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.green700)),
+              pw.Text(
+                isRussian ? 'Общая регулярность приема' : 'Overall adherence',
+                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.Text(
+                '${adherenceRate.toStringAsFixed(1)}%',
+                style: pw.TextStyle(
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                  color: adherenceRate >= 80 ? PdfColors.green700 : PdfColors.orange700,
+                ),
+              ),
             ],
           ),
         ),
@@ -95,34 +135,152 @@ class PdfGeneratorService {
     );
   }
 
-  // Детали препарата
-  static pw.Widget _buildMedicineDetails(MedicineEntity medicine, DateFormat dateFormat, AppLocalizations l10n) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
+  static pw.Widget _buildSummaryRow({
+    required bool isRussian,
+    required int takenCount,
+    required int skippedCount,
+    required int pendingCount,
+  }) {
+    pw.Widget metric(String label, String value) {
+      return pw.Expanded(
+        child: pw.Container(
+          padding: const pw.EdgeInsets.all(12),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey100,
+            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+          ),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                value,
+                style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Text(label, style: const pw.TextStyle(fontSize: 11)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return pw.Row(
       children: [
-        pw.Text('Medication Profile', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.blue800)),
-        pw.SizedBox(height: 8),
-        pw.Text('Name: ${medicine.name}', style: const pw.TextStyle(fontSize: 14)),
-        pw.Text('Dosage: ${medicine.dosage} ${medicine.dosageUnit} (${medicine.form.name})', style: const pw.TextStyle(fontSize: 14)),
-        pw.Text('Started: ${dateFormat.format(medicine.startDate)}', style: const pw.TextStyle(fontSize: 14)),
-        if (medicine.foodInstruction != FoodInstructionEnum.noMatter)
-          pw.Text('Instruction: ${medicine.foodInstruction.name}', style: const pw.TextStyle(fontSize: 14)),
+        metric(isRussian ? 'Принято' : 'Taken', takenCount.toString()),
+        pw.SizedBox(width: 10),
+        metric(isRussian ? 'Пропущено' : 'Skipped', skippedCount.toString()),
+        pw.SizedBox(width: 10),
+        metric(isRussian ? 'Ожидается' : 'Pending', pendingCount.toString()),
       ],
     );
   }
 
-  // Таблица истории приемов
-  static pw.Widget _buildLogsTable(List<DoseLogEntity> logs, DateFormat dateFormat, DateFormat timeFormat, AppLocalizations l10n) {
-    // Фильтруем логи, оставляем только те, что уже должны были быть выпиты (или пропущены)
+  static pw.Widget _buildCareProfile({
+    required bool isRussian,
+    required String patientName,
+    CaregiverProfile? caregiver,
+  }) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(14),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            isRussian ? 'Участники ухода' : 'Care team',
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.blue800,
+            ),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text('${isRussian ? 'Пациент' : 'Patient'}: $patientName'),
+          if (caregiver != null) ...[
+            pw.Text(
+              '${isRussian ? 'Помогающий человек' : 'Caregiver'}: ${caregiver.name}',
+            ),
+            if (caregiver.relation.isNotEmpty)
+              pw.Text('${isRussian ? 'Связь' : 'Relationship'}: ${caregiver.relation}'),
+            if (caregiver.phone.isNotEmpty)
+              pw.Text('${isRussian ? 'Контакт' : 'Contact'}: ${caregiver.phone}'),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static pw.Widget _buildMedicineDetails({
+    required bool isRussian,
+    required MedicineEntity medicine,
+    required DateFormat dateFormat,
+  }) {
+    final instruction = switch (medicine.foodInstruction) {
+      FoodInstructionEnum.beforeFood => isRussian ? 'До еды' : 'Before food',
+      FoodInstructionEnum.withFood => isRussian ? 'Во время еды' : 'With food',
+      FoodInstructionEnum.afterFood => isRussian ? 'После еды' : 'After food',
+      _ => isRussian ? 'Без ограничений' : 'No food restriction',
+    };
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          isRussian ? 'Профиль лекарства' : 'Medication profile',
+          style: pw.TextStyle(
+            fontSize: 18,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColors.blue800,
+          ),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Text('${isRussian ? 'Название' : 'Name'}: ${medicine.name}'),
+        pw.Text(
+          '${isRussian ? 'Дозировка' : 'Dosage'}: ${medicine.dosage} ${medicine.dosageUnit} (${medicine.form.name})',
+        ),
+        pw.Text(
+          '${isRussian ? 'Начало курса' : 'Started'}: ${dateFormat.format(medicine.startDate)}',
+        ),
+        pw.Text(
+          '${isRussian ? 'Остаток' : 'Stock left'}: ${medicine.pillsRemaining} ${medicine.dosageUnit}',
+        ),
+        pw.Text('${isRussian ? 'Инструкция' : 'Instruction'}: $instruction'),
+      ],
+    );
+  }
+
+  static pw.Widget _buildLogsTable({
+    required bool isRussian,
+    required List<DoseLogEntity> logs,
+    required DateFormat dateFormat,
+    required DateFormat timeFormat,
+  }) {
     final pastLogs = logs.where((l) => l.status != DoseStatusEnum.pending).toList();
 
     if (pastLogs.isEmpty) {
-      return pw.Text('No recorded history yet.', style: pw.TextStyle(color: PdfColors.grey600, fontStyle: pw.FontStyle.italic));
+      return pw.Text(
+        isRussian ? 'История приема пока не записана.' : 'No recorded history yet.',
+        style: pw.TextStyle(
+          color: PdfColors.grey600,
+          fontStyle: pw.FontStyle.italic,
+        ),
+      );
     }
 
     return pw.TableHelper.fromTextArray(
-      headers: ['Date', 'Scheduled Time', 'Actual Time', 'Status'], // В идеале из l10n
-      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      headers: [
+        isRussian ? 'Дата' : 'Date',
+        isRussian ? 'По плану' : 'Scheduled',
+        isRussian ? 'Фактически' : 'Actual',
+        isRussian ? 'Статус' : 'Status',
+      ],
+      headerStyle: pw.TextStyle(
+        fontWeight: pw.FontWeight.bold,
+        color: PdfColors.white,
+      ),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.blue600),
       cellHeight: 30,
       cellAlignments: {
@@ -132,22 +290,17 @@ class PdfGeneratorService {
         3: pw.Alignment.center,
       },
       data: pastLogs.map((log) {
-        String statusText;
-        PdfColor statusColor;
-
-        if (log.status == DoseStatusEnum.taken) {
-          statusText = 'Taken';
-          statusColor = PdfColors.green600;
-        } else {
-          statusText = 'Skipped';
-          statusColor = PdfColors.red600;
-        }
+        final statusText = switch (log.status) {
+          DoseStatusEnum.taken => isRussian ? 'Принято' : 'Taken',
+          DoseStatusEnum.skipped => isRussian ? 'Пропущено' : 'Skipped',
+          _ => isRussian ? 'Ожидается' : 'Pending',
+        };
 
         return [
           dateFormat.format(log.scheduledTime),
           timeFormat.format(log.scheduledTime),
           log.actualTime != null ? timeFormat.format(log.actualTime!) : '-',
-          statusText, // Для раскраски текста нужен кастомный билд ячеек, но для простоты текста хватит массива
+          statusText,
         ];
       }).toList(),
     );

@@ -11,7 +11,9 @@ import 'home_provider.dart';
 
 final homeControllerProvider = Provider((ref) => HomeController(ref));
 
-final asNeededMedicinesProvider = StreamProvider<List<MedicineEntity>>((ref) async* {
+final asNeededMedicinesProvider = StreamProvider<List<MedicineEntity>>((
+  ref,
+) async* {
   final isarService = ref.read(localDbProvider);
   final isar = await isarService.db;
   yield* isar.medicineEntitys
@@ -25,18 +27,18 @@ class HomeController {
 
   HomeController(this.ref);
 
-  Future<void> updateDoseStatus(DoseLogEntity log, DoseStatusEnum newStatus) async {
+  Future<void> updateDoseStatus(
+    DoseLogEntity log,
+    DoseStatusEnum newStatus,
+  ) async {
     final isarService = ref.read(localDbProvider);
     final notificationService = ref.read(notificationServiceProvider);
     final isar = await isarService.db;
     final now = DateTime.now();
 
-    if (newStatus != DoseStatusEnum.pending) {
-      final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59);
-      if (log.scheduledTime.isAfter(endOfToday)) {
-        debugPrint('Blocked attempt to modify future dose log');
-        return;
-      }
+    if (newStatus != DoseStatusEnum.pending && log.scheduledTime.isAfter(now)) {
+      debugPrint('Blocked attempt to modify future dose log');
+      return;
     }
 
     log.status = newStatus;
@@ -48,9 +50,11 @@ class HomeController {
       await isar.doseLogEntitys.put(log);
 
       if (newStatus == DoseStatusEnum.taken) {
-        final medicine = await isar.medicineEntitys.where().syncIdEqualTo(log.medicineSyncId).findFirst();
+        final medicine = await isar.medicineEntitys
+            .where()
+            .syncIdEqualTo(log.medicineSyncId)
+            .findFirst();
         if (medicine != null && medicine.pillsRemaining > 0) {
-
           final oldStock = medicine.pillsRemaining;
           // 🚀 ИСПОЛЬЗУЕМ ИНДИВИДУАЛЬНУЮ ДОЗУ ЛОГА ДЛЯ СПИСАНИЯ СО СКЛАДА (ЕСЛИ ОНА > 0)
           final deduction = log.dosage > 0 ? log.dosage.ceil() : 1;
@@ -61,17 +65,19 @@ class HomeController {
 
           if (oldStock > medicine.refillAlertThreshold &&
               medicine.pillsRemaining <= medicine.refillAlertThreshold) {
-
             await notificationService.showImmediateNotification(
               id: medicine.id * 1000,
               title: '⚠️ Low Stock: ${medicine.name}',
-              body: 'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
+              body:
+                  'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
             );
           }
         }
       }
     });
     ref.invalidate(dailyScheduleProvider);
+    ref.invalidate(heroDoseProvider);
+    ref.invalidate(homeDashboardProvider);
   }
 
   Future<void> undoDoseStatus(DoseLogEntity log) async {
@@ -99,9 +105,15 @@ class HomeController {
       }
     });
     ref.invalidate(dailyScheduleProvider);
+    ref.invalidate(heroDoseProvider);
+    ref.invalidate(homeDashboardProvider);
   }
 
-  Future<void> takeAsNeededDose(MedicineEntity medicine, BuildContext context, AppLocalizations l10n) async {
+  Future<void> takeAsNeededDose(
+    MedicineEntity medicine,
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
     final isarService = ref.read(localDbProvider);
     final isar = await isarService.db;
     final now = DateTime.now();
@@ -162,13 +174,16 @@ class HomeController {
           await notificationService.showImmediateNotification(
             id: medicine.id * 1000,
             title: '⚠️ Low Stock: ${medicine.name}',
-            body: 'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
+            body:
+                'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
           );
         }
       }
     });
 
     ref.invalidate(dailyScheduleProvider);
+    ref.invalidate(heroDoseProvider);
+    ref.invalidate(homeDashboardProvider);
   }
 
   Future<void> togglePauseMedicine(MedicineEntity medicine) async {
@@ -192,48 +207,69 @@ class HomeController {
     if (newPausedState) {
       if (logs.isNotEmpty) {
         if (medicine.frequency == FrequencyTypeEnum.daily) {
-          final uniqueTimes = logs.map((l) => TimeOfDay.fromDateTime(l.scheduledTime)).toSet();
+          final uniqueTimes = logs
+              .map((l) => TimeOfDay.fromDateTime(l.scheduledTime))
+              .toSet();
           for (var time in uniqueTimes) {
-            final stableNotificationId = (medicine.id * 10000) + (time.hour * 100) + time.minute;
+            final stableNotificationId =
+                (medicine.id * 10000) + (time.hour * 100) + time.minute;
             await notificationService.cancelNotification(stableNotificationId);
           }
         } else {
           for (var log in logs) {
-            final stableNotificationId = (medicine.id * 100000) + log.scheduledTime.day * 1000 + log.scheduledTime.hour * 100 + log.scheduledTime.minute;
+            final stableNotificationId =
+                (medicine.id * 100000) +
+                log.scheduledTime.day * 1000 +
+                log.scheduledTime.hour * 100 +
+                log.scheduledTime.minute;
             await notificationService.cancelNotification(stableNotificationId);
           }
         }
       }
     } else {
       if (medicine.frequency == FrequencyTypeEnum.daily) {
-        final uniqueTimes = logs.map((l) => TimeOfDay.fromDateTime(l.scheduledTime)).toSet();
+        final uniqueTimes = logs
+            .map((l) => TimeOfDay.fromDateTime(l.scheduledTime))
+            .toSet();
         for (var time in uniqueTimes) {
-          final stableNotificationId = (medicine.id * 100000) + (time.hour * 100) + time.minute;
+          final stableNotificationId =
+              (medicine.id * 10000) + (time.hour * 100) + time.minute;
           await notificationService.scheduleDailyRepeatingNotification(
             id: stableNotificationId,
             title: medicine.notificationTitle ?? 'Medicine Reminder',
             body: medicine.notificationBody ?? 'Time to take your medicine',
             time: time,
-            payload: medicine.syncId,
+            payload: NotificationPayload.daily(
+              medicineSyncId: medicine.syncId,
+              hour: time.hour,
+              minute: time.minute,
+            ),
           );
         }
       } else {
         final now = DateTime.now();
         for (var log in logs) {
-          if (log.scheduledTime.isAfter(now) && log.scheduledTime.difference(now).inDays < 30) {
-            final stableNotificationId = (medicine.id * 100000) + log.scheduledTime.day * 1000 + log.scheduledTime.hour * 100 + log.scheduledTime.minute;
+          if (log.scheduledTime.isAfter(now) &&
+              log.scheduledTime.difference(now).inDays < 30) {
+            final stableNotificationId =
+                (medicine.id * 100000) +
+                log.scheduledTime.day * 1000 +
+                log.scheduledTime.hour * 100 +
+                log.scheduledTime.minute;
             await notificationService.scheduleExactNotification(
               id: stableNotificationId,
               title: medicine.notificationTitle ?? 'Medicine Reminder',
               body: medicine.notificationBody ?? 'Time to take your medicine',
               scheduledTime: log.scheduledTime,
-              payload: medicine.syncId,
+              payload: NotificationPayload.log(log.syncId),
             );
           }
         }
       }
     }
     ref.invalidate(dailyScheduleProvider);
+    ref.invalidate(heroDoseProvider);
+    ref.invalidate(homeDashboardProvider);
   }
 
   Future<void> addMedicineAndGenerateSchedule({
@@ -277,7 +313,8 @@ class HomeController {
       ..intervalDays = intervalDays
       ..cycleOnDays = cycleOnDays
       ..cycleOffDays = cycleOffDays
-      ..taperingSteps = taperingSteps // 🚀 СОХРАНЯЕМ ШАГИ ТИТРАЦИИ
+      ..taperingSteps =
+          taperingSteps // 🚀 СОХРАНЯЕМ ШАГИ ТИТРАЦИИ
       ..timesPerDay = times.length
       ..startDate = now
       ..pillsInPackage = pillsInPackage
@@ -292,7 +329,9 @@ class HomeController {
     final List<DoseLogEntity> logsToInsert = [];
 
     // 🚀 СМАРТ-ГЕНЕРАТОР РАСПИСАНИЯ
-    if (frequency == FrequencyTypeEnum.tapering && taperingSteps != null && taperingSteps.isNotEmpty) {
+    if (frequency == FrequencyTypeEnum.tapering &&
+        taperingSteps != null &&
+        taperingSteps.isNotEmpty) {
       // 1. ЛОГИКА ДЛЯ ДИНАМИЧЕСКИХ ДОЗ (Tapering)
       int dayOffset = 0;
 
@@ -302,7 +341,11 @@ class HomeController {
 
           for (var time in times) {
             final specificTime = DateTime(
-              scheduledDate.year, scheduledDate.month, scheduledDate.day, time.hour, time.minute,
+              scheduledDate.year,
+              scheduledDate.month,
+              scheduledDate.day,
+              time.hour,
+              time.minute,
             );
             final log = DoseLogEntity()
               ..syncId = const Uuid().v4()
@@ -323,17 +366,26 @@ class HomeController {
         bool shouldAddDose = false;
 
         switch (frequency) {
-          case FrequencyTypeEnum.daily: shouldAddDose = true; break;
+          case FrequencyTypeEnum.daily:
+            shouldAddDose = true;
+            break;
           case FrequencyTypeEnum.interval:
-            if (intervalDays != null && day % intervalDays == 0) shouldAddDose = true;
+            if (intervalDays != null && day % intervalDays == 0) {
+              shouldAddDose = true;
+            }
             break;
           case FrequencyTypeEnum.specificDays:
-            if (selectedWeekDays != null && selectedWeekDays.contains(scheduledDate.weekday)) shouldAddDose = true;
+            if (selectedWeekDays != null &&
+                selectedWeekDays.contains(scheduledDate.weekday)) {
+              shouldAddDose = true;
+            }
             break;
           case FrequencyTypeEnum.cycle:
             if (cycleOnDays != null && cycleOffDays != null) {
               final cycleLength = cycleOnDays + cycleOffDays;
-              if (day % cycleLength < cycleOnDays) shouldAddDose = true;
+              if (day % cycleLength < cycleOnDays) {
+                shouldAddDose = true;
+              }
             }
             break;
           case FrequencyTypeEnum.asNeeded:
@@ -344,7 +396,11 @@ class HomeController {
         if (shouldAddDose) {
           for (var time in times) {
             final specificTime = DateTime(
-              scheduledDate.year, scheduledDate.month, scheduledDate.day, time.hour, time.minute,
+              scheduledDate.year,
+              scheduledDate.month,
+              scheduledDate.day,
+              time.hour,
+              time.minute,
             );
             final log = DoseLogEntity()
               ..syncId = const Uuid().v4()
@@ -369,28 +425,49 @@ class HomeController {
     // Настройка уведомлений
     if (frequency == FrequencyTypeEnum.daily) {
       for (var time in times) {
-        final stableNotificationId = (medicineLocalId * 10000) + (time.hour * 100) + time.minute;
+        final stableNotificationId =
+            (medicineLocalId * 10000) + (time.hour * 100) + time.minute;
         await notificationService.scheduleDailyRepeatingNotification(
-          id: stableNotificationId, title: notificationTitle, body: notificationBody, time: time, payload: syncId,
+          id: stableNotificationId,
+          title: notificationTitle,
+          body: notificationBody,
+          time: time,
+          payload: NotificationPayload.daily(
+            medicineSyncId: syncId,
+            hour: time.hour,
+            minute: time.minute,
+          ),
         );
       }
     } else if (frequency != FrequencyTypeEnum.asNeeded) {
       for (var log in logsToInsert) {
-        final stableNotificationId = (medicineLocalId * 100000) + log.scheduledTime.day * 1000 + log.scheduledTime.hour * 100 + log.scheduledTime.minute;
+        final stableNotificationId =
+            (medicineLocalId * 100000) +
+            log.scheduledTime.day * 1000 +
+            log.scheduledTime.hour * 100 +
+            log.scheduledTime.minute;
         if (log.scheduledTime.difference(DateTime.now()).inDays < 30) {
-
           // 🚀 Если это титрация, показываем правильную дозу в пуше
           final customBody = frequency == FrequencyTypeEnum.tapering
-              ? notificationBody.replaceAll(dosage.toString(), log.dosage.toString())
+              ? notificationBody.replaceAll(
+                  dosage.toString(),
+                  log.dosage.toString(),
+                )
               : notificationBody;
 
           await notificationService.scheduleExactNotification(
-            id: stableNotificationId, title: notificationTitle, body: customBody, scheduledTime: log.scheduledTime, payload: syncId,
+            id: stableNotificationId,
+            title: notificationTitle,
+            body: customBody,
+            scheduledTime: log.scheduledTime,
+            payload: NotificationPayload.log(log.syncId),
           );
         }
       }
     }
     ref.invalidate(dailyScheduleProvider);
+    ref.invalidate(heroDoseProvider);
+    ref.invalidate(homeDashboardProvider);
   }
 
   Future<void> updateMedicineDetails({
@@ -437,7 +514,8 @@ class HomeController {
       await isar.medicineEntitys.put(medicine);
     });
 
-    if (!medicine.isPaused && medicine.frequency != FrequencyTypeEnum.asNeeded) {
+    if (!medicine.isPaused &&
+        medicine.frequency != FrequencyTypeEnum.asNeeded) {
       final logs = await isar.doseLogEntitys
           .filter()
           .medicineSyncIdEqualTo(medicine.syncId)
@@ -446,25 +524,41 @@ class HomeController {
 
       if (logs.isNotEmpty) {
         if (medicine.frequency == FrequencyTypeEnum.daily) {
-          final uniqueTimes = logs.map((l) => TimeOfDay.fromDateTime(l.scheduledTime)).toSet();
+          final uniqueTimes = logs
+              .map((l) => TimeOfDay.fromDateTime(l.scheduledTime))
+              .toSet();
           for (var time in uniqueTimes) {
-            final stableNotificationId = (medicine.id * 10000) + (time.hour * 100) + time.minute;
+            final stableNotificationId =
+                (medicine.id * 10000) + (time.hour * 100) + time.minute;
             await notificationService.scheduleDailyRepeatingNotification(
               id: stableNotificationId,
               title: newNotificationTitle,
               body: newNotificationBody,
               time: time,
-              payload: medicine.syncId,
+              payload: NotificationPayload.daily(
+                medicineSyncId: medicine.syncId,
+                hour: time.hour,
+                minute: time.minute,
+              ),
             );
           }
         } else {
           final now = DateTime.now();
           for (var log in logs) {
-            if (log.scheduledTime.isAfter(now) && log.scheduledTime.difference(now).inDays < 30) {
-              final stableNotificationId = (medicine.id * 100000) + log.scheduledTime.day * 1000 + log.scheduledTime.hour * 100 + log.scheduledTime.minute;
+            if (log.scheduledTime.isAfter(now) &&
+                log.scheduledTime.difference(now).inDays < 30) {
+              final stableNotificationId =
+                  (medicine.id * 100000) +
+                  log.scheduledTime.day * 1000 +
+                  log.scheduledTime.hour * 100 +
+                  log.scheduledTime.minute;
 
-              final customBody = medicine.frequency == FrequencyTypeEnum.tapering
-                  ? newNotificationBody.replaceAll(newDosage.toString(), log.dosage.toString())
+              final customBody =
+                  medicine.frequency == FrequencyTypeEnum.tapering
+                  ? newNotificationBody.replaceAll(
+                      newDosage.toString(),
+                      log.dosage.toString(),
+                    )
                   : newNotificationBody;
 
               await notificationService.scheduleExactNotification(
@@ -472,7 +566,7 @@ class HomeController {
                 title: newNotificationTitle,
                 body: customBody,
                 scheduledTime: log.scheduledTime,
-                payload: medicine.syncId,
+                payload: NotificationPayload.log(log.syncId),
               );
             }
           }
@@ -480,6 +574,8 @@ class HomeController {
       }
     }
     ref.invalidate(dailyScheduleProvider);
+    ref.invalidate(heroDoseProvider);
+    ref.invalidate(homeDashboardProvider);
   }
 
   Future<void> deleteMedicine(MedicineEntity medicine) async {
@@ -487,19 +583,29 @@ class HomeController {
     final notificationService = ref.read(notificationServiceProvider);
     final isar = await isarService.db;
 
-    final logs = await isar.doseLogEntitys.filter().medicineSyncIdEqualTo(medicine.syncId).findAll();
+    final logs = await isar.doseLogEntitys
+        .filter()
+        .medicineSyncIdEqualTo(medicine.syncId)
+        .findAll();
     final logIds = logs.map((e) => e.id).toList();
 
     if (logs.isNotEmpty) {
       if (medicine.frequency == FrequencyTypeEnum.daily) {
-        final uniqueTimes = logs.map((l) => TimeOfDay.fromDateTime(l.scheduledTime)).toSet();
+        final uniqueTimes = logs
+            .map((l) => TimeOfDay.fromDateTime(l.scheduledTime))
+            .toSet();
         for (var time in uniqueTimes) {
-          final stableNotificationId = (medicine.id * 10000) + (time.hour * 100) + time.minute;
+          final stableNotificationId =
+              (medicine.id * 10000) + (time.hour * 100) + time.minute;
           await notificationService.cancelNotification(stableNotificationId);
         }
       } else {
         for (var log in logs) {
-          final stableNotificationId = (medicine.id * 100000) + log.scheduledTime.day * 1000 + log.scheduledTime.hour * 100 + log.scheduledTime.minute;
+          final stableNotificationId =
+              (medicine.id * 100000) +
+              log.scheduledTime.day * 1000 +
+              log.scheduledTime.hour * 100 +
+              log.scheduledTime.minute;
           await notificationService.cancelNotification(stableNotificationId);
         }
       }
@@ -510,5 +616,7 @@ class HomeController {
       await isar.medicineEntitys.delete(medicine.id);
     });
     ref.invalidate(dailyScheduleProvider);
+    ref.invalidate(heroDoseProvider);
+    ref.invalidate(homeDashboardProvider);
   }
 }

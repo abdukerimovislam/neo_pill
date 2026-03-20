@@ -1,37 +1,122 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="Ydg-fD-yQy"/>
-                        <viewControllerLayoutGuide type="bottom" id="xbc-2k-c8Z"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
-                            </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="orb-left">
+                                <rect key="frame" x="-38" y="-56" width="220" height="220"/>
+                                <color key="backgroundColor" red="0.05882352941" green="0.6156862745" blue="0.3450980392" alpha="0.08" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="220" id="orb-left-width"/>
+                                    <constraint firstAttribute="height" constant="220" id="orb-left-height"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="110"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="orb-right">
+                                <rect key="frame" x="255" y="662" width="180" height="180"/>
+                                <color key="backgroundColor" red="0.1450980392" green="0.3882352941" blue="0.9215686275" alpha="0.06" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="180" id="orb-right-width"/>
+                                    <constraint firstAttribute="height" constant="180" id="orb-right-height"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="90"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mark-bg">
+                                <rect key="frame" x="130.5" y="308" width="132" height="132"/>
+                                <color key="backgroundColor" red="0.9176470588" green="0.9725490196" blue="0.9450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="132" id="mark-bg-width"/>
+                                    <constraint firstAttribute="height" constant="132" id="mark-bg-height"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="66"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mark-pill">
+                                <rect key="frame" x="154.5" y="344" width="84" height="60"/>
+                                <color key="backgroundColor" red="0.05882352941" green="0.6156862745" blue="0.3450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="84" id="mark-pill-width"/>
+                                    <constraint firstAttribute="height" constant="60" id="mark-pill-height"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="30"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mark-line">
+                                <rect key="frame" x="188.5" y="354" width="16" height="40"/>
+                                <color key="backgroundColor" red="0.968627451" green="0.9843137255" blue="0.9764705882" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="16" id="mark-line-width"/>
+                                    <constraint firstAttribute="height" constant="40" id="mark-line-height"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="NeoPill" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="title">
+                                <rect key="frame" x="127" y="472" width="139" height="34"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="28"/>
+                                <color key="textColor" red="0.05882352941" green="0.09019607843" blue="0.1647058824" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Simple medication tracking" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="subtitle">
+                                <rect key="frame" x="92" y="516" width="210" height="40"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <color key="textColor" red="0.2941176471" green="0.3333333333" blue="0.3882352941" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
+                        <color key="backgroundColor" red="0.968627451" green="0.9843137255" blue="0.9764705882" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="1a2-6s-vTC"/>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="4X2-HB-R7a"/>
+                            <constraint firstItem="mark-bg" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="mark-bg-centerX"/>
+                            <constraint firstItem="mark-bg" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-52" id="mark-bg-centerY"/>
+                            <constraint firstItem="mark-pill" firstAttribute="centerX" secondItem="mark-bg" secondAttribute="centerX" id="mark-pill-centerX"/>
+                            <constraint firstItem="mark-pill" firstAttribute="centerY" secondItem="mark-bg" secondAttribute="centerY" id="mark-pill-centerY"/>
+                            <constraint firstItem="mark-line" firstAttribute="centerX" secondItem="mark-pill" secondAttribute="centerX" id="mark-line-centerX"/>
+                            <constraint firstItem="mark-line" firstAttribute="centerY" secondItem="mark-pill" secondAttribute="centerY" id="mark-line-centerY"/>
+                            <constraint firstItem="title" firstAttribute="top" secondItem="mark-bg" secondAttribute="bottom" constant="32" id="title-top"/>
+                            <constraint firstItem="title" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="title-centerX"/>
+                            <constraint firstItem="subtitle" firstAttribute="top" secondItem="title" secondAttribute="bottom" constant="10" id="subtitle-top"/>
+                            <constraint firstItem="subtitle" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="subtitle-centerX"/>
+                            <constraint firstItem="orb-left" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" constant="-56" id="orb-left-top"/>
+                            <constraint firstItem="orb-left" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" constant="-38" id="orb-left-leading"/>
+                            <constraint firstItem="orb-right" firstAttribute="trailing" secondItem="Ze5-6b-2t3" secondAttribute="trailing" constant="42" id="orb-right-trailing"/>
+                            <constraint firstItem="orb-right" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottom" constant="52" id="orb-right-bottom"/>
                         </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="53" y="375"/>
+            <point key="canvasLocation" x="50" y="370"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="LaunchImage" width="168" height="185"/>
-    </resources>
 </document>

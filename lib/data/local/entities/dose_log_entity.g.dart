@@ -22,11 +22,7 @@ const DoseLogEntitySchema = CollectionSchema(
       name: r'actualTime',
       type: IsarType.dateTime,
     ),
-    r'dosage': PropertySchema(
-      id: 1,
-      name: r'dosage',
-      type: IsarType.double,
-    ),
+    r'dosage': PropertySchema(id: 1, name: r'dosage', type: IsarType.double),
     r'medicineSyncId': PropertySchema(
       id: 2,
       name: r'medicineSyncId',
@@ -43,11 +39,7 @@ const DoseLogEntitySchema = CollectionSchema(
       type: IsarType.byte,
       enumMap: _DoseLogEntitystatusEnumValueMap,
     ),
-    r'syncId': PropertySchema(
-      id: 5,
-      name: r'syncId',
-      type: IsarType.string,
-    )
+    r'syncId': PropertySchema(id: 5, name: r'syncId', type: IsarType.string),
   },
   estimateSize: _doseLogEntityEstimateSize,
   serialize: _doseLogEntitySerialize,
@@ -65,7 +57,7 @@ const DoseLogEntitySchema = CollectionSchema(
           name: r'syncId',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'medicineSyncId': IndexSchema(
@@ -78,7 +70,7 @@ const DoseLogEntitySchema = CollectionSchema(
           name: r'medicineSyncId',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'scheduledTime': IndexSchema(
@@ -91,9 +83,9 @@ const DoseLogEntitySchema = CollectionSchema(
           name: r'scheduledTime',
           type: IndexType.value,
           caseSensitive: false,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
@@ -142,7 +134,7 @@ DoseLogEntity _doseLogEntityDeserialize(
   object.scheduledTime = reader.readDateTime(offsets[3]);
   object.status =
       _DoseLogEntitystatusValueEnumMap[reader.readByteOrNull(offsets[4])] ??
-          DoseStatusEnum.taken;
+      DoseStatusEnum.taken;
   object.syncId = reader.readString(offsets[5]);
   return object;
 }
@@ -164,7 +156,8 @@ P _doseLogEntityDeserializeProp<P>(
       return (reader.readDateTime(offset)) as P;
     case 4:
       return (_DoseLogEntitystatusValueEnumMap[reader.readByteOrNull(offset)] ??
-          DoseStatusEnum.taken) as P;
+              DoseStatusEnum.taken)
+          as P;
     case 5:
       return (reader.readString(offset)) as P;
     default:
@@ -194,7 +187,10 @@ List<IsarLinkBase<dynamic>> _doseLogEntityGetLinks(DoseLogEntity object) {
 }
 
 void _doseLogEntityAttach(
-    IsarCollection<dynamic> col, Id id, DoseLogEntity object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  DoseLogEntity object,
+) {
   object.id = id;
 }
 
@@ -247,8 +243,10 @@ extension DoseLogEntityByIndex on IsarCollection<DoseLogEntity> {
     return putAllByIndex(r'syncId', objects);
   }
 
-  List<Id> putAllBySyncIdSync(List<DoseLogEntity> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllBySyncIdSync(
+    List<DoseLogEntity> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'syncId', objects, saveLinks: saveLinks);
   }
 }
@@ -273,17 +271,16 @@ extension DoseLogEntityQueryWhereSort
 extension DoseLogEntityQueryWhere
     on QueryBuilder<DoseLogEntity, DoseLogEntity, QWhereClause> {
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause> idEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -306,8 +303,9 @@ extension DoseLogEntityQueryWhere
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -316,8 +314,9 @@ extension DoseLogEntityQueryWhere
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -332,195 +331,225 @@ extension DoseLogEntityQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause> syncIdEqualTo(
-      String syncId) {
+    String syncId,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'syncId',
-        value: [syncId],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'syncId', value: [syncId]),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause>
-      syncIdNotEqualTo(String syncId) {
+  syncIdNotEqualTo(String syncId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'syncId',
-              lower: [],
-              upper: [syncId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'syncId',
-              lower: [syncId],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'syncId',
+                lower: [],
+                upper: [syncId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'syncId',
+                lower: [syncId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'syncId',
-              lower: [syncId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'syncId',
-              lower: [],
-              upper: [syncId],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'syncId',
+                lower: [syncId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'syncId',
+                lower: [],
+                upper: [syncId],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause>
-      medicineSyncIdEqualTo(String medicineSyncId) {
+  medicineSyncIdEqualTo(String medicineSyncId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'medicineSyncId',
-        value: [medicineSyncId],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'medicineSyncId',
+          value: [medicineSyncId],
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause>
-      medicineSyncIdNotEqualTo(String medicineSyncId) {
+  medicineSyncIdNotEqualTo(String medicineSyncId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'medicineSyncId',
-              lower: [],
-              upper: [medicineSyncId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'medicineSyncId',
-              lower: [medicineSyncId],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'medicineSyncId',
+                lower: [],
+                upper: [medicineSyncId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'medicineSyncId',
+                lower: [medicineSyncId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'medicineSyncId',
-              lower: [medicineSyncId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'medicineSyncId',
-              lower: [],
-              upper: [medicineSyncId],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'medicineSyncId',
+                lower: [medicineSyncId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'medicineSyncId',
+                lower: [],
+                upper: [medicineSyncId],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause>
-      scheduledTimeEqualTo(DateTime scheduledTime) {
+  scheduledTimeEqualTo(DateTime scheduledTime) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'scheduledTime',
-        value: [scheduledTime],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'scheduledTime',
+          value: [scheduledTime],
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause>
-      scheduledTimeNotEqualTo(DateTime scheduledTime) {
+  scheduledTimeNotEqualTo(DateTime scheduledTime) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'scheduledTime',
-              lower: [],
-              upper: [scheduledTime],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'scheduledTime',
-              lower: [scheduledTime],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'scheduledTime',
+                lower: [],
+                upper: [scheduledTime],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'scheduledTime',
+                lower: [scheduledTime],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'scheduledTime',
-              lower: [scheduledTime],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'scheduledTime',
-              lower: [],
-              upper: [scheduledTime],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'scheduledTime',
+                lower: [scheduledTime],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'scheduledTime',
+                lower: [],
+                upper: [scheduledTime],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause>
-      scheduledTimeGreaterThan(
-    DateTime scheduledTime, {
-    bool include = false,
-  }) {
+  scheduledTimeGreaterThan(DateTime scheduledTime, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'scheduledTime',
-        lower: [scheduledTime],
-        includeLower: include,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'scheduledTime',
+          lower: [scheduledTime],
+          includeLower: include,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause>
-      scheduledTimeLessThan(
-    DateTime scheduledTime, {
-    bool include = false,
-  }) {
+  scheduledTimeLessThan(DateTime scheduledTime, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'scheduledTime',
-        lower: [],
-        upper: [scheduledTime],
-        includeUpper: include,
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'scheduledTime',
+          lower: [],
+          upper: [scheduledTime],
+          includeUpper: include,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterWhereClause>
-      scheduledTimeBetween(
+  scheduledTimeBetween(
     DateTime lowerScheduledTime,
     DateTime upperScheduledTime, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'scheduledTime',
-        lower: [lowerScheduledTime],
-        includeLower: includeLower,
-        upper: [upperScheduledTime],
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'scheduledTime',
+          lower: [lowerScheduledTime],
+          includeLower: includeLower,
+          upper: [upperScheduledTime],
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -528,127 +557,129 @@ extension DoseLogEntityQueryWhere
 extension DoseLogEntityQueryFilter
     on QueryBuilder<DoseLogEntity, DoseLogEntity, QFilterCondition> {
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      actualTimeIsNull() {
+  actualTimeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'actualTime',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'actualTime'),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      actualTimeIsNotNull() {
+  actualTimeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'actualTime',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'actualTime'),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      actualTimeEqualTo(DateTime? value) {
+  actualTimeEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'actualTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'actualTime', value: value),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      actualTimeGreaterThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  actualTimeGreaterThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'actualTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'actualTime',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      actualTimeLessThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  actualTimeLessThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'actualTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'actualTime',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      actualTimeBetween(
+  actualTimeBetween(
     DateTime? lower,
     DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'actualTime',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'actualTime',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      dosageEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
+  dosageEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'dosage',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'dosage',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      dosageGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'dosage',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      dosageLessThan(
+  dosageGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'dosage',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'dosage',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      dosageBetween(
+  dosageLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'dosage',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
+  dosageBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -656,38 +687,39 @@ extension DoseLogEntityQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'dosage',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'dosage',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition> idEqualTo(
-      Id value) {
+    Id value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -696,11 +728,13 @@ extension DoseLogEntityQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -711,64 +745,69 @@ extension DoseLogEntityQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  medicineSyncIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'medicineSyncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'medicineSyncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'medicineSyncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdLessThan(
+  medicineSyncIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'medicineSyncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'medicineSyncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdBetween(
+  medicineSyncIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'medicineSyncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
+  medicineSyncIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -776,247 +815,250 @@ extension DoseLogEntityQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'medicineSyncId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'medicineSyncId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  medicineSyncIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'medicineSyncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'medicineSyncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  medicineSyncIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'medicineSyncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'medicineSyncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdContains(String value, {bool caseSensitive = true}) {
+  medicineSyncIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'medicineSyncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'medicineSyncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdMatches(String pattern, {bool caseSensitive = true}) {
+  medicineSyncIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'medicineSyncId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'medicineSyncId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdIsEmpty() {
+  medicineSyncIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'medicineSyncId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'medicineSyncId', value: ''),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      medicineSyncIdIsNotEmpty() {
+  medicineSyncIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'medicineSyncId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'medicineSyncId', value: ''),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      scheduledTimeEqualTo(DateTime value) {
+  scheduledTimeEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'scheduledTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'scheduledTime', value: value),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      scheduledTimeGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  scheduledTimeGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'scheduledTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'scheduledTime',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      scheduledTimeLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  scheduledTimeLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'scheduledTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'scheduledTime',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      scheduledTimeBetween(
+  scheduledTimeBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'scheduledTime',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'scheduledTime',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      statusEqualTo(DoseStatusEnum value) {
+  statusEqualTo(DoseStatusEnum value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'status',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'status', value: value),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      statusGreaterThan(
-    DoseStatusEnum value, {
-    bool include = false,
-  }) {
+  statusGreaterThan(DoseStatusEnum value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'status',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'status',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      statusLessThan(
-    DoseStatusEnum value, {
-    bool include = false,
-  }) {
+  statusLessThan(DoseStatusEnum value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'status',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'status',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      statusBetween(
+  statusBetween(
     DoseStatusEnum lower,
     DoseStatusEnum upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'status',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'status',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  syncIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'syncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'syncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'syncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdLessThan(
+  syncIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'syncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'syncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdBetween(
+  syncIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'syncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
+  syncIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1024,84 +1066,86 @@ extension DoseLogEntityQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'syncId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'syncId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  syncIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'syncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'syncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  syncIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'syncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'syncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdContains(String value, {bool caseSensitive = true}) {
+  syncIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'syncId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'syncId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdMatches(String pattern, {bool caseSensitive = true}) {
+  syncIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'syncId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'syncId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdIsEmpty() {
+  syncIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'syncId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'syncId', value: ''),
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterFilterCondition>
-      syncIdIsNotEmpty() {
+  syncIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'syncId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'syncId', value: ''),
+      );
     });
   }
 }
@@ -1121,7 +1165,7 @@ extension DoseLogEntityQuerySortBy
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      sortByActualTimeDesc() {
+  sortByActualTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'actualTime', Sort.desc);
     });
@@ -1140,28 +1184,28 @@ extension DoseLogEntityQuerySortBy
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      sortByMedicineSyncId() {
+  sortByMedicineSyncId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'medicineSyncId', Sort.asc);
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      sortByMedicineSyncIdDesc() {
+  sortByMedicineSyncIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'medicineSyncId', Sort.desc);
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      sortByScheduledTime() {
+  sortByScheduledTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'scheduledTime', Sort.asc);
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      sortByScheduledTimeDesc() {
+  sortByScheduledTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'scheduledTime', Sort.desc);
     });
@@ -1201,7 +1245,7 @@ extension DoseLogEntityQuerySortThenBy
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      thenByActualTimeDesc() {
+  thenByActualTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'actualTime', Sort.desc);
     });
@@ -1232,28 +1276,28 @@ extension DoseLogEntityQuerySortThenBy
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      thenByMedicineSyncId() {
+  thenByMedicineSyncId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'medicineSyncId', Sort.asc);
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      thenByMedicineSyncIdDesc() {
+  thenByMedicineSyncIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'medicineSyncId', Sort.desc);
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      thenByScheduledTime() {
+  thenByScheduledTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'scheduledTime', Sort.asc);
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QAfterSortBy>
-      thenByScheduledTimeDesc() {
+  thenByScheduledTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'scheduledTime', Sort.desc);
     });
@@ -1299,15 +1343,17 @@ extension DoseLogEntityQueryWhereDistinct
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QDistinct>
-      distinctByMedicineSyncId({bool caseSensitive = true}) {
+  distinctByMedicineSyncId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'medicineSyncId',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'medicineSyncId',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseLogEntity, QDistinct>
-      distinctByScheduledTime() {
+  distinctByScheduledTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'scheduledTime');
     });
@@ -1319,8 +1365,9 @@ extension DoseLogEntityQueryWhereDistinct
     });
   }
 
-  QueryBuilder<DoseLogEntity, DoseLogEntity, QDistinct> distinctBySyncId(
-      {bool caseSensitive = true}) {
+  QueryBuilder<DoseLogEntity, DoseLogEntity, QDistinct> distinctBySyncId({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'syncId', caseSensitive: caseSensitive);
     });
@@ -1336,7 +1383,7 @@ extension DoseLogEntityQueryProperty
   }
 
   QueryBuilder<DoseLogEntity, DateTime?, QQueryOperations>
-      actualTimeProperty() {
+  actualTimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'actualTime');
     });
@@ -1349,21 +1396,21 @@ extension DoseLogEntityQueryProperty
   }
 
   QueryBuilder<DoseLogEntity, String, QQueryOperations>
-      medicineSyncIdProperty() {
+  medicineSyncIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'medicineSyncId');
     });
   }
 
   QueryBuilder<DoseLogEntity, DateTime, QQueryOperations>
-      scheduledTimeProperty() {
+  scheduledTimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'scheduledTime');
     });
   }
 
   QueryBuilder<DoseLogEntity, DoseStatusEnum, QQueryOperations>
-      statusProperty() {
+  statusProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'status');
     });

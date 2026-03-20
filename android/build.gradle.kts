@@ -15,6 +15,18 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
+
+// 🚀 СНАЧАЛА РЕГИСТРИРУЕМ ХУК (ДО ВЫЧИСЛЕНИЯ)
+subprojects {
+    afterEvaluate {
+        val androidExt = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
+        if (androidExt != null && androidExt.namespace == null) {
+            androidExt.namespace = project.group.toString()
+        }
+    }
+}
+
+// 🚀 ТОЛЬКО ПОТОМ ДЕЛАЕМ EVALUATION DEPENDS ON
 subprojects {
     project.evaluationDependsOn(":app")
 }

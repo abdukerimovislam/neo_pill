@@ -1,0 +1,153 @@
+{
+  "@@locale": "en",
+  "appTitle": "AI Medication Manager",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "todaySchedule": "Today Schedule",
+  "architectureReady": "Architecture is set. All systems normal.",
+  "nextCreateHome": "Next: Create Home Screen",
+  "statusTaken": "Taken",
+  "statusSkipped": "Skipped",
+  "statusSnoozed": "Snoozed 10 min",
+  "statusPending": "Pending",
+  "emptySchedule": "No medications scheduled for this day",
+  "takeAction": "Take",
+  "skipAction": "Skip",
+  "dosageUnitMg": "mg",
+  "dosageUnitMl": "ml",
+  "dosageUnitDrops": "drops",
+  "addMedicationTitle": "Add Medication",
+    "medicineNameHint": "Medicine Name (e.g. Vitamin D)",
+    "dosageHint": "Dosage (e.g. 500)",
+    "saveAction": "Save & Create Schedule",
+    "errorEmptyFields": "Please fill in all fields",
+    "profileTitle": "Profile",
+    "notificationTitle": "Time to take {name}!",
+      "@notificationTitle": {
+        "placeholders": {
+          "name": {
+            "type": "String"
+          }
+        }
+      },
+      "notificationBody": "Dosage: {dosage}. Please don't miss it.",
+      "@notificationBody": {
+        "placeholders": {
+          "dosage": {
+            "type": "String"
+          }
+        }
+      },
+      "analyticsTitle": "Analytics",
+        "adherenceRate": "Adherence Rate",
+        "dosesTaken": "Doses Taken",
+        "dosesMissed": "Doses Missed",
+        "activeCourses": "Active Courses",
+        "tabHome": "Schedule",
+        "tabAnalytics": "Stats",
+        "keepItUp": "Great job! Keep it up.",
+        "needsAttention": "Needs attention. Try not to miss doses.",
+        "medicineDetails": "Medicine Details",
+          "pillsRemaining": "Pills Remaining",
+          "deleteCourse": "Delete Course",
+          "deleteConfirmation": "Are you sure you want to delete this medication and all its reminders?",
+          "cancel": "Cancel",
+          "delete": "Delete",
+          "timeOfDay": "Time of Day",
+          "courseDuration": "Course Duration (days)",
+            "pillsInPackage": "Pills in Package",
+            "addTime": "Add Time",
+            "timeLabel": "Time {number}",
+            "@timeLabel": {
+              "placeholders": {
+                "number": {
+                  "type": "int"
+                }
+              }
+            },
+            "foodBefore": "Before food",
+            "foodWith": "With food",
+            "foodAfter": "After food",
+            "unknownMedicine": "Unknown medicine",
+            "addPhoto": "Add Photo",
+              "takePhoto": "Take a photo",
+              "chooseFromGallery": "Choose from gallery",
+              "medicineInfo": "Medicine Info",
+              "formTitle": "Form",
+              "scheduleTitle": "Schedule",
+              "everyXDays": "Every X days",
+              "maxDosesPerDay": "Max doses per day (Safety)",
+              "overdoseWarning": "To prevent accidental overdose.",
+              "foodInstructionTitle": "Food Instruction",
+              "doseNumber": "Dose {number}",
+              "@doseNumber": {
+                "placeholders": {
+                  "number": {
+                    "type": "int"
+                  }
+                }
+              },
+              "coursePaused": "Course Paused",
+                "resumeCourse": "Resume",
+                "pauseCourse": "Pause",
+                "doctorReport": "Doctor Report",
+                "generatingReport": "Generating Doctor Report...",
+                "errorGeneratingReport": "Error generating PDF: {error}",
+                "@errorGeneratingReport": {
+                  "placeholders": {
+                    "error": {
+                      "type": "String"
+                    }
+                  }
+                },
+                "editCourse": "Edit Course",
+                  "saveChanges": "Save Changes",
+                  "editMedicineInfo": "Edit Medicine Info",
+                  "lowStockTitle": "Low Stock: {name}",
+                    "@lowStockTitle": {
+                      "placeholders": {
+                        "name": { "type": "String" }
+                      }
+                    },
+                    "lowStockBody": "Only {count} {unit} left. Time to refill!",
+                    "@lowStockBody": {
+                      "placeholders": {
+                        "count": { "type": "int" },
+                        "unit": { "type": "String" }
+                      }
+                    },
+                    "lowStockBadge": "Low Stock",
+                    "snoozeAction": "Snooze (30m)",
+                      "undoAction": "Undo",
+                      "sosPanelTitle": "As Needed (SOS)",
+                        "takeNowAction": "Take",
+                        "limitReachedAlert": "Daily limit reached! Consult your doctor.",
+                        "addSosMedicine": "Add SOS",
+                        "outOfStockBadge": "Out of Stock",
+                          "recentHistory": "Recent History",
+                          "noHistoryYet": "No history yet",
+                          "statusTaken": "Taken",
+                          "statusSkipped": "Skipped",
+                          "statusPending": "Pending",
+                          "lifetimeCourse": "Continuous (Lifetime)",
+                            "doneAction": "Done",
+                            "addMeasurement": "Log Health Data",
+                              "bloodPressure": "Blood Pressure",
+                              "heartRate": "Heart Rate",
+                              "weight": "Weight",
+                              "bloodSugar": "Blood Sugar",
+                              "systolic": "Sys",
+                              "diastolic": "Dia",
+                              "taperingDosing": "Dynamic Dosing (Tapering)",
+                                "stepNumber": "Step {number}",
+                                "@stepNumber": {
+                                  "placeholders": {
+                                    "number": {
+                                      "type": "int"
+                                    }
+                                  }
+                                },
+                                "addStep": "Add Step",
+                                "doseForStep": "Dose for this step"
+}

@@ -1,3 +1,4 @@
+import 'dart:io'; // 🚀 ДОБАВЛЕНО ДЛЯ РАБОТЫ С ФОТО
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -15,81 +16,60 @@ class DoseCard extends ConsumerWidget {
 
   const DoseCard({super.key, required this.item});
 
-  // 🚀 НОВОЕ: Отрисовка таблетки через Визуальный Конструктор
+  // 🚀 ОБНОВЛЕНО: ТЕПЕРЬ ПОДДЕРЖИВАЕТ РЕАЛЬНЫЕ ФОТО ИЗ КАМЕРЫ
   Widget _buildMedicineImageOrIcon(MedicineEntity? medicine, ThemeData theme) {
     if (medicine != null) {
       return Container(
-        width: 48,
-        height: 48,
+        width: 56,
+        height: 56,
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Color(medicine.pillColor).withOpacity(0.3), width: 1.5),
+          color: theme.colorScheme.surface.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Color(medicine.pillColor).withValues(alpha: 0.3), width: 2),
           boxShadow: [
-            BoxShadow(
-              color: Color(medicine.pillColor).withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            )
+            BoxShadow(color: Color(medicine.pillColor).withValues(alpha: 0.15), blurRadius: 12, offset: const Offset(0, 4))
           ],
         ),
-        child: Center(
-          child: PillIconWidget(
-            shape: medicine.pillShape,
-            colorHex: medicine.pillColor,
-            size: 20,
+        child: medicine.pillImagePath != null && File(medicine.pillImagePath!).existsSync()
+            ? ClipRRect(
+          borderRadius: BorderRadius.circular(14), // Скругление чуть меньше, чтобы влезло в рамку
+          child: Image.file(
+            File(medicine.pillImagePath!),
+            fit: BoxFit.cover,
+            width: 56,
+            height: 56,
           ),
-        ),
+        )
+            : Center(child: PillIconWidget(shape: medicine.pillShape, colorHex: medicine.pillColor, size: 28)),
       );
     }
-
-    // Если лекарство не найдено (ошибка базы)
     return Container(
-      width: 48, height: 48,
-      decoration: BoxDecoration(color: theme.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
-      child: Icon(Icons.medication, size: 24, color: theme.primaryColor),
+      width: 56, height: 56,
+      decoration: BoxDecoration(color: theme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(16)),
+      child: Icon(Icons.medication_rounded, size: 28, color: theme.primaryColor),
     );
   }
 
   Widget? _buildFoodTag(FoodInstructionEnum? food, ThemeData theme, AppLocalizations l10n) {
     if (food == null || food == FoodInstructionEnum.noMatter) return null;
 
-    IconData icon;
-    String text;
-    Color color = theme.colorScheme.secondary;
+    IconData icon; String text; Color color = theme.colorScheme.secondary;
 
     switch (food) {
-      case FoodInstructionEnum.beforeFood:
-        icon = Icons.restaurant_menu;
-        text = l10n.foodBefore;
-        color = theme.colorScheme.primary;
-        break;
-      case FoodInstructionEnum.withFood:
-        icon = Icons.restaurant;
-        text = l10n.foodWith;
-        break;
-      case FoodInstructionEnum.afterFood:
-        icon = Icons.local_dining;
-        text = l10n.foodAfter;
-        color = Colors.orange.shade700;
-        break;
+      case FoodInstructionEnum.beforeFood: icon = Icons.restaurant_menu_rounded; text = l10n.foodBefore; color = theme.colorScheme.primary; break;
+      case FoodInstructionEnum.withFood: icon = Icons.restaurant_rounded; text = l10n.foodWith; break;
+      case FoodInstructionEnum.afterFood: icon = Icons.local_dining_rounded; text = l10n.foodAfter; color = Colors.orange.shade700; break;
       default: return null;
     }
 
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
+      margin: const EdgeInsets.only(top: 10), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: color.withValues(alpha: 0.2))),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          Text(text, style: theme.textTheme.bodySmall?.copyWith(color: color, fontWeight: FontWeight.w600)),
+          Icon(icon, size: 14, color: color), const SizedBox(width: 6),
+          Text(text, style: theme.textTheme.bodySmall?.copyWith(color: color, fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -103,7 +83,9 @@ class DoseCard extends ConsumerWidget {
 
     final medicine = item.medicine;
     final medicineName = medicine?.name ?? l10n.unknownMedicine;
-    final rawDosage = medicine?.dosage ?? 0;
+
+    // Берем дозу из ЛОГА
+    final rawDosage = item.doseLog.dosage > 0 ? item.doseLog.dosage : (medicine?.dosage ?? 0);
     final dosage = rawDosage % 1 == 0 ? rawDosage.toInt().toString() : rawDosage.toString();
     final unit = medicine?.dosageUnit ?? '';
 
@@ -117,39 +99,39 @@ class DoseCard extends ConsumerWidget {
     IconData statusIcon;
 
     switch (item.doseLog.status) {
-      case DoseStatusEnum.taken:
-        statusColor = theme.colorScheme.secondary;
-        statusIcon = Icons.check_circle;
-        break;
-      case DoseStatusEnum.skipped:
-        statusColor = theme.colorScheme.error;
-        statusIcon = Icons.cancel;
-        break;
-      default:
-        statusColor = isFutureDay ? theme.primaryColor.withOpacity(0.4) : theme.primaryColor;
-        statusIcon = Icons.schedule;
+      case DoseStatusEnum.taken: statusColor = theme.colorScheme.secondary; statusIcon = Icons.check_circle_rounded; break;
+      case DoseStatusEnum.skipped: statusColor = theme.colorScheme.error; statusIcon = Icons.cancel_rounded; break;
+      default: statusColor = isFutureDay ? theme.primaryColor.withValues(alpha: 0.4) : theme.primaryColor; statusIcon = Icons.schedule_rounded;
     }
 
     return GestureDetector(
       onTap: () {
-        if (medicine != null) {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => MedicineDetailScreen(medicine: medicine)));
-        }
+        if (medicine != null) Navigator.of(context).push(MaterialPageRoute(builder: (context) => MedicineDetailScreen(medicine: medicine)));
       },
       child: GlassContainer(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 12), // Сделали карточки плотнее друг к другу
         padding: const EdgeInsets.all(16),
+        color: item.doseLog.status == DoseStatusEnum.taken
+            ? theme.colorScheme.secondary.withValues(alpha: 0.04) // Очень легкое зеленое свечение
+            : theme.colorScheme.surface.withValues(alpha: 0.45),
         child: Row(
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(statusIcon, color: statusColor, size: 28),
+                Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.1),
+                        shape: BoxShape.circle
+                    ),
+                    child: Icon(statusIcon, color: statusColor, size: 24)
+                ),
                 const SizedBox(height: 8),
-                Text(timeString, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: statusColor)),
+                Text(timeString, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800, color: statusColor, fontSize: 16)),
               ],
             ),
-            Container(height: 50, width: 1, margin: const EdgeInsets.symmetric(horizontal: 16), color: theme.dividerColor.withOpacity(0.2)),
+            Container(height: 60, width: 1, margin: const EdgeInsets.symmetric(horizontal: 16), color: theme.dividerColor.withValues(alpha: 0.1)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,42 +140,29 @@ class DoseCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       _buildMedicineImageOrIcon(medicine, theme),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(medicineName, style: theme.textTheme.titleLarge?.copyWith(fontSize: 18), maxLines: 1, overflow: TextOverflow.ellipsis),
+                            Text(medicineName, style: theme.textTheme.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface), maxLines: 1, overflow: TextOverflow.ellipsis),
                             const SizedBox(height: 2),
-                            Text('$dosage $unit', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7), fontWeight: FontWeight.w500)),
+                            Text('$dosage $unit', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w600)),
 
+                            // Бейджи инвентаря
                             if (medicine != null && medicine.pillsRemaining == 0) ...[
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(color: theme.colorScheme.error.withOpacity(0.15), borderRadius: BorderRadius.circular(4), border: Border.all(color: theme.colorScheme.error)),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.error_outline, size: 12, color: theme.colorScheme.error),
-                                    const SizedBox(width: 4),
-                                    Text(l10n.outOfStockBadge, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error, fontWeight: FontWeight.bold, fontSize: 10)),
-                                  ],
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(color: theme.colorScheme.error.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6), border: Border.all(color: theme.colorScheme.error.withValues(alpha: 0.3))),
+                                child: Text(l10n.outOfStockBadge, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error, fontWeight: FontWeight.w800, fontSize: 10)),
                               ),
                             ] else if (medicine != null && medicine.pillsRemaining <= medicine.refillAlertThreshold) ...[
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(color: Colors.orange.withOpacity(0.15), borderRadius: BorderRadius.circular(4), border: Border.all(color: Colors.orange.withOpacity(0.5))),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.warning_amber_rounded, size: 12, color: Colors.orange),
-                                    const SizedBox(width: 4),
-                                    Text(l10n.lowStockBadge, style: theme.textTheme.bodySmall?.copyWith(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 10)),
-                                  ],
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.orange.withValues(alpha: 0.3))),
+                                child: Text(l10n.lowStockBadge, style: theme.textTheme.bodySmall?.copyWith(color: Colors.orange, fontWeight: FontWeight.w800, fontSize: 10)),
                               ),
                             ]
                           ],
@@ -207,19 +176,29 @@ class DoseCard extends ConsumerWidget {
                 ],
               ),
             ),
+
+            // Дерзкие, крупные кнопки действий в стиле Pure Swiss
             if (item.doseLog.status == DoseStatusEnum.pending && !isFutureDay) ...[
               const SizedBox(width: 8),
               Column(
                 children: [
                   IconButton(
-                    style: IconButton.styleFrom(backgroundColor: theme.colorScheme.secondary.withOpacity(0.1), padding: const EdgeInsets.all(12)),
-                    icon: Icon(Icons.check, color: theme.colorScheme.secondary),
+                    style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.secondary.withValues(alpha: 0.15),
+                        padding: const EdgeInsets.all(14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
+                    ),
+                    icon: Icon(Icons.check_rounded, color: theme.colorScheme.secondary, size: 28),
                     onPressed: () => controller.updateDoseStatus(item.doseLog, DoseStatusEnum.taken),
                   ),
                   const SizedBox(height: 8),
                   IconButton(
-                    style: IconButton.styleFrom(padding: const EdgeInsets.all(8)),
-                    icon: Icon(Icons.close, color: theme.colorScheme.error, size: 20),
+                    style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.error.withValues(alpha: 0.1),
+                        padding: const EdgeInsets.all(10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+                    ),
+                    icon: Icon(Icons.close_rounded, color: theme.colorScheme.error, size: 22),
                     onPressed: () => controller.updateDoseStatus(item.doseLog, DoseStatusEnum.skipped),
                   ),
                 ],
@@ -227,8 +206,12 @@ class DoseCard extends ConsumerWidget {
             ] else if (item.doseLog.status != DoseStatusEnum.pending) ...[
               const SizedBox(width: 8),
               IconButton(
-                style: IconButton.styleFrom(backgroundColor: theme.dividerColor.withOpacity(0.05), padding: const EdgeInsets.all(12)),
-                icon: Icon(Icons.undo, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                style: IconButton.styleFrom(
+                    backgroundColor: theme.dividerColor.withValues(alpha: 0.05),
+                    padding: const EdgeInsets.all(14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
+                ),
+                icon: Icon(Icons.undo_rounded, color: theme.colorScheme.onSurface.withValues(alpha: 0.5), size: 26),
                 onPressed: () => controller.undoDoseStatus(item.doseLog),
               ),
             ]

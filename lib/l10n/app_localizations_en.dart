@@ -240,7 +240,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sosPanelTitle => 'As Needed (SOS)';
 
   @override
-  String get takeNowAction => 'Take';
+  String get takeNowAction => 'TAKE NOW';
 
   @override
   String get limitReachedAlert => 'Daily limit reached! Consult your doctor.';
@@ -297,4 +297,202 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get doseForStep => 'Dose for this step';
+
+  @override
+  String get whatWouldYouLikeToDo => 'What would you like to do?';
+
+  @override
+  String get scheduleNewTreatmentCourse => 'Schedule a new treatment course';
+
+  @override
+  String get logHealthMetricsSubtitle =>
+      'Log blood pressure, heart rate, weight';
+
+  @override
+  String get priorityAction => 'Priority Action';
+
+  @override
+  String get skipDoseAction => 'Skip Dose';
+
+  @override
+  String errorPrefix(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get goodMorning => 'Good morning';
+
+  @override
+  String get goodAfternoon => 'Good afternoon';
+
+  @override
+  String get goodEvening => 'Good evening';
+
+  @override
+  String get dailyProgress => 'Daily Progress';
+
+  @override
+  String get sosEmergency => 'SOS Emergency';
+
+  @override
+  String get adherenceSubtitle => 'Your medication consistency overview';
+
+  @override
+  String get healthCorrelationTitle => 'Health Correlation';
+
+  @override
+  String get healthCorrelationSubtitle =>
+      'Compare medication adherence with your health metrics';
+
+  @override
+  String get last7Days => 'Last 7 days';
+
+  @override
+  String get pillsTaken => 'Pills taken';
+
+  @override
+  String get overallAdherence => 'Overall adherence';
+
+  @override
+  String get statusGood => 'Good';
+
+  @override
+  String get statusNeedsAttention => 'Needs attention';
+
+  @override
+  String get statTaken => 'Taken';
+
+  @override
+  String get statSkipped => 'Skipped';
+
+  @override
+  String get statTotal => 'Total';
+
+  @override
+  String get completedDosesSubtitle => 'Completed doses';
+
+  @override
+  String get missedDosesSubtitle => 'Missed doses';
+
+  @override
+  String get noDataYet => 'No data yet';
+
+  @override
+  String get noDataDescription =>
+      'Start tracking measurements and taking medication regularly\nto see correlation insights here.';
+
+  @override
+  String get failedToLoadAdherence => 'Failed to load adherence';
+
+  @override
+  String get failedToLoadChart => 'Failed to load chart';
+
+  @override
+  String avgAdherence(String value) {
+    return 'Avg adherence $value%';
+  }
+
+  @override
+  String avgMetric(String metricName, String value) {
+    return 'Avg $metricName $value';
+  }
+
+  @override
+  String get addAction => 'Add Log';
+
+  @override
+  String get frequency => 'Frequency';
+
+  @override
+  String get form => 'Form';
+
+  @override
+  String get inventory => 'Inventory';
+
+  @override
+  String get lowStockAlert => 'LOW STOCK';
+
+  @override
+  String get asNeededFrequency => 'AS NEEDED';
+
+  @override
+  String get taperingFrequency => 'TAPERING';
+
+  @override
+  String get customizePill => 'Customize Appearance';
+
+  @override
+  String get customizePillTitle => 'Customize Pill';
+
+  @override
+  String get shape => 'Shape';
+
+  @override
+  String get color => 'Color';
+
+  @override
+  String get overview => 'Overview';
+
+  @override
+  String get scheduleAndRules => 'Schedule & Rules';
+
+  @override
+  String get duration => 'Duration';
+
+  @override
+  String get reminders => 'Reminders';
+
+  @override
+  String get daysSuffix => 'days';
+
+  @override
+  String get pcsSuffix => 'pcs';
+
+  @override
+  String get details => 'Details';
+
+  @override
+  String get settingsTitle => 'Settings & Profile';
+
+  @override
+  String get personalInfo => 'Personal Information';
+
+  @override
+  String get appPreferences => 'App Preferences';
+
+  @override
+  String get darkMode => 'Dark Mode';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get advancedFeatures => 'Advanced Features';
+
+  @override
+  String get caregivers => 'Med-Friends & Caregivers';
+
+  @override
+  String get drugInteractions => 'Drug Interactions';
+
+  @override
+  String get comingSoon => 'SOON';
+
+  @override
+  String get supportAndAbout => 'Support & About';
+
+  @override
+  String get contactSupport => 'Contact Support';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get logout => 'Log Out';
+
+  @override
+  String get tabSettings => 'Profile';
 }

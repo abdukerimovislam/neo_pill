@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
-import 'dart:math';
 import '../../../data/local/isar_service.dart';
 import '../../../data/local/entities/dose_log_entity.dart';
 import '../../../data/local/entities/medicine_entity.dart';
 import '../../../data/local/entities/measurement_entity.dart';
 
-// --- СТАРЫЙ ПРОВАЙДЕР ДЛЯ ОБЩЕЙ СТАТИСТИКИ ---
+// --- МОДЕЛИ ДАННЫХ ДЛЯ UI ---
+
 class AnalyticsStats {
   final double adherenceRate;
   final int takenDoses;
@@ -21,17 +21,47 @@ class AnalyticsStats {
   });
 }
 
+class DailyCorrelation {
+  final DateTime date;
+  final double adherencePct; // 0-100%
+  final double? measurementValue; // Значение пульса, веса и т.д.
+
+  DailyCorrelation({
+    required this.date,
+    required this.adherencePct,
+    this.measurementValue,
+  });
+}
+
+// 🚀 НОВОЕ: Обертка, чтобы UI вообще не делал математику
+class CorrelationSummary {
+  final List<DailyCorrelation> dailyData;
+  final double avgAdherence;
+  final double? avgMeasurement;
+  final double maxMeasurement;
+
+  CorrelationSummary({
+    required this.dailyData,
+    required this.avgAdherence,
+    this.avgMeasurement,
+    required this.maxMeasurement,
+  });
+}
+
+// --- СТЕЙТ ВЫБРАННОЙ МЕТРИКИ ---
+final selectedChartMetricProvider = StateProvider<MeasurementTypeEnum>((ref) => MeasurementTypeEnum.bloodPressure);
+
+// --- ПРОВАЙДЕР ДЛЯ ОБЩЕЙ СТАТИСТИКИ ---
 final analyticsStatsProvider = FutureProvider.autoDispose<AnalyticsStats>((ref) async {
   final isarService = ref.read(localDbProvider);
   final isar = await isarService.db;
 
   final now = DateTime.now();
-  final startOfMonth = DateTime(now.year, now.month, 1);
+  final startOf7Days = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6));
 
   final logs = await isar.doseLogEntitys
       .filter()
-      .scheduledTimeBetween(startOfMonth, now)
-  // 🚀 ИСПРАВЛЕНИЕ: Используем оператор .not() перед .statusEqualTo
+      .scheduledTimeBetween(startOf7Days, now)
       .not().statusEqualTo(DoseStatusEnum.pending)
       .findAll();
 
@@ -56,24 +86,8 @@ final analyticsStatsProvider = FutureProvider.autoDispose<AnalyticsStats>((ref) 
   );
 });
 
-// --- 🚀 НОВЫЕ ПРОВАЙДЕРЫ ДЛЯ ГРАФИКОВ КОРРЕЛЯЦИИ ---
-
-class DailyCorrelation {
-  final DateTime date;
-  final double adherencePct; // 0-100%
-  final double? measurementValue; // Значение пульса, веса и т.д.
-
-  DailyCorrelation({
-    required this.date,
-    required this.adherencePct,
-    this.measurementValue,
-  });
-}
-
-// Стейт для переключателя типа графика на экране
-final selectedChartMetricProvider = StateProvider<MeasurementTypeEnum>((ref) => MeasurementTypeEnum.bloodPressure);
-
-final correlationChartProvider = FutureProvider.autoDispose<List<DailyCorrelation>>((ref) async {
+// --- ПРОВАЙДЕР ГРАФИКА КОРРЕЛЯЦИИ ---
+final correlationChartProvider = FutureProvider.autoDispose<CorrelationSummary>((ref) async {
   final isarService = ref.read(localDbProvider);
   final isar = await isarService.db;
   final metricType = ref.watch(selectedChartMetricProvider);
@@ -81,13 +95,16 @@ final correlationChartProvider = FutureProvider.autoDispose<List<DailyCorrelatio
   final today = DateTime.now();
   final List<DailyCorrelation> result = [];
 
-  // Идем по последним 7 дням (включая сегодня)
+  double totalAdherence = 0;
+  double totalMeasurement = 0;
+  int measurementDaysCount = 0;
+  double maxMetricValue = 0;
+
   for (int i = 6; i >= 0; i--) {
     final date = today.subtract(Duration(days: i));
     final startOfDay = DateTime(date.year, date.month, date.day);
     final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
 
-    // 1. Считаем adherence (приверженность) за этот день
     final logs = await isar.doseLogEntitys
         .filter()
         .scheduledTimeBetween(startOfDay, endOfDay)
@@ -100,7 +117,6 @@ final correlationChartProvider = FutureProvider.autoDispose<List<DailyCorrelatio
       adherence = (taken / finishedLogs.length) * 100;
     }
 
-    // 2. Считаем среднее значение замера за этот день
     final measurements = await isar.measurementEntitys
         .filter()
         .typeEqualTo(metricType)
@@ -111,7 +127,14 @@ final correlationChartProvider = FutureProvider.autoDispose<List<DailyCorrelatio
     if (measurements.isNotEmpty) {
       final sum = measurements.fold(0.0, (prev, m) => prev + m.value1);
       avgValue = sum / measurements.length;
+
+      // Считаем метрики для итоговой сводки
+      totalMeasurement += avgValue;
+      measurementDaysCount++;
+      if (avgValue > maxMetricValue) maxMetricValue = avgValue;
     }
+
+    totalAdherence += adherence;
 
     result.add(DailyCorrelation(
       date: startOfDay,
@@ -120,5 +143,10 @@ final correlationChartProvider = FutureProvider.autoDispose<List<DailyCorrelatio
     ));
   }
 
-  return result;
+  return CorrelationSummary(
+    dailyData: result,
+    avgAdherence: result.isEmpty ? 0.0 : (totalAdherence / result.length),
+    avgMeasurement: measurementDaysCount > 0 ? (totalMeasurement / measurementDaysCount) : null,
+    maxMeasurement: maxMetricValue > 0 ? maxMetricValue : 100.0, // Защита от деления на 0 в UI
+  );
 });

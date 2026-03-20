@@ -149,5 +149,95 @@
                                   }
                                 },
                                 "addStep": "Add Step",
-                                "doseForStep": "Dose for this step"
+                                "doseForStep": "Dose for this step",
+                                "whatWouldYouLikeToDo": "What would you like to do?",
+                                  "scheduleNewTreatmentCourse": "Schedule a new treatment course",
+                                  "logHealthMetricsSubtitle": "Log blood pressure, heart rate, weight",
+                                  "priorityAction": "Priority Action",
+                                  "takeNowAction": "TAKE NOW",
+                                  "skipDoseAction": "Skip Dose",
+                                  "errorPrefix": "Error: {error}",
+                                  "@errorPrefix": {
+                                    "placeholders": {
+                                      "error": {
+                                        "type": "String"
+                                      }
+                                    }
+                                  },
+                                  "goodMorning": "Good morning",
+                                    "goodAfternoon": "Good afternoon",
+                                    "goodEvening": "Good evening",
+                                    "dailyProgress": "Daily Progress",
+                                    "sosEmergency": "SOS Emergency",
+                                    "adherenceSubtitle": "Your medication consistency overview",
+                                      "healthCorrelationTitle": "Health Correlation",
+                                      "healthCorrelationSubtitle": "Compare medication adherence with your health metrics",
+                                      "last7Days": "Last 7 days",
+                                      "pillsTaken": "Pills taken",
+                                      "overallAdherence": "Overall adherence",
+                                      "statusGood": "Good",
+                                      "statusNeedsAttention": "Needs attention",
+                                      "statTaken": "Taken",
+                                      "statSkipped": "Skipped",
+                                      "statTotal": "Total",
+                                      "completedDosesSubtitle": "Completed doses",
+                                      "missedDosesSubtitle": "Missed doses",
+                                      "noDataYet": "No data yet",
+                                      "noDataDescription": "Start tracking measurements and taking medication regularly\nto see correlation insights here.",
+                                      "failedToLoadAdherence": "Failed to load adherence",
+                                      "failedToLoadChart": "Failed to load chart",
+                                      "avgAdherence": "Avg adherence {value}%",
+                                      "@avgAdherence": {
+                                        "placeholders": {
+                                          "value": {
+                                            "type": "String"
+                                          }
+                                        }
+                                      },
+                                      "avgMetric": "Avg {metricName} {value}",
+                                      "@avgMetric": {
+                                        "placeholders": {
+                                          "metricName": {
+                                            "type": "String"
+                                          },
+                                          "value": {
+                                            "type": "String"
+                                          }
+                                        }
+                                      },
+                                      "addAction": "Add Log",
+                                      "frequency": "Frequency",
+                                        "form": "Form",
+                                        "inventory": "Inventory",
+                                        "lowStockAlert": "LOW STOCK",
+                                        "asNeededFrequency": "AS NEEDED",
+                                        "taperingFrequency": "TAPERING",
+                                        "customizePill": "Customize Appearance",
+                                        "customizePillTitle": "Customize Pill",
+                                        "shape": "Shape",
+                                        "color": "Color",
+                                        "overview": "Overview",
+                                        "scheduleAndRules": "Schedule & Rules",
+                                        "duration": "Duration",
+                                        "reminders": "Reminders",
+                                        "daysSuffix": "days",
+                                        "pcsSuffix": "pcs",
+                                        "editCourse": "Edit Course",
+                                          "details": "Details",
+                                          "saveChanges": "Save Changes",
+                                          "settingsTitle": "Settings & Profile",
+                                            "personalInfo": "Personal Information",
+                                            "appPreferences": "App Preferences",
+                                            "darkMode": "Dark Mode",
+                                            "language": "Language",
+                                            "notifications": "Notifications",
+                                            "advancedFeatures": "Advanced Features",
+                                            "caregivers": "Med-Friends & Caregivers",
+                                            "drugInteractions": "Drug Interactions",
+                                            "comingSoon": "SOON",
+                                            "supportAndAbout": "Support & About",
+                                            "contactSupport": "Contact Support",
+                                            "privacyPolicy": "Privacy Policy",
+                                            "logout": "Log Out",
+                                            "tabSettings": "Profile"
 }

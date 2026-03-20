@@ -100,5 +100,95 @@
                                     }
                                   },
                                   "addStep": "Добавить шаг",
-                                  "doseForStep": "Доза для этого шага"
+                                  "doseForStep": "Доза для этого шага",
+                                  "whatWouldYouLikeToDo": "Что бы вы хотели сделать?",
+                                    "scheduleNewTreatmentCourse": "Запланировать новый курс лечения",
+                                    "logHealthMetricsSubtitle": "Записать давление, пульс, вес",
+                                    "priorityAction": "Приоритетное действие",
+                                    "takeNowAction": "ПРИНЯТЬ СЕЙЧАС",
+                                    "skipDoseAction": "Пропустить",
+                                    "errorPrefix": "Ошибка: {error}",
+                                    "@errorPrefix": {
+                                      "placeholders": {
+                                        "error": {
+                                          "type": "String"
+                                        }
+                                      }
+                                    },
+                                    "goodMorning": "Доброе утро",
+                                      "goodAfternoon": "Добрый день",
+                                      "goodEvening": "Добрый вечер",
+                                      "dailyProgress": "Прогресс за день",
+                                      "sosEmergency": "Экстренная помощь",
+                                      "adherenceSubtitle": "Обзор регулярности приема лекарств",
+                                        "healthCorrelationTitle": "Связь со здоровьем",
+                                        "healthCorrelationSubtitle": "Сравните прием лекарств с показателями вашего здоровья",
+                                        "last7Days": "Последние 7 дней",
+                                        "pillsTaken": "Принято таблеток",
+                                        "overallAdherence": "Общий показатель",
+                                        "statusGood": "Отлично",
+                                        "statusNeedsAttention": "Требует внимания",
+                                        "statTaken": "Принято",
+                                        "statSkipped": "Пропущено",
+                                        "statTotal": "Всего",
+                                        "completedDosesSubtitle": "Завершенные приемы",
+                                        "missedDosesSubtitle": "Пропущенные приемы",
+                                        "noDataYet": "Пока нет данных",
+                                        "noDataDescription": "Начните регулярно принимать лекарства и вносить измерения,\nчтобы увидеть аналитику здесь.",
+                                        "failedToLoadAdherence": "Не удалось загрузить данные",
+                                        "failedToLoadChart": "Не удалось загрузить график",
+                                        "avgAdherence": "Ср. показатель {value}%",
+                                        "@avgAdherence": {
+                                          "placeholders": {
+                                            "value": {
+                                              "type": "String"
+                                            }
+                                          }
+                                        },
+                                        "avgMetric": "Ср. {metricName} {value}",
+                                        "@avgMetric": {
+                                          "placeholders": {
+                                            "metricName": {
+                                              "type": "String"
+                                            },
+                                            "value": {
+                                              "type": "String"
+                                            }
+                                          }
+                                        },
+                                        "addAction": "Добавить",
+                                        "frequency": "Частота",
+                                          "form": "Форма",
+                                          "inventory": "Запасы",
+                                          "lowStockAlert": "МАЛО",
+                                          "asNeededFrequency": "ПО ПОТРЕБНОСТИ",
+                                          "taperingFrequency": "ТИТРАЦИЯ",
+                                          "customizePill": "Настроить вид",
+                                          "customizePillTitle": "Внешний вид",
+                                          "shape": "Форма",
+                                          "color": "Цвет",
+                                          "overview": "Основное",
+                                          "scheduleAndRules": "Расписание и правила",
+                                          "duration": "Длительность",
+                                          "reminders": "Напоминания",
+                                          "daysSuffix": "дней",
+                                          "pcsSuffix": "шт",
+                                          "editCourse": "Изменить курс",
+                                            "details": "Детали",
+                                            "saveChanges": "Сохранить изменения",
+                                            "settingsTitle": "Настройки и профиль",
+                                              "personalInfo": "Личная информация",
+                                              "appPreferences": "Настройки приложения",
+                                              "darkMode": "Темная тема",
+                                              "language": "Язык",
+                                              "notifications": "Уведомления",
+                                              "advancedFeatures": "Продвинутые функции",
+                                              "caregivers": "Мед-друзья и близкие",
+                                              "drugInteractions": "Совместимость лекарств",
+                                              "comingSoon": "СКОРО",
+                                              "supportAndAbout": "Поддержка и инфо",
+                                              "contactSupport": "Связаться с поддержкой",
+                                              "privacyPolicy": "Политика конфиденциальности",
+                                              "logout": "Выйти",
+                                              "tabSettings": "Профиль"
 }

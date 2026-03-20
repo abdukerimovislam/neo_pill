@@ -1,3 +1,4 @@
+import 'dart:io'; // 🚀 ДОБАВЛЕН ИМПОРТ ДЛЯ РАБОТЫ С ФАЙЛАМИ ФОТО
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -33,13 +34,30 @@ class MedicineDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<MedicineDetailScreen> createState() => _MedicineDetailScreenState();
 }
 
-class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
+class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> with SingleTickerProviderStateMixin {
   late bool _isPaused;
+  late AnimationController _breathingController;
+  late Animation<double> _breathingAnimation;
 
   @override
   void initState() {
     super.initState();
     _isPaused = widget.medicine.isPaused;
+
+    _breathingController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _breathingAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _breathingController, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _breathingController.dispose();
+    super.dispose();
   }
 
   void _confirmDelete(BuildContext context, AppLocalizations l10n) {
@@ -71,51 +89,33 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
 
   Future<void> _generatePdfReport(AppLocalizations l10n) async {
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-              const SizedBox(width: 16),
-              Text(l10n.generatingReport),
-            ],
-          ),
-          backgroundColor: Theme.of(context).primaryColor,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Row(children: [const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)), const SizedBox(width: 16), Text(l10n.generatingReport)]), backgroundColor: Theme.of(context).primaryColor, duration: const Duration(seconds: 2)));
       final isar = await ref.read(localDbProvider).db;
       final logs = await isar.doseLogEntitys.filter().medicineSyncIdEqualTo(widget.medicine.syncId).findAll();
-
       await PdfGeneratorService.generateAndShareReport(medicine: widget.medicine, logs: logs, l10n: l10n);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.errorGeneratingReport(e.toString())), backgroundColor: Theme.of(context).colorScheme.error));
     }
   }
 
-  // 🚀 НОВОЕ: Отрисовка таблетки через Визуальный Конструктор
-  Widget _buildMedicineImageOrIcon(ThemeData theme) {
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.5),
-        shape: BoxShape.circle,
-        border: Border.all(color: Color(widget.medicine.pillColor).withOpacity(0.4), width: 3),
-        boxShadow: [
-          BoxShadow(
-            color: Color(widget.medicine.pillColor).withOpacity(0.25),
-            blurRadius: 24,
-            spreadRadius: 4,
-          )
-        ],
-      ),
-      child: Center(
-        child: PillIconWidget(
-          shape: widget.medicine.pillShape,
-          colorHex: widget.medicine.pillColor,
-          size: 44, // Крупная таблетка для экрана деталей
+  Widget _buildBentoCard(String title, String value, IconData icon, Color color, ThemeData theme) {
+    return Expanded(
+      child: GlassContainer(
+        padding: const EdgeInsets.all(16),
+        color: color.withValues(alpha: 0.04),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+                child: Icon(icon, color: color, size: 22)
+            ),
+            const SizedBox(height: 14),
+            Text(value, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface), maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 4),
+            Text(title, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.55))),
+          ],
         ),
       ),
     );
@@ -131,156 +131,139 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
     final rawDosage = widget.medicine.dosage;
     final dosage = rawDosage % 1 == 0 ? rawDosage.toInt().toString() : rawDosage.toString();
 
+    String freqStr = widget.medicine.frequency.name.toUpperCase();
+    if (widget.medicine.frequency == FrequencyTypeEnum.asNeeded) freqStr = l10n.asNeededFrequency;
+    if (widget.medicine.frequency == FrequencyTypeEnum.tapering) freqStr = l10n.taperingFrequency;
+
     return GradientScaffold(
       extendBodyBehindAppBar: true,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            centerTitle: true,
-            expandedHeight: 100.0,
-            floating: false,
-            pinned: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
+            centerTitle: true, expandedHeight: 80.0, floating: false, pinned: true, backgroundColor: Colors.transparent, elevation: 0,
             iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                tooltip: l10n.editCourse,
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => EditMedicineScreen(medicine: widget.medicine))).then((_) {
-                    setState(() {});
-                    ref.invalidate(medicineHistoryProvider(widget.medicine.syncId));
-                  });
-                },
-              ),
+              IconButton(icon: const Icon(Icons.edit_outlined), tooltip: l10n.editCourse, onPressed: () { Navigator.of(context).push(MaterialPageRoute(builder: (context) => EditMedicineScreen(medicine: widget.medicine))).then((_) { setState(() {}); ref.invalidate(medicineHistoryProvider(widget.medicine.syncId)); }); }),
               const SizedBox(width: 8),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              titlePadding: const EdgeInsets.only(bottom: 16),
-              title: Text(l10n.medicineDetails, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
-              background: Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [theme.scaffoldBackgroundColor, theme.scaffoldBackgroundColor.withOpacity(0.0)]))),
+              background: Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [theme.scaffoldBackgroundColor, theme.scaffoldBackgroundColor.withValues(alpha: 0.0)]))),
             ),
           ),
 
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 🚀 АНИМИРОВАННАЯ КАРТОЧКА: ФОТО ИЛИ ИКОНКА
+                  ScaleTransition(
+                    scale: _breathingAnimation,
+                    child: Container(
+                      width: 140, height: 140,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface, shape: BoxShape.circle,
+                        border: Border.all(color: Color(widget.medicine.pillColor).withValues(alpha: 0.3), width: 3),
+                        boxShadow: [BoxShadow(color: Color(widget.medicine.pillColor).withValues(alpha: 0.2), blurRadius: 40, spreadRadius: 10)],
+                      ),
+                      child: widget.medicine.pillImagePath != null && File(widget.medicine.pillImagePath!).existsSync()
+                          ? ClipOval(
+                        child: Image.file(
+                          File(widget.medicine.pillImagePath!),
+                          width: 140,
+                          height: 140,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                          : Center(child: PillIconWidget(shape: widget.medicine.pillShape, colorHex: widget.medicine.pillColor, size: 60)),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
-                // --- БЛОК 1: ГЛАВНАЯ ИНФО ---
-                GlassContainer(
-                  padding: const EdgeInsets.all(24),
-                  color: _isPaused ? theme.disabledColor.withOpacity(0.05) : theme.colorScheme.surface.withOpacity(0.4),
-                  child: SizedBox(
-                    width: double.infinity,
+                  Text(widget.medicine.name, style: theme.textTheme.displayLarge?.copyWith(fontSize: 32, letterSpacing: -1.0, color: _isPaused ? theme.disabledColor : null), textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(color: theme.primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+                    child: Text('$dosage ${widget.medicine.dosageUnit}', style: theme.textTheme.titleLarge?.copyWith(color: theme.primaryColor, fontWeight: FontWeight.w900)),
+                  ),
+
+                  if (_isPaused) ...[
+                    const SizedBox(height: 16),
+                    Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange.withValues(alpha: 0.5))), child: Row(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.pause_circle_filled, color: Colors.orange, size: 16), const SizedBox(width: 6), Text(l10n.coursePaused, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.orange, fontWeight: FontWeight.bold))])),
+                  ],
+                  const SizedBox(height: 32),
+
+                  Row(
+                    children: [
+                      _buildBentoCard(l10n.frequency, freqStr, Icons.calendar_month_rounded, theme.primaryColor, theme),
+                      const SizedBox(width: 16),
+                      _buildBentoCard(l10n.form, widget.medicine.form.name.toUpperCase(), Icons.medication_rounded, theme.colorScheme.secondary, theme),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  GlassContainer(
+                    padding: const EdgeInsets.all(20),
+                    color: widget.medicine.pillsRemaining == 0 ? theme.colorScheme.error.withValues(alpha: 0.05) : theme.colorScheme.surface.withValues(alpha: 0.45),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildMedicineImageOrIcon(theme),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(l10n.inventory, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)),
+                            if (widget.medicine.pillsRemaining == 0) Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: theme.colorScheme.error.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)), child: Text(l10n.outOfStockBadge, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error, fontWeight: FontWeight.w800))),
+                            if (widget.medicine.pillsRemaining > 0 && widget.medicine.pillsRemaining <= widget.medicine.refillAlertThreshold) Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)), child: Text(l10n.lowStockAlert, style: theme.textTheme.bodySmall?.copyWith(color: Colors.orange, fontWeight: FontWeight.w800))),
+                          ],
+                        ),
                         const SizedBox(height: 16),
-                        Text(widget.medicine.name, style: theme.textTheme.displayLarge?.copyWith(fontSize: 28, color: _isPaused ? theme.disabledColor : null), textAlign: TextAlign.center),
-                        const SizedBox(height: 8),
-                        Text('$dosage ${widget.medicine.dosageUnit}', style: theme.textTheme.titleLarge?.copyWith(color: _isPaused ? theme.disabledColor : theme.colorScheme.secondary)),
-
-                        if (_isPaused) ...[
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange.withOpacity(0.5))),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.pause_circle_filled, color: Colors.orange, size: 16),
-                                const SizedBox(width: 6),
-                                Text(l10n.coursePaused, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.orange, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
-                        ]
+                        Row(
+                          children: [
+                            Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(8), child: LinearProgressIndicator(value: progress, minHeight: 12, backgroundColor: theme.dividerColor.withValues(alpha: 0.15), color: widget.medicine.pillsRemaining == 0 ? theme.colorScheme.error : (progress > 0.2 ? theme.colorScheme.secondary : Colors.orange)))),
+                            const SizedBox(width: 16),
+                            Text('${widget.medicine.pillsRemaining} / ${widget.medicine.pillsInPackage}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
-                // --- BENTO БЛОК 2: СКЛАД (С акцентом на окончание) ---
-                Text('Inventory', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.6))),
-                const SizedBox(height: 12),
-                GlassContainer(
-                  padding: const EdgeInsets.all(20),
-                  color: widget.medicine.pillsRemaining == 0 ? theme.colorScheme.error.withOpacity(0.05) : theme.colorScheme.surface.withOpacity(0.4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(l10n.pillsRemaining, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                          if (widget.medicine.pillsRemaining == 0)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(color: theme.colorScheme.error.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                              child: Text(l10n.outOfStockBadge, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error, fontWeight: FontWeight.bold)),
-                            )
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: LinearProgressIndicator(
-                                value: progress,
-                                minHeight: 12,
-                                backgroundColor: theme.dividerColor.withOpacity(0.1),
-                                color: widget.medicine.pillsRemaining == 0 ? theme.colorScheme.error : (progress > 0.2 ? theme.colorScheme.secondary : Colors.orange),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Text('${widget.medicine.pillsRemaining} / ${widget.medicine.pillsInPackage}', style: theme.textTheme.titleLarge),
-                        ],
-                      ),
-                    ],
+                  Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                          l10n.recentHistory,
+                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface)
+                      )
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                // --- 🚀 BENTO БЛОК 3: НЕДАВНЯЯ ИСТОРИЯ ---
-                Text(l10n.recentHistory, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.6))),
-                const SizedBox(height: 12),
-                GlassContainer(
-                  padding: const EdgeInsets.all(16),
-                  color: theme.colorScheme.surface.withOpacity(0.4),
-                  child: historyAsync.when(
+                  const SizedBox(height: 16),
+                  historyAsync.when(
                     data: (logs) {
-                      if (logs.isEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: Center(child: Text(l10n.noHistoryYet, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5)))),
-                        );
-                      }
+                      if (logs.isEmpty) return Center(child: Text(l10n.noHistoryYet, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.55))));
                       return Column(
                         children: logs.map((log) {
                           final isTaken = log.status == DoseStatusEnum.taken;
                           final statusColor = isTaken ? theme.colorScheme.secondary : theme.colorScheme.error;
-                          final dateStr = DateFormat('MMM d, HH:mm', Localizations.localeOf(context).languageCode).format(log.scheduledTime);
+                          final dateStr = DateFormat('MMM d', Localizations.localeOf(context).languageCode).format(log.scheduledTime);
+                          final timeStr = DateFormat('HH:mm', Localizations.localeOf(context).languageCode).format(log.scheduledTime);
 
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
+                            padding: const EdgeInsets.only(bottom: 16.0),
                             child: Row(
                               children: [
-                                Icon(isTaken ? Icons.check_circle : Icons.cancel, color: statusColor, size: 20),
-                                const SizedBox(width: 12),
-                                Expanded(child: Text(dateStr, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500))),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                                  child: Text(isTaken ? l10n.statusTaken : l10n.statusSkipped, style: theme.textTheme.bodySmall?.copyWith(color: statusColor, fontWeight: FontWeight.bold)),
-                                )
+                                Column(
+                                  children: [
+                                    Text(dateStr, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.55))),
+                                    Text(timeStr, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                                  ],
+                                ),
+                                const SizedBox(width: 16),
+                                Container(width: 14, height: 14, decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle, border: Border.all(color: theme.scaffoldBackgroundColor, width: 3), boxShadow: [BoxShadow(color: statusColor.withValues(alpha: 0.5), blurRadius: 8)])),
+                                const SizedBox(width: 16),
+                                Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16)), child: Text(isTaken ? l10n.statusTaken : l10n.statusSkipped, style: theme.textTheme.bodyMedium?.copyWith(color: statusColor, fontWeight: FontWeight.w700)))),
                               ],
                             ),
                           );
@@ -290,63 +273,24 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (err, stack) => const Center(child: Text('Error')),
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
-                // --- БЛОК 4: УПРАВЛЕНИЕ ---
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: _isPaused ? theme.colorScheme.secondary.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
-                          foregroundColor: _isPaused ? theme.colorScheme.secondary : Colors.orange,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        onPressed: _togglePause,
-                        icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
-                        label: Text(_isPaused ? l10n.resumeCourse : l10n.pauseCourse),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: theme.primaryColor.withOpacity(0.1),
-                          foregroundColor: theme.primaryColor,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        onPressed: () => _generatePdfReport(l10n),
-                        icon: const Icon(Icons.picture_as_pdf),
-                        label: Text(l10n.doctorReport),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // КНОПКА УДАЛЕНИЯ
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: theme.colorScheme.error.withOpacity(0.1),
-                      foregroundColor: theme.colorScheme.error,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    onPressed: () => _confirmDelete(context, l10n),
-                    icon: const Icon(Icons.delete_outline),
-                    label: Text(l10n.deleteCourse),
+                  Row(
+                    children: [
+                      Expanded(child: ElevatedButton.icon(style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), backgroundColor: _isPaused ? theme.colorScheme.secondary.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1), foregroundColor: _isPaused ? theme.colorScheme.secondary : Colors.orange, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), onPressed: _togglePause, icon: Icon(_isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded), label: Text(_isPaused ? l10n.resumeCourse : l10n.pauseCourse, style: const TextStyle(fontWeight: FontWeight.w800)))),
+                      const SizedBox(width: 16),
+                      Expanded(child: ElevatedButton.icon(style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), backgroundColor: theme.primaryColor.withValues(alpha: 0.1), foregroundColor: theme.primaryColor, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), onPressed: () => _generatePdfReport(l10n), icon: const Icon(Icons.picture_as_pdf_rounded), label: Text(l10n.doctorReport, style: const TextStyle(fontWeight: FontWeight.w800)))),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 40),
-              ]),
+                  const SizedBox(height: 32),
+
+                  TextButton.icon(
+                    style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error, padding: const EdgeInsets.symmetric(vertical: 16)),
+                    onPressed: () => _confirmDelete(context, l10n), icon: const Icon(Icons.delete_outline_rounded), label: Text(l10n.deleteCourse, style: const TextStyle(fontWeight: FontWeight.w800)),
+                  ),
+                  const SizedBox(height: 60),
+                ],
+              ),
             ),
           ),
         ],

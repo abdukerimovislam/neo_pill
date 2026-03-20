@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @takeNowAction.
   ///
   /// In en, this message translates to:
-  /// **'Take'**
+  /// **'TAKE NOW'**
   String get takeNowAction;
 
   /// No description provided for @limitReachedAlert.
@@ -643,6 +643,384 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dose for this step'**
   String get doseForStep;
+
+  /// No description provided for @whatWouldYouLikeToDo.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to do?'**
+  String get whatWouldYouLikeToDo;
+
+  /// No description provided for @scheduleNewTreatmentCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule a new treatment course'**
+  String get scheduleNewTreatmentCourse;
+
+  /// No description provided for @logHealthMetricsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log blood pressure, heart rate, weight'**
+  String get logHealthMetricsSubtitle;
+
+  /// No description provided for @priorityAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority Action'**
+  String get priorityAction;
+
+  /// No description provided for @skipDoseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip Dose'**
+  String get skipDoseAction;
+
+  /// No description provided for @errorPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorPrefix(String error);
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorning;
+
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoon;
+
+  /// No description provided for @goodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEvening;
+
+  /// No description provided for @dailyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Progress'**
+  String get dailyProgress;
+
+  /// No description provided for @sosEmergency.
+  ///
+  /// In en, this message translates to:
+  /// **'SOS Emergency'**
+  String get sosEmergency;
+
+  /// No description provided for @adherenceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your medication consistency overview'**
+  String get adherenceSubtitle;
+
+  /// No description provided for @healthCorrelationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Correlation'**
+  String get healthCorrelationTitle;
+
+  /// No description provided for @healthCorrelationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare medication adherence with your health metrics'**
+  String get healthCorrelationSubtitle;
+
+  /// No description provided for @last7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get last7Days;
+
+  /// No description provided for @pillsTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Pills taken'**
+  String get pillsTaken;
+
+  /// No description provided for @overallAdherence.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall adherence'**
+  String get overallAdherence;
+
+  /// No description provided for @statusGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get statusGood;
+
+  /// No description provided for @statusNeedsAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get statusNeedsAttention;
+
+  /// No description provided for @statTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken'**
+  String get statTaken;
+
+  /// No description provided for @statSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get statSkipped;
+
+  /// No description provided for @statTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get statTotal;
+
+  /// No description provided for @completedDosesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed doses'**
+  String get completedDosesSubtitle;
+
+  /// No description provided for @missedDosesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed doses'**
+  String get missedDosesSubtitle;
+
+  /// No description provided for @noDataYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No data yet'**
+  String get noDataYet;
+
+  /// No description provided for @noDataDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tracking measurements and taking medication regularly\nto see correlation insights here.'**
+  String get noDataDescription;
+
+  /// No description provided for @failedToLoadAdherence.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load adherence'**
+  String get failedToLoadAdherence;
+
+  /// No description provided for @failedToLoadChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load chart'**
+  String get failedToLoadChart;
+
+  /// No description provided for @avgAdherence.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg adherence {value}%'**
+  String avgAdherence(String value);
+
+  /// No description provided for @avgMetric.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg {metricName} {value}'**
+  String avgMetric(String metricName, String value);
+
+  /// No description provided for @addAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Log'**
+  String get addAction;
+
+  /// No description provided for @frequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get frequency;
+
+  /// No description provided for @form.
+  ///
+  /// In en, this message translates to:
+  /// **'Form'**
+  String get form;
+
+  /// No description provided for @inventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get inventory;
+
+  /// No description provided for @lowStockAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'LOW STOCK'**
+  String get lowStockAlert;
+
+  /// No description provided for @asNeededFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'AS NEEDED'**
+  String get asNeededFrequency;
+
+  /// No description provided for @taperingFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'TAPERING'**
+  String get taperingFrequency;
+
+  /// No description provided for @customizePill.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Appearance'**
+  String get customizePill;
+
+  /// No description provided for @customizePillTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Pill'**
+  String get customizePillTitle;
+
+  /// No description provided for @shape.
+  ///
+  /// In en, this message translates to:
+  /// **'Shape'**
+  String get shape;
+
+  /// No description provided for @color.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get color;
+
+  /// No description provided for @overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get overview;
+
+  /// No description provided for @scheduleAndRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule & Rules'**
+  String get scheduleAndRules;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
+
+  /// No description provided for @reminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get reminders;
+
+  /// No description provided for @daysSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get daysSuffix;
+
+  /// No description provided for @pcsSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'pcs'**
+  String get pcsSuffix;
+
+  /// No description provided for @details.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get details;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings & Profile'**
+  String get settingsTitle;
+
+  /// No description provided for @personalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInfo;
+
+  /// No description provided for @appPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'App Preferences'**
+  String get appPreferences;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @advancedFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Features'**
+  String get advancedFeatures;
+
+  /// No description provided for @caregivers.
+  ///
+  /// In en, this message translates to:
+  /// **'Med-Friends & Caregivers'**
+  String get caregivers;
+
+  /// No description provided for @drugInteractions.
+  ///
+  /// In en, this message translates to:
+  /// **'Drug Interactions'**
+  String get drugInteractions;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'SOON'**
+  String get comingSoon;
+
+  /// No description provided for @supportAndAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'Support & About'**
+  String get supportAndAbout;
+
+  /// No description provided for @contactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get contactSupport;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get logout;
+
+  /// No description provided for @tabSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get tabSettings;
 }
 
 class _AppLocalizationsDelegate

@@ -17,6 +17,9 @@ import 'features/settings/provider/settings_provider.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
+// --- ДОБАВЛЕННЫЙ ИМПОРТ НАШЕГО АНИМИРОВАННОГО СПЛЭША ---
+import 'features/splash/presentation/animated_splash_screen.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final preferences = await SharedPreferences.getInstance();
@@ -102,7 +105,7 @@ class _PilloraAppState extends ConsumerState<PilloraApp> {
 
     _foregroundMessagesSub = ref.listenManual(
       firebaseForegroundMessagesProvider,
-      (previous, next) async {
+          (previous, next) async {
         final notificationService = NotificationService();
         final messages = next.valueOrNull;
         if (messages == null) {
@@ -125,7 +128,10 @@ class _PilloraAppState extends ConsumerState<PilloraApp> {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final comfortMode = ref.watch(comfortModeProvider);
+
+    // Узнаем, куда направлять пользователя ПОСЛЕ сплэша
     final onboardingComplete = ref.watch(onboardingCompleteProvider);
+
     final notificationService = NotificationService();
     final l10n = AppLocalizations.of(context);
 
@@ -147,7 +153,7 @@ class _PilloraAppState extends ConsumerState<PilloraApp> {
 
     return MaterialApp(
       onGenerateTitle: (context) =>
-          AppLocalizations.of(context)?.appTitle ?? 'Pillora',
+      AppLocalizations.of(context)?.appTitle ?? 'Pillora',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme(comfortMode: comfortMode),
       darkTheme: AppTheme.darkTheme(comfortMode: comfortMode),
@@ -160,9 +166,9 @@ class _PilloraAppState extends ConsumerState<PilloraApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en', ''), Locale('ru', '')],
-      home: onboardingComplete
-          ? const MainNavigationScreen()
-          : const OnboardingScreen(),
+
+      // --- ИЗМЕНЕННАЯ СТРОКА: ЗАПУСКАЕМ НАШ СПЛЭШ И ПЕРЕДАЕМ ЕМУ ФЛАГ ---
+      home: AnimatedSplashScreen(isOnboardingComplete: onboardingComplete),
     );
   }
 }

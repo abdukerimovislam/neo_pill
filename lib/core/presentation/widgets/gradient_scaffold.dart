@@ -29,10 +29,10 @@ class GradientScaffold extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final primaryGlow = theme.colorScheme.primary.withValues(
-      alpha: isDark ? 0.18 : 0.10,
+      alpha: isDark ? 0.16 : 0.08,
     );
     final secondaryGlow = theme.colorScheme.secondary.withValues(
-      alpha: isDark ? 0.12 : 0.06,
+      alpha: isDark ? 0.10 : 0.10,
     );
 
     Widget content = Padding(padding: padding ?? EdgeInsets.zero, child: body);
@@ -64,7 +64,7 @@ class GradientScaffold extends StatelessWidget {
                     theme.scaffoldBackgroundColor,
                     theme.scaffoldBackgroundColor,
                     theme.colorScheme.surface.withValues(
-                      alpha: isDark ? 0.92 : 0.96,
+                      alpha: isDark ? 0.94 : 0.98,
                     ),
                   ],
                 ),

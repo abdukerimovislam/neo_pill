@@ -1,194 +1,840 @@
 {
   "@@locale": "ru",
-  "appTitle": "AI Менеджер Лекарств",
+  "appTitle": "Pillora",
   "todaySchedule": "Расписание на сегодня",
   "architectureReady": "Архитектура заложена. Все системы в норме.",
   "nextCreateHome": "Далее: Создать Главный экран",
   "statusTaken": "Принято",
   "statusSkipped": "Пропущено",
   "statusSnoozed": "Отложить на 10 мин",
-  "statusPending": "Ожидает",
+  "statusPending": "Ожидается",
   "emptySchedule": "На этот день лекарств не назначено",
-    "takeAction": "Принять",
-    "skipAction": "Пропустить",
-    "dosageUnitMg": "мг",
-    "dosageUnitMl": "мл",
-    "dosageUnitDrops": "капель",
-    "addMedicationTitle": "Добавить лекарство",
-      "medicineNameHint": "Название (например, Витамин Д)",
-      "dosageHint": "Дозировка (например, 500)",
-      "saveAction": "Сохранить и создать расписание",
-      "errorEmptyFields": "Пожалуйста, заполните все поля",
-      "profileTitle": "Профиль",
-      "notificationTitle": "Время принять {name}!",
-        "notificationBody": "Дозировка: {dosage}. Пожалуйста, не пропустите.",
-        "analyticsTitle": "Аналитика",
-          "adherenceRate": "Соблюдение курса",
-          "dosesTaken": "Принято доз",
-          "dosesMissed": "Пропущено доз",
-          "activeCourses": "Активные курсы",
-          "tabHome": "Расписание",
-          "tabAnalytics": "Статистика",
-          "keepItUp": "Отличная работа! Так держать.",
-          "needsAttention": "Обратите внимание. Старайтесь не пропускать.",
-          "medicineDetails": "Детали лекарства",
-            "pillsRemaining": "Остаток таблеток",
-            "deleteCourse": "Удалить курс",
-            "deleteConfirmation": "Вы уверены, что хотите удалить это лекарство и все его напоминания?",
-            "cancel": "Отмена",
-            "delete": "Удалить",
-            "timeOfDay": "Время приема",
-            "courseDuration": "Длительность курса (дней)",
-              "pillsInPackage": "Таблеток в упаковке",
-              "addTime": "Добавить время",
-              "timeLabel": "Время {number}",
-              "foodBefore": "До еды",
-              "foodWith": "Во время еды",
-              "foodAfter": "После еды",
-              "unknownMedicine": "Неизвестное лекарство",
-              "addPhoto": "Добавить фото",
-                "takePhoto": "Сделать снимок",
-                "chooseFromGallery": "Выбрать из галереи",
-                "medicineInfo": "Информация о лекарстве",
-                "formTitle": "Форма выпуска",
-                "scheduleTitle": "Расписание",
-                "everyXDays": "Каждые X дней",
-                "maxDosesPerDay": "Макс. доз в день (Безопасность)",
-                "overdoseWarning": "Для предотвращения случайной передозировки.",
-                "foodInstructionTitle": "Прием пищи",
-                "doseNumber": "Прием {number}",
-                "coursePaused": "Курс приостановлен",
-                  "resumeCourse": "Возобновить",
-                  "pauseCourse": "Пауза",
-                  "doctorReport": "Отчет для врача",
-                  "generatingReport": "Создание отчета...",
-                  "errorGeneratingReport": "Ошибка создания PDF: {error}",
-                  "editCourse": "Редактировать курс",
-                    "saveChanges": "Сохранить изменения",
-                    "editMedicineInfo": "Изменить информацию",
-                    "lowStockTitle": "Заканчивается: {name}",
-                      "lowStockBody": "Осталось всего {count} {unit}. Пора в аптеку!",
-                      "lowStockBadge": "Мало запасов",
-                      "snoozeAction": "Отложить (30м)",
-                        "undoAction": "Отменить",
-                        "sosPanelTitle": "Экстренно (SOS)",
-                          "takeNowAction": "Принять",
-                          "limitReachedAlert": "Дневной лимит исчерпан! Обратитесь к врачу.",
-                          "addSosMedicine": "Добавить SOS",
-                          "outOfStockBadge": "Закончилось",
-                            "recentHistory": "Недавняя история",
-                            "noHistoryYet": "Истории пока нет",
-                            "statusTaken": "Принято",
-                            "statusSkipped": "Пропущено",
-                            "statusPending": "Ожидается",
-                            "lifetimeCourse": "Постоянный прием (Всю жизнь)",
-                              "doneAction": "Готово",
-                              "addMeasurement": "Новый замер",
-                                "bloodPressure": "Давление",
-                                "heartRate": "Пульс",
-                                "weight": "Вес",
-                                "bloodSugar": "Сахар",
-                                "systolic": "Сист",
-                                "diastolic": "Диаст",
-                                "taperingDosing": "Динамическая (Ступенчатая)",
-                                  "stepNumber": "Шаг {number}",
-                                  "@stepNumber": {
-                                    "placeholders": {
-                                      "number": {
-                                        "type": "int"
-                                      }
-                                    }
-                                  },
-                                  "addStep": "Добавить шаг",
-                                  "doseForStep": "Доза для этого шага",
-                                  "whatWouldYouLikeToDo": "Что бы вы хотели сделать?",
-                                    "scheduleNewTreatmentCourse": "Запланировать новый курс лечения",
-                                    "logHealthMetricsSubtitle": "Записать давление, пульс, вес",
-                                    "priorityAction": "Приоритетное действие",
-                                    "takeNowAction": "ПРИНЯТЬ СЕЙЧАС",
-                                    "skipDoseAction": "Пропустить",
-                                    "errorPrefix": "Ошибка: {error}",
-                                    "@errorPrefix": {
-                                      "placeholders": {
-                                        "error": {
-                                          "type": "String"
-                                        }
-                                      }
-                                    },
-                                    "goodMorning": "Доброе утро",
-                                      "goodAfternoon": "Добрый день",
-                                      "goodEvening": "Добрый вечер",
-                                      "dailyProgress": "Прогресс за день",
-                                      "sosEmergency": "Экстренная помощь",
-                                      "adherenceSubtitle": "Обзор регулярности приема лекарств",
-                                        "healthCorrelationTitle": "Связь со здоровьем",
-                                        "healthCorrelationSubtitle": "Сравните прием лекарств с показателями вашего здоровья",
-                                        "last7Days": "Последние 7 дней",
-                                        "pillsTaken": "Принято таблеток",
-                                        "overallAdherence": "Общий показатель",
-                                        "statusGood": "Отлично",
-                                        "statusNeedsAttention": "Требует внимания",
-                                        "statTaken": "Принято",
-                                        "statSkipped": "Пропущено",
-                                        "statTotal": "Всего",
-                                        "completedDosesSubtitle": "Завершенные приемы",
-                                        "missedDosesSubtitle": "Пропущенные приемы",
-                                        "noDataYet": "Пока нет данных",
-                                        "noDataDescription": "Начните регулярно принимать лекарства и вносить измерения,\nчтобы увидеть аналитику здесь.",
-                                        "failedToLoadAdherence": "Не удалось загрузить данные",
-                                        "failedToLoadChart": "Не удалось загрузить график",
-                                        "avgAdherence": "Ср. показатель {value}%",
-                                        "@avgAdherence": {
-                                          "placeholders": {
-                                            "value": {
-                                              "type": "String"
-                                            }
-                                          }
-                                        },
-                                        "avgMetric": "Ср. {metricName} {value}",
-                                        "@avgMetric": {
-                                          "placeholders": {
-                                            "metricName": {
-                                              "type": "String"
-                                            },
-                                            "value": {
-                                              "type": "String"
-                                            }
-                                          }
-                                        },
-                                        "addAction": "Добавить",
-                                        "frequency": "Частота",
-                                          "form": "Форма",
-                                          "inventory": "Запасы",
-                                          "lowStockAlert": "МАЛО",
-                                          "asNeededFrequency": "ПО ПОТРЕБНОСТИ",
-                                          "taperingFrequency": "ТИТРАЦИЯ",
-                                          "customizePill": "Настроить вид",
-                                          "customizePillTitle": "Внешний вид",
-                                          "shape": "Форма",
-                                          "color": "Цвет",
-                                          "overview": "Основное",
-                                          "scheduleAndRules": "Расписание и правила",
-                                          "duration": "Длительность",
-                                          "reminders": "Напоминания",
-                                          "daysSuffix": "дней",
-                                          "pcsSuffix": "шт",
-                                          "editCourse": "Изменить курс",
-                                            "details": "Детали",
-                                            "saveChanges": "Сохранить изменения",
-                                            "settingsTitle": "Настройки и профиль",
-                                              "personalInfo": "Личная информация",
-                                              "appPreferences": "Настройки приложения",
-                                              "darkMode": "Темная тема",
-                                              "language": "Язык",
-                                              "notifications": "Уведомления",
-                                              "advancedFeatures": "Продвинутые функции",
-                                              "caregivers": "Мед-друзья и близкие",
-                                              "drugInteractions": "Совместимость лекарств",
-                                              "comingSoon": "СКОРО",
-                                              "supportAndAbout": "Поддержка и инфо",
-                                              "contactSupport": "Связаться с поддержкой",
-                                              "privacyPolicy": "Политика конфиденциальности",
-                                              "logout": "Выйти",
-                                              "tabSettings": "Профиль"
+  "takeAction": "Принять",
+  "skipAction": "Пропустить",
+  "dosageUnitMg": "мг",
+  "dosageUnitMl": "мл",
+  "dosageUnitDrops": "капель",
+  "dosageUnitPcs": "шт",
+  "dosageUnitG": "г",
+  "dosageUnitMcg": "мкг",
+  "dosageUnitIu": "МЕ",
+  "addMedicationTitle": "Добавить лекарство",
+  "medicineNameHint": "Название (например, Витамин Д)",
+  "dosageHint": "Дозировка (например, 500)",
+  "saveAction": "Сохранить и создать расписание",
+  "errorEmptyFields": "Пожалуйста, заполните все поля",
+  "profileTitle": "Профиль",
+  "notificationTitle": "Время принять {name}!",
+  "@notificationTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationBody": "Дозировка: {dosage}. Пожалуйста, не пропустите.",
+  "@notificationBody": {
+    "placeholders": {
+      "dosage": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsTitle": "Аналитика",
+  "adherenceRate": "Соблюдение курса",
+  "dosesTaken": "Принято доз",
+  "dosesMissed": "Пропущено доз",
+  "activeCourses": "Активные курсы",
+  "tabHome": "Расписание",
+  "tabAnalytics": "Статистика",
+  "keepItUp": "Отличная работа! Так держать.",
+  "needsAttention": "Обратите внимание. Старайтесь не пропускать.",
+  "medicineDetails": "Детали лекарства",
+  "pillsRemaining": "Осталось в запасе",
+  "deleteCourse": "Удалить курс",
+  "deleteConfirmation": "Вы уверены, что хотите удалить этот курс и все его напоминания?",
+  "courseAddedMessage": "{type} «{name}» добавлен.",
+  "@courseAddedMessage": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courseUpdatedMessage": "{type} «{name}» обновлен.",
+  "@courseUpdatedMessage": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courseDeletedMessage": "{type} «{name}» удален.",
+  "@courseDeletedMessage": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Отмена",
+  "delete": "Удалить",
+  "timeOfDay": "Время приема",
+  "courseDuration": "Длительность курса (дней)",
+  "pillsInPackage": "Количество в упаковке",
+  "addTime": "Добавить время",
+  "timeLabel": "Время {number}",
+  "@timeLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "foodBefore": "До еды",
+  "foodWith": "Во время еды",
+  "foodAfter": "После еды",
+  "foodNoMatter": "В любое время",
+  "unknownMedicine": "Неизвестное лекарство",
+  "addPhoto": "Добавить фото",
+  "takePhoto": "Сделать снимок",
+  "chooseFromGallery": "Выбрать из галереи",
+  "medicineInfo": "Информация о лекарстве",
+  "formTitle": "Форма выпуска",
+  "scheduleTitle": "Расписание",
+  "everyXDays": "Каждые X дней",
+  "maxDosesPerDay": "Макс. доз в день (Безопасность)",
+  "overdoseWarning": "Для предотвращения случайной передозировки.",
+  "foodInstructionTitle": "Прием пищи",
+  "doseNumber": "Прием {number}",
+  "@doseNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "coursePaused": "Курс приостановлен",
+  "resumeCourse": "Возобновить",
+  "pauseCourse": "Пауза",
+  "coursePausedMessage": "{type} «{name}» приостановлен.",
+  "@coursePausedMessage": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courseResumedMessage": "{type} «{name}» возобновлен.",
+  "@courseResumedMessage": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "doctorReport": "Отчет для врача",
+  "generatingReport": "Создание отчета...",
+  "errorGeneratingReport": "Ошибка создания PDF: {error}",
+  "@errorGeneratingReport": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "editCourse": "Изменить курс",
+  "saveChanges": "Сохранить изменения",
+  "editMedicineInfo": "Изменить информацию",
+  "lowStockTitle": "Заканчивается: {name}",
+  "@lowStockTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lowStockBody": "Осталось всего {count} {unit}. Пора в аптеку!",
+  "@lowStockBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "lowStockBadge": "Мало запасов",
+  "snoozeAction": "Отложить (30м)",
+  "undoAction": "Отменить",
+  "sosPanelTitle": "Экстренно (SOS)",
+  "takeNowAction": "ПРИНЯТЬ СЕЙЧАС",
+  "limitReachedAlert": "Дневной лимит исчерпан! Обратитесь к врачу.",
+  "addSosMedicine": "Добавить SOS",
+  "outOfStockBadge": "Закончилось",
+  "recentHistory": "Недавняя история",
+  "noHistoryYet": "Истории пока нет",
+  "lifetimeCourse": "Постоянный прием (Всю жизнь)",
+  "doneAction": "Готово",
+  "addMeasurement": "Новый замер",
+  "bloodPressure": "Давление",
+  "heartRate": "Пульс",
+  "weight": "Вес",
+  "bloodSugar": "Сахар",
+  "systolic": "Сист",
+  "diastolic": "Диаст",
+  "taperingDosing": "Динамическая (Ступенчатая)",
+  "stepNumber": "Шаг {number}",
+  "@stepNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "addStep": "Добавить шаг",
+  "doseForStep": "Доза для этого шага",
+  "whatWouldYouLikeToDo": "Что бы вы хотели сделать?",
+  "scheduleNewTreatmentCourse": "Запланировать новый курс лечения",
+  "logHealthMetricsSubtitle": "Записать давление, пульс, вес",
+  "priorityAction": "Приоритетное действие",
+  "skipDoseAction": "Пропустить",
+  "errorPrefix": "Ошибка: {error}",
+  "@errorPrefix": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "goodMorning": "Доброе утро",
+  "goodAfternoon": "Добрый день",
+  "goodEvening": "Добрый вечер",
+  "dailyProgress": "Прогресс за день",
+  "sosEmergency": "Экстренная помощь",
+  "adherenceSubtitle": "Обзор регулярности приема лекарств",
+  "healthCorrelationTitle": "Связь со здоровьем",
+  "healthCorrelationSubtitle": "Сравните прием лекарств с показателями вашего здоровья",
+  "last7Days": "Последние 7 дней",
+  "pillsTaken": "Принято таблеток",
+  "overallAdherence": "Общий показатель",
+  "statusGood": "Отлично",
+  "statusNeedsAttention": "Требует внимания",
+  "statTaken": "Принято",
+  "statSkipped": "Пропущено",
+  "statTotal": "Всего",
+  "completedDosesSubtitle": "Завершенные приемы",
+  "missedDosesSubtitle": "Пропущенные приемы",
+  "noDataYet": "Пока нет данных",
+  "noDataDescription": "Начните регулярно принимать лекарства и вносить измерения,\nчтобы увидеть аналитику здесь.",
+  "failedToLoadAdherence": "Не удалось загрузить данные",
+  "failedToLoadChart": "Не удалось загрузить график",
+  "avgAdherence": "Ср. показатель {value}%",
+  "@avgAdherence": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "avgMetric": "Ср. {metricName} {value}",
+  "@avgMetric": {
+    "placeholders": {
+      "metricName": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "addAction": "Добавить",
+  "frequency": "Частота",
+  "form": "Форма",
+  "inventory": "Запасы",
+  "lowStockAlert": "МАЛО",
+  "asNeededFrequency": "ПО ПОТРЕБНОСТИ",
+  "taperingFrequency": "ТИТРАЦИЯ",
+  "customizePill": "Настроить вид",
+  "customizePillTitle": "Внешний вид",
+  "shape": "Форма",
+  "color": "Цвет",
+  "overview": "Основное",
+  "scheduleAndRules": "Расписание и правила",
+  "duration": "Длительность",
+  "reminders": "Напоминания",
+  "daysSuffix": "дней",
+  "pcsSuffix": "шт",
+  "details": "Детали",
+  "settingsTitle": "Настройки и профиль",
+  "personalInfo": "Личная информация",
+  "appPreferences": "Настройки приложения",
+  "darkMode": "Темная тема",
+  "language": "Язык",
+  "notifications": "Уведомления",
+  "advancedFeatures": "Продвинутые функции",
+  "caregivers": "Мед-друзья и близкие",
+  "drugInteractions": "Совместимость лекарств",
+  "comingSoon": "СКОРО",
+  "supportAndAbout": "Поддержка и инфо",
+  "contactSupport": "Связаться с поддержкой",
+  "privacyPolicy": "Политика конфиденциальности",
+  "logout": "Выйти",
+  "tabSettings": "Профиль",
+  "defaultUserName": "Друг",
+  "courseKindMedication": "Лекарство",
+  "courseKindSupplement": "БАД",
+  "courseFilterAll": "Все",
+  "courseFilterMedications": "Лекарства",
+  "courseFilterSupplements": "БАДы",
+  "homeTakeMedicationNow": "Примите это лекарство сейчас",
+  "homeTakeSupplementNow": "Примите этот БАД сейчас",
+  "homeEmptyAllTitle": "Сейчас все спокойно",
+  "homeEmptyMedicationsTitle": "С лекарствами все в порядке",
+  "homeEmptySupplementsTitle": "С БАДами все в порядке",
+  "homeEmptyAllSubtitle": "Сейчас ничего не требует внимания. Можно проверить другой день или добавить новый курс, когда будете готовы.",
+  "homeEmptyMedicationsSubtitle": "На эту дату лекарства не требуют внимания. Можно просто следовать привычному режиму.",
+  "homeEmptySupplementsSubtitle": "На эту дату БАДы не требуют внимания. Можно спокойно продолжать привычный режим приема.",
+  "homeAddSupplementTitle": "Добавить БАД",
+  "homeAddSupplementSubtitle": "Запланируйте витамины и полезные добавки",
+  "homeForThisDay": "На этот день",
+  "homeMorningRoutine": "Утренние приемы",
+  "homeAfternoonRoutine": "Дневные приемы",
+  "homeEveningRoutine": "Вечерние приемы",
+  "homeNightRoutine": "Ночные приемы",
+  "homeRoutineSupplementsOnly": "только БАДы",
+  "homeRoutineMedicationsOnly": "только лекарства",
+  "homeRoutineMixed": "смешанные приемы",
+  "homeRoutineItemCount": "{count, plural, =1{{count} пункт} few{{count} пункта} many{{count} пунктов} other{{count} пункта}}",
+  "@homeRoutineItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeNeedsAttentionTitle": "Требует внимания",
+  "homeNeedsAttentionSubtitle": "{count, plural, =1{{count} запланированный пункт нужно принять или проверить сейчас.} few{{count} запланированных пункта нужно принять или проверить сейчас.} many{{count} запланированных пунктов нужно принять или проверить сейчас.} other{{count} запланированных пункта нужно принять или проверить сейчас.}}",
+  "@homeNeedsAttentionSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeNextUpTitle": "Дальше",
+  "homeRefillReminderTitle": "Напоминание о пополнении",
+  "homeRefillReminderSubtitle": "{count, plural, =1{{count} курсу скоро может понадобиться пополнение.} few{{count} курсам скоро может понадобиться пополнение.} many{{count} курсам скоро может понадобиться пополнение.} other{{count} курсам скоро может понадобиться пополнение.}}",
+  "@homeRefillReminderSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeEverythingCalmTitle": "Сейчас все спокойно",
+  "homeEverythingCalmSubtitle": "Сейчас нет срочных задач по лекарствам или БАДам.",
+  "homeNoUpcomingItem": "Ближайший прием не запланирован.",
+  "homeScheduledFor": "Запланировано на {time}",
+  "@homeScheduledFor": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarToday": "Сегодня",
+  "calendarSelectedDay": "Выбранный день",
+  "calendarShowingToday": "Показано расписание на сегодня",
+  "calendarBrowseNearbyDays": "Прокручивайте колесо, чтобы посмотреть соседние дни",
+  "calendarPreviewAnotherDay": "Колесо позволяет предварительно посмотреть другой день до обновления экрана.",
+  "calendarDayWheelSemantics": "Колесо дней",
+  "analyticsCourseMix": "Курсы по типам",
+  "analyticsCourseMixSubtitle": "Лечение и БАДы отслеживаются вместе, но здесь считаются отдельно.",
+  "analyticsCurrentRoutine": "Текущая серия",
+  "analyticsCurrentRoutineSubtitle": "Дни подряд без пропущенных доз",
+  "analyticsTimingAccuracy": "Точность по времени",
+  "analyticsTimingAccuracySubtitle": "Принято в пределах 30 минут",
+  "analyticsBestRoutine": "Лучшая серия",
+  "analyticsBestRoutineSubtitle": "Лучший результат за последние 90 дней",
+  "analyticsRefillRisk": "Риск пополнения",
+  "analyticsRefillRiskSubtitle": "Курсы, близкие к порогу пополнения",
+  "analyticsAverageDelay": "Средняя задержка",
+  "analyticsMinutesShort": "мин",
+  "analyticsCoachNote": "Подсказка",
+  "analyticsMissedDoses": "Пропущенные дозы",
+  "analyticsActiveShort": "{count} активных",
+  "@analyticsActiveShort": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "analyticsTakenMissed": "Принято: {taken}  Пропущено: {missed}",
+  "@analyticsTakenMissed": {
+    "placeholders": {
+      "taken": {
+        "type": "int"
+      },
+      "missed": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsContactSupportTitle": "Связаться с поддержкой",
+  "settingsContactSupportBody": "Если что-то выглядит непонятно или работает не так, мы поможем. Укажите модель устройства, версию приложения и коротко опишите проблему.",
+  "settingsSupportEmailCopied": "Почта поддержки скопирована",
+  "settingsCopySupportEmail": "Скопировать почту поддержки",
+  "settingsPrivacyTitle": "Политика конфиденциальности",
+  "settingsPrivacyBodyPrimary": "Pillora хранит данные о курсах, настройках напоминаний и истории приемов на вашем устройстве, чтобы показывать расписание и формировать отчеты.",
+  "settingsPrivacyBodySecondary": "Фотографии лекарств и экспорт отчетов создаются только когда вы сами выбираете эти функции. Перед релизом замените это краткое описание внутри приложения на финальную ссылку на политику конфиденциальности.",
+  "settingsPrivacyLaunchNote": "Примечание к релизу: опубликуйте полную политику конфиденциальности на сайте или в карточке приложения до выпуска.",
+  "settingsLanguageEnglish": "Английский",
+  "settingsLanguageRussian": "Русский",
+  "settingsYourProfilePreferences": "Ваш профиль и важные настройки",
+  "settingsComfortModeTitle": "Комфортный режим",
+  "settingsComfortModeSubtitle": "Более крупный текст и меньше визуального шума",
+  "settingsNotificationsEnabled": "Напоминания о лекарствах включены",
+  "settingsOn": "Вкл",
+  "settingsSupportAndSafety": "Поддержка и безопасность",
+  "settingsShowOnboardingAgain": "Показать приветственное руководство снова",
+  "settingsShowOnboardingAgainSubtitle": "Снова открыть руководство по началу работы",
+  "settingsFeaturePolishing": "Эта функция дорабатывается к следующему релизу",
+  "settingsCaregiverTitle": "Доступ для близкого человека",
+  "settingsCaregiverDescription": "Добавьте доверенного человека, чтобы в отчетах были его контакты и совместная забота оставалась понятной.",
+  "settingsCaregiverName": "Имя близкого человека",
+  "settingsCaregiverRelation": "Кто вам этот человек",
+  "settingsCaregiverPhone": "Номер телефона",
+  "settingsCaregiverShareReports": "Добавлять близкого человека в отчеты",
+  "settingsCaregiverShareReportsSubtitle": "Контакты этого человека будут включаться в отчеты, которыми вы делитесь.",
+  "settingsCaregiverSaved": "Данные близкого человека сохранены",
+  "settingsCaregiverRemoved": "Близкий человек удален",
+  "settingsCaregiverRemove": "Удалить близкого человека",
+  "settingsCaregiverEmpty": "Добавьте доверенного человека для совместной заботы и отчетов",
+  "settingsCaregiverAlertsTitle": "Оповещения для близкого человека",
+  "settingsCaregiverAlertsDescription": "Если важный прием просрочен или отмечен как пропущенный, Pillora подготовит на этом устройстве готовое сообщение для близкого человека.",
+  "settingsCaregiverAlertsEmpty": "Сначала добавьте близкого человека, чтобы включить такие оповещения",
+  "settingsCaregiverAlertsDisabled": "Оповещения для близкого человека отключены",
+  "settingsCaregiverAlertsEnabledSummary": "Сообщение готовится через {minutes} мин., если приему требуется внимание",
+  "@settingsCaregiverAlertsEnabledSummary": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsCaregiverAlertsSwitchTitle": "Готовить сообщения для близкого человека",
+  "settingsCaregiverAlertsSwitchSubtitle": "Когда прием требует внимания, Pillora подготовит сообщение, которое можно быстро скопировать и отправить.",
+  "settingsCaregiverAlertsGraceTitle": "Пауза перед оповещением",
+  "settingsCaregiverAlertsGraceDescription": "Подождать {minutes} мин. перед подготовкой сообщения о просроченном приеме.",
+  "@settingsCaregiverAlertsGraceDescription": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsCaregiverAlertsGraceChip": "{minutes} мин.",
+  "@settingsCaregiverAlertsGraceChip": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsCaregiverAlertsOverdueTitle": "Учитывать просроченные приемы",
+  "settingsCaregiverAlertsOverdueSubtitle": "Готовить сообщение, если прием все еще не отмечен после выбранной паузы.",
+  "settingsCaregiverAlertsSkippedTitle": "Учитывать пропущенные приемы",
+  "settingsCaregiverAlertsSkippedSubtitle": "Готовить сообщение, если прием явно отмечен как пропущенный.",
+  "settingsCaregiverAlertsSupplementsTitle": "Учитывать БАДы",
+  "settingsCaregiverAlertsSupplementsSubtitle": "Использовать тот же сценарий не только для лекарств, но и для БАДов.",
+  "settingsCaregiverAlertsSaved": "Правила оповещений для близкого человека сохранены",
+  "settingsCaregiverConnectedTitle": "Связь с устройством близкого",
+  "settingsCaregiverConnectedDescription": "На стороне приложения уже подготовлены постоянный код связи и outbox для оповещений, чтобы прямую доставку на устройство близкого можно было аккуратно подключить через облачный слой.",
+  "settingsCaregiverConnectedReady": "Код связи уже готов. В outbox сейчас нет ожидающих оповещений.",
+  "settingsCaregiverConnectedPending": "В outbox для связанной доставки ожидают {count} оповещений.",
+  "@settingsCaregiverConnectedPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsCaregiverConnectedCodeTitle": "Код связи для близкого",
+  "settingsCaregiverConnectedCodeSubtitle": "Сохраните этот код для будущей привязки устройства близкого, когда будет включена прямая доставка.",
+  "settingsCaregiverConnectedOutboxTitle": "Outbox оповещений",
+  "settingsCaregiverConnectedLastQueued": "Последний раз добавлено: {value}",
+  "@settingsCaregiverConnectedLastQueued": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsCaregiverConnectedCopyCode": "Скопировать код связи",
+  "settingsCaregiverConnectedCodeCopied": "Код связи для близкого скопирован",
+  "settingsCaregiverConnectedClearOutbox": "Очистить outbox",
+  "settingsCaregiverConnectedOutboxCleared": "Outbox близкого очищен",
+  "settingsCaregiverConnectedCloudTitle": "Режим облачной связи",
+  "settingsCaregiverConnectedModePatient": "Это устройство работает как устройство пациента и зеркалит оповещения в Firestore.",
+  "settingsCaregiverConnectedModeCaregiver": "Это устройство связано как устройство близкого человека для {patientName}.",
+  "@settingsCaregiverConnectedModeCaregiver": {
+    "placeholders": {
+      "patientName": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsCaregiverConnectedModeNone": "Это устройство пока не подключено к облачному caregiver-сценарию.",
+  "settingsCaregiverConnectedCloudCode": "Связанный код: {code}",
+  "@settingsCaregiverConnectedCloudCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsCaregiverConnectedInboxTitle": "Предпросмотр caregiver inbox",
+  "settingsCaregiverConnectedInboxEmpty": "Сейчас в облачном inbox нет ожидающих оповещений.",
+  "settingsCaregiverConnectedUsePatientDevice": "Использовать это устройство как устройство пациента",
+  "settingsCaregiverConnectedPatientModeSaved": "Это устройство теперь связано как устройство пациента",
+  "settingsCaregiverConnectedUseCaregiverDevice": "Подключить это устройство как устройство близкого",
+  "settingsCaregiverConnectedJoinTitle": "Подключение устройства близкого",
+  "settingsCaregiverConnectedJoinSubtitle": "Введите код связи с устройства пациента, чтобы получать оповещения в этом приложении, пока оно активно.",
+  "settingsCaregiverConnectedJoinAction": "Подключить устройство близкого",
+  "settingsCaregiverConnectedCaregiverModeSaved": "Это устройство теперь связано как устройство близкого человека",
+  "settingsCaregiverConnectedJoinFailed": "Код связи для близкого не найден",
+  "settingsCaregiverConnectedDisconnect": "Отключить облачную связь",
+  "settingsCaregiverConnectedDisconnected": "Это устройство отключено от облачного caregiver-сценария",
+  "caregiverCloudNotificationTitle": "Оповещение для близкого",
+  "caregiverAlertCardTitle": "Сообщение для близкого уже готово",
+  "caregiverAlertCardSubtitle": "{caregiverName} можно быстро сообщить о {count} пунктах, которым сегодня нужно внимание.",
+  "@caregiverAlertCardSubtitle": {
+    "placeholders": {
+      "caregiverName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "caregiverAlertReviewAction": "Открыть и скопировать",
+  "caregiverAlertSheetTitle": "Сообщение для близкого человека",
+  "caregiverAlertSheetSubtitle": "Pillora подготовил готовое сообщение для {caregiverName} о {count} пунктах, которым нужно внимание.",
+  "@caregiverAlertSheetSubtitle": {
+    "placeholders": {
+      "caregiverName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "caregiverAlertReasonOverdue": "Просрочено на {minutes} мин.",
+  "@caregiverAlertReasonOverdue": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "caregiverAlertReasonSkipped": "Отмечено как пропущенное",
+  "caregiverAlertItemSchedule": "По плану в {time}. {reason}.",
+  "@caregiverAlertItemSchedule": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "caregiverAlertManualShareNote": "В этой версии Pillora готовит сообщение на вашем устройстве, чтобы вы могли быстро скопировать его и отправить близкому человеку.",
+  "caregiverAlertCopyMessage": "Скопировать текст сообщения",
+  "caregiverAlertCopyPhone": "Скопировать номер близкого",
+  "caregiverAlertNoPhone": "Добавьте номер близкого в настройках",
+  "caregiverAlertMessageCopied": "Сообщение для близкого скопировано",
+  "caregiverAlertPhoneCopied": "Номер близкого скопирован",
+  "caregiverAlertMessageGreeting": "Здравствуйте, {caregiverName}.",
+  "@caregiverAlertMessageGreeting": {
+    "placeholders": {
+      "caregiverName": {
+        "type": "String"
+      }
+    }
+  },
+  "caregiverAlertMessageIntro": "Pillora подготовил это обновление для {patientName}. Сегодня внимания требуют следующие приемы:",
+  "@caregiverAlertMessageIntro": {
+    "placeholders": {
+      "patientName": {
+        "type": "String"
+      }
+    }
+  },
+  "caregiverAlertMessageLineOverdue": "{courseName} — по плану в {time}, сейчас просрочено на {minutes} мин.",
+  "@caregiverAlertMessageLineOverdue": {
+    "placeholders": {
+      "courseName": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "caregiverAlertMessageLineSkipped": "{courseName} — по плану в {time}, отмечено как пропущенное",
+  "@caregiverAlertMessageLineSkipped": {
+    "placeholders": {
+      "courseName": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "caregiverAlertMessageFooter": "Пожалуйста, свяжитесь с человеком, если нужна поддержка.",
+  "settingsSupportEmailSubtitle": "Почта поддержки для вопросов и сообщений об ошибках",
+  "settingsPrivacySubtitle": "Как обрабатываются данные напоминаний, фото и отчетов",
+  "settingsExampleName": "Например, Алексей",
+  "settingsSave": "Сохранить",
+  "onboardingStartUsing": "Начать использовать Pillora",
+  "onboardingContinue": "Продолжить",
+  "onboardingBack": "Назад",
+  "onboardingWelcomeTitle": "Pillora помогает держать лечение под контролем",
+  "onboardingWelcomeTagline": "Спокойно, понятно и по делу.",
+  "onboardingWelcomeBody": "Сразу после открытия приложения вы увидите, что нужно принять сейчас и что будет дальше.",
+  "onboardingFeatureEasyInterface": "Крупный и легко читаемый интерфейс",
+  "onboardingFeatureNextDose": "Фокус на ближайшем приеме",
+  "onboardingFeatureReminders": "Напоминания и контроль запаса",
+  "onboardingTailorTitle": "Давайте настроим приложение под вас",
+  "onboardingTailorSubtitle": "Позже эти настройки можно изменить в профиле.",
+  "onboardingNamePrompt": "Как к вам обращаться?",
+  "onboardingLanguageTitle": "Язык",
+  "onboardingReadingComfort": "Комфорт чтения",
+  "onboardingComfortModeTitle": "Комфортный режим",
+  "onboardingComfortModeSubtitle": "Более крупный текст, большие кнопки и меньше визуального шума.",
+  "onboardingReadyTitle": "Все готово",
+  "onboardingReadyBanner": "Первый экран показывает, что и когда нужно принять.",
+  "onboardingReadyBody": "На главном экране сначала показываются самые важные приемы, а статистика остается на отдельной вкладке.",
+  "onboardingReadySummaryHome": "Более простой главный экран без лишнего шума",
+  "onboardingReadySummaryActions": "Понятные действия: принять, пропустить, добавить",
+  "onboardingReadySummaryComfortOn": "Комфортный режим уже включен",
+  "onboardingReadySummaryComfortLater": "Комфортный режим можно включить позже в профиле",
+  "medicineStandardCourse": "Обычный курс",
+  "medicineComplexCourse": "Сложный курс",
+  "schedulePreviewTitle": "Предпросмотр расписания",
+  "scheduleDoseAtTime": "Доза в это время",
+  "courseTypeLabel": "Тип курса",
+  "addSupplementScreenTitle": "Добавить БАД",
+  "editSupplementTitle": "Редактировать БАД",
+  "settingsLanguageChangeLater": "Позже это можно изменить в профиле",
+  "homeNothingDueTitle": "Сейчас ничего не запланировано",
+  "homeUseDayWheelSubtitle": "Используйте колесо дней выше, если хотите посмотреть другой день.",
+  "homeNoAttentionRightNow": "Сейчас ни лекарства, ни БАДы не требуют внимания.",
+  "homeAddItemFab": "Добавить лекарство, БАД или измерение",
+  "homeTimelineSubtitle": "Лекарства и БАДы показаны по времени.",
+  "analyticsCoachGreat": "У вас формируется надежный режим приема. Продолжайте в том же духе.",
+  "analyticsCoachMissed": "Большинство пропусков связано не с количеством, а с нерегулярностью. Сделайте первый прием дня своей опорной точкой.",
+  "analyticsCoachTiming": "Ваш режим движется в правильную сторону. Следующий шаг — точнее соблюдать время.",
+  "medicineFrequencyDaily": "Ежедневно",
+  "medicineFrequencySpecificDays": "Определенные дни",
+  "medicineFrequencyInterval": "Интервал",
+  "medicineFrequencyCycle": "Цикл",
+  "medicineFormTablet": "Таблетка",
+  "medicineFormCapsule": "Капсула",
+  "medicineFormLiquid": "Жидкость",
+  "medicineFormInjection": "Инъекция",
+  "medicineFormDrops": "Капли",
+  "medicineFormOintment": "Мазь",
+  "medicineFormSpray": "Спрей",
+  "medicineFormInhaler": "Ингалятор",
+  "medicineFormPatch": "Пластырь",
+  "medicineFormSuppository": "Суппозиторий",
+  "medicineTimelineSupplementInfo": "Этот БАД показывается в общей дневной ленте, но остается отдельным курсом.",
+  "medicineTimelineMedicationInfo": "Это лекарство показывается в общей дневной ленте и остается частью основного плана лечения.",
+  "medicineDoseScheduleTitle": "Схема доз",
+  "medicineDoseScheduleSubtitle": "Следующий день курса с дозировкой по времени.",
+  "medicineHistoryLoadError": "Ошибка",
+  "scheduleDoseTabletsAtTime": "Таблеток в это время",
+  "scheduleDoseAmountAtTime": "Доза в это время",
+  "schedulePreviewFutureRebuilt": "Будущие дозы будут пересобраны по этому расписанию.",
+  "scheduleComplexTitle": "Сложное расписание",
+  "scheduleComplexEditSubtitle": "Можно отдельно редактировать и время, и дозировку для каждой дозы.",
+  "courseTimelineSupplementInfo": "Этот БАД остается в своей категории, но показывается в общей ленте по времени.",
+  "courseTimelineMedicationInfo": "Это лекарство остается в своей категории и показывается в общей ленте по времени.",
+  "supplementNameHint": "Название БАДа (например, Магний)",
+  "addDoseAction": "Добавить дозу",
+  "addConditionSuggestionsTitle": "Подсказки по заболеванию",
+  "addConditionSuggestionsSubtitle": "Выберите заболевание, чтобы увидеть частые шаблоны курсов. Это только ориентиры, их нужно сверять с реальным назначением.",
+  "addConditionSuggestionsEmpty": "Для этого заболевания больше нет видимых подсказок. Можно выбрать другое заболевание или продолжить вручную.",
+  "addFlowSupplementTitle": "Как вы хотите добавить этот БАД?",
+  "addFlowMedicationTitle": "С чего начать?",
+  "addFlowSupplementSubtitle": "БАДы чаще добавляют вручную, но можно выбрать и готовый шаблон, если он подходит.",
+  "addFlowMedicationSubtitle": "Сначала выберите удобный способ добавления. Ниже все детали можно изменить вручную.",
+  "addFlowByConditionTitle": "По заболеванию",
+  "addFlowByConditionSubtitle": "Посмотреть частые шаблоны для заболевания",
+  "addFlowQuickTemplateTitle": "Быстрый шаблон",
+  "addFlowQuickTemplateSubtitle": "Использовать один из частых готовых курсов",
+  "addFlowManualTitle": "Вручную",
+  "addFlowManualSubtitle": "Заполнить курс самостоятельно с нуля",
+  "addAppearanceTitle": "Внешний вид",
+  "addAppearanceSubtitle": "Необязательный шаг. Добавьте фото или настройте вид таблетки, чтобы потом ее было легче узнать.",
+  "addPhotoLabel": "Фото",
+  "addQuickStartTitle": "Быстрый старт",
+  "addQuickStartSubtitle": "Используйте один из самых частых шаблонов курса одним нажатием.",
+  "addSkipTemplate": "Пропустить",
+  "addUseTemplate": "Использовать шаблон",
+  "addRecommendedMetricsTitle": "Рекомендуемые показатели здоровья",
+  "addRecommendedMetricsSubtitle": "Эти измерения часто ведут вместе с этим заболеванием. Можно сразу внести первое значение.",
+  "addSupplementTimelineInfo": "Этот БАД будет показываться вместе с лекарствами в дневной ленте.",
+  "addMedicationTimelineInfo": "Это лекарство будет показываться в общей дневной ленте вместе с другими курсами.",
+  "conditionDiabetesTitle": "Сахарный диабет",
+  "conditionDiabetesSubtitle": "Частые схемы длительной терапии",
+  "conditionHypertensionTitle": "Гипертония",
+  "conditionHypertensionSubtitle": "Частые препараты для контроля давления",
+  "conditionCholesterolTitle": "Высокий холестерин",
+  "conditionCholesterolSubtitle": "Частая вечерняя гиполипидемическая терапия",
+  "conditionThyroidTitle": "Гипотиреоз",
+  "conditionThyroidSubtitle": "Типичная утренняя заместительная терапия",
+  "conditionGerdTitle": "Рефлюкс / ГЭРБ",
+  "conditionGerdSubtitle": "Частый контроль симптомов кислотности",
+  "conditionAsthmaTitle": "Астма",
+  "conditionAsthmaSubtitle": "Частые поддерживающие схемы и варианты для быстрого облегчения",
+  "conditionAllergyTitle": "Аллергия",
+  "conditionAllergySubtitle": "Частый контроль симптомов антигистаминными",
+  "conditionHeartPreventionTitle": "Заболевания сердца / профилактика",
+  "conditionHeartPreventionSubtitle": "Частые долгосрочные кардиологические схемы",
+  "conditionHeartFailureTitle": "Сердечная недостаточность",
+  "conditionHeartFailureSubtitle": "Частая поддерживающая терапия для жидкости и давления",
+  "conditionAtrialFibrillationTitle": "Фибрилляция предсердий",
+  "conditionAtrialFibrillationSubtitle": "Частая терапия ритма и профилактики инсульта",
+  "conditionJointPainTitle": "Боль в суставах / артрит",
+  "conditionJointPainSubtitle": "Частый контроль боли и воспаления",
+  "conditionBphTitle": "Простата / ДГПЖ",
+  "conditionBphSubtitle": "Частый контроль мочевых симптомов",
+  "conditionOsteoporosisTitle": "Остеопороз / здоровье костей",
+  "conditionOsteoporosisSubtitle": "Частые схемы поддержки костей",
+  "conditionAnemiaTitle": "Дефицит железа / анемия",
+  "conditionAnemiaSubtitle": "Частые схемы восполнения железа",
+  "suggestionMetforminName": "Метформин",
+  "suggestionMetforminNote": "Типичная таблетированная терапия. Точную дозу сверяйте с назначением.",
+  "suggestionInsulinName": "Инсулин",
+  "suggestionInsulinNote": "Шаблон для инъекций. Тип инсулина, дозу и время нужно подстроить под реальную схему.",
+  "suggestionAmlodipineName": "Амлодипин",
+  "suggestionAmlodipineNote": "Частый прием один раз в день для контроля давления.",
+  "suggestionLosartanName": "Лозартан",
+  "suggestionLosartanNote": "Часто используется как ежедневная длительная терапия.",
+  "suggestionAtorvastatinName": "Аторвастатин",
+  "suggestionAtorvastatinNote": "Частый шаблон ежедневного приема статина.",
+  "suggestionLevothyroxineName": "Левотироксин",
+  "suggestionLevothyroxineNote": "Обычно принимается утром до еды.",
+  "suggestionOmeprazoleName": "Омепразол",
+  "suggestionOmeprazoleNote": "Часто принимается утром до еды.",
+  "suggestionFamotidineName": "Фамотидин",
+  "suggestionFamotidineNote": "Используется при симптомах кислотности, часто вечером.",
+  "suggestionBudesonideFormoterolName": "Будесонид/Формотерол",
+  "suggestionBudesonideFormoterolNote": "Частый шаблон поддерживающего ингалятора.",
+  "suggestionAlbuterolName": "Альбутерол",
+  "suggestionAlbuterolNote": "Частый ингалятор для быстрого облегчения по потребности.",
+  "suggestionCetirizineName": "Цетиризин",
+  "suggestionCetirizineNote": "Часто используется один раз в день при симптомах аллергии.",
+  "suggestionLoratadineName": "Лоратадин",
+  "suggestionLoratadineNote": "Частый дневной шаблон антигистаминного.",
+  "suggestionAspirinName": "Аспирин",
+  "suggestionAspirinNote": "Частый шаблон низкой дозы для кардиопрофилактики.",
+  "suggestionClopidogrelName": "Клопидогрел",
+  "suggestionClopidogrelNote": "Часто используется как антиагрегант один раз в день.",
+  "suggestionFurosemideName": "Фуросемид",
+  "suggestionFurosemideNote": "Шаблон диуретика, который часто принимают в первой половине дня.",
+  "suggestionSpironolactoneName": "Спиронолактон",
+  "suggestionSpironolactoneNote": "Частая поддерживающая терапия один раз в день.",
+  "suggestionApixabanName": "Апиксабан",
+  "suggestionApixabanNote": "Частый режим антикоагулянта два раза в день.",
+  "suggestionMetoprololName": "Метопролол",
+  "suggestionMetoprololNote": "Часто используется для контроля частоты пульса.",
+  "suggestionIbuprofenName": "Ибупрофен",
+  "suggestionIbuprofenNote": "Частый шаблон для кратковременного снятия боли.",
+  "suggestionDiclofenacGelName": "Гель диклофенак",
+  "suggestionDiclofenacGelNote": "Шаблон местного противовоспалительного средства для снятия симптомов.",
+  "suggestionTamsulosinName": "Тамсулозин",
+  "suggestionTamsulosinNote": "Часто принимается вечером после еды.",
+  "suggestionFinasterideName": "Финастерид",
+  "suggestionFinasterideNote": "Частая долгосрочная поддержка один раз в день.",
+  "suggestionAlendronateName": "Алендронат",
+  "suggestionAlendronateNote": "Типичный утренний еженедельный шаблон до еды.",
+  "suggestionCalciumVitaminDName": "Кальций + витамин D",
+  "suggestionCalciumVitaminDNote": "Частый курс БАДов для поддержки костей.",
+  "suggestionFerrousSulfateName": "Сульфат железа",
+  "suggestionFerrousSulfateNote": "Частый шаблон перорального восполнения железа.",
+  "suggestionFolicAcidName": "Фолиевая кислота",
+  "suggestionFolicAcidNote": "Частый шаблон поддерживающего витамина.",
+  "pdfDoctorReportTitle": "Отчет для врача",
+  "pdfSupplementCourseSummary": "Сводка по курсу БАДов",
+  "pdfMedicationCourseSummary": "Сводка по курсу лечения",
+  "pdfCourseProfileTitle": "Профиль курса",
+  "pdfScheduleSnapshotTitle": "Снимок расписания",
+  "pdfScheduleSnapshotSubtitle": "Показательный день курса с временем и дозировкой.",
+  "pdfAdministrationHistoryTitle": "История приемов",
+  "pdfAdministrationHistorySubtitle": "Показывает, что было принято и насколько это совпадало с планом.",
+  "pdfAdherenceLabel": "Соблюдение",
+  "pdfSnoozedLabel": "Отложено",
+  "pdfClinicalSummaryTitle": "Клиническая сводка",
+  "pdfPatientLabel": "Пациент",
+  "pdfCaregiverLabel": "Помогающий человек",
+  "pdfReportPeriodLabel": "Период отчета",
+  "pdfOnTimeRateLabel": "Точность по времени",
+  "pdfAverageDelayLabel": "Средняя задержка",
+  "pdfUpcomingDosesLabel": "Предстоящие дозы",
+  "pdfStockLeftLabel": "Остаток запаса",
+  "pdfNameLabel": "Название",
+  "pdfCourseTypeLabel": "Тип курса",
+  "pdfDosageLabel": "Дозировка",
+  "pdfFrequencyLabel": "Частота",
+  "pdfStartedLabel": "Начало",
+  "pdfInstructionLabel": "Инструкция",
+  "pdfNotesLabel": "Заметки",
+  "pdfTimelineEmpty": "Записанной истории приемов пока нет.",
+  "pdfTimelineTruncated": "В PDF показаны последние {visible} записей из {total}.",
+  "@pdfTimelineTruncated": {
+    "placeholders": {
+      "visible": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfTableScheduled": "По плану",
+  "pdfTableActual": "Фактически",
+  "pdfTableDose": "Доза",
+  "pdfTableStatus": "Статус",
+  "pdfTableDelay": "Отклонение",
+  "pdfOnTime": "Вовремя",
+  "pdfMinuteShort": "мин",
+  "pdfNoFoodRestriction": "Без ограничений по еде"
 }

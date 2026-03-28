@@ -2,30 +2,65 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/firebase/caregiver_cloud_repository.dart';
 import '../../../core/presentation/widgets/glass_container.dart';
+import '../../../core/presentation/widgets/animated_reveal.dart';
+import '../../../core/presentation/widgets/care_context_switcher.dart';
 import '../../../core/presentation/widgets/gradient_scaffold.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../data/local/entities/measurement_entity.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../settings/provider/care_context_provider.dart';
+import '../../settings/provider/caregiver_cloud_provider.dart';
+import '../../settings/provider/settings_provider.dart';
 import '../providers/analytics_provider.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
 
-  static bool _isRussian(BuildContext context) =>
-      Localizations.localeOf(context).languageCode == 'ru';
-
-  static String _copy(BuildContext context, String en, String ru) =>
-      _isRussian(context) ? ru : en;
+  static String _courseFilterLabel(
+    BuildContext context,
+    AnalyticsCourseFilterType filter,
+  ) {
+    return switch (filter) {
+      AnalyticsCourseFilterType.all => AppLocalizations.of(
+        context,
+      )!.courseFilterAll,
+      AnalyticsCourseFilterType.medications => AppLocalizations.of(
+        context,
+      )!.courseFilterMedications,
+      AnalyticsCourseFilterType.supplements => AppLocalizations.of(
+        context,
+      )!.courseFilterSupplements,
+    };
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isRu = _isRussian(context);
-
-    final statsAsync = ref.watch(analyticsStatsProvider);
-    final correlationAsync = ref.watch(correlationChartProvider);
+    final caregiverCloudState = ref.watch(caregiverCloudProvider);
+    final caregiverCloudAlerts =
+        ref.watch(caregiverCloudAlertsProvider).valueOrNull ??
+        const <CaregiverCloudAlert>[];
+    final displayName = ref.watch(userNameProvider).trim().isEmpty
+        ? l10n.defaultUserName
+        : ref.watch(userNameProvider).trim();
+    final hasCaregivingContext = caregiverCloudState.hasCaregiverLink;
+    final selectedContext = hasCaregivingContext
+        ? ref.watch(selectedCareContextProvider)
+        : AppCareContext.myCare;
+    final isMyCare = selectedContext == AppCareContext.myCare;
+    final statsAsync = isMyCare
+        ? ref.watch(analyticsStatsProvider)
+        : const AsyncValue<AnalyticsStats>.loading();
+    final correlationAsync = isMyCare
+        ? ref.watch(correlationChartProvider)
+        : const AsyncValue<CorrelationSummary>.loading();
     final selectedMetric = ref.watch(selectedChartMetricProvider);
+    final selectedCourseFilter = ref.watch(
+      selectedAnalyticsCourseFilterProvider,
+    );
 
     final bottomSafeArea = MediaQuery.paddingOf(context).bottom;
     final bottomNavHeight = 85.0 + bottomSafeArea;
@@ -59,16 +94,18 @@ class AnalyticsScreen extends ConsumerWidget {
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: false,
               titlePadding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
+                left: 16,
+                right: 16,
                 bottom: 16,
               ),
               title: Text(
-                l10n.analyticsTitle,
+                selectedContext == AppCareContext.myCare
+                    ? l10n.analyticsTitle
+                    : l10n.settingsCaregiverConnectedInboxTitle,
                 style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w900,
                   color: theme.colorScheme.onSurface,
-                  letterSpacing: -0.4,
+                  letterSpacing: -0.5,
                 ),
               ),
               background: DecoratedBox(
@@ -87,171 +124,237 @@ class AnalyticsScreen extends ConsumerWidget {
           ),
           SliverPadding(
             padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
+              left: 16,
+              right: 16,
               top: 12,
               bottom: bottomNavHeight + 24,
             ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
+                if (hasCaregivingContext) ...[
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 40),
+                    child: CareContextSwitcher(
+                      selectedContext: selectedContext,
+                      personalLabel: displayName,
+                      caregivingLabel:
+                          caregiverCloudState.caregiverLinkedPatientName ??
+                          l10n.settingsCaregiverConnectedTitle,
+                      onChanged: (value) {
+                        ref.read(selectedCareContextProvider.notifier).state =
+                            value;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (selectedContext == AppCareContext.caregiving)
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 90),
+                    child: _CaregivingAnalyticsCard(
+                      linkedPatientName:
+                          caregiverCloudState.caregiverLinkedPatientName ??
+                          l10n.defaultUserName,
+                      alerts: caregiverCloudAlerts,
+                    ),
+                  )
+                else ...[
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 50),
+                  child: _AnalyticsCourseFilterChips(
+                    selectedFilter: selectedCourseFilter,
+                    labelBuilder: (filter) =>
+                        _courseFilterLabel(context, filter),
+                    onSelected: (filter) {
+                      ref
+                              .read(
+                                selectedAnalyticsCourseFilterProvider.notifier,
+                              )
+                              .state =
+                          filter;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
                 statsAsync.when(
                   data: (stats) {
                     final isGoodRate = stats.adherenceRate >= 80.0;
                     final rateColor = isGoodRate
-                        ? theme.colorScheme.secondary
-                        : theme.colorScheme.error;
+                        ? theme.successAccent
+                        : theme.dangerAccent;
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _SectionHeader(
-                          title: l10n.adherenceRate,
-                          subtitle: l10n.adherenceSubtitle,
-                        ),
-                        const SizedBox(height: 12),
-                        _AdherenceHeroCard(
-                          adherenceRate: stats.adherenceRate,
-                          takenDoses: stats.takenDoses,
-                          missedDoses: stats.missedDoses,
-                          rateColor: rateColor,
-                          l10n: l10n,
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _SummaryInfoCard(
-                                icon: Icons.local_fire_department_rounded,
-                                title: _copy(
-                                  context,
-                                  'Current routine',
-                                  'Текущая серия',
-                                ),
-                                value: isRu
-                                    ? '${stats.currentStreak} дн.'
-                                    : '${stats.currentStreak} days',
-                                color: theme.primaryColor,
-                                subtitle: _copy(
-                                  context,
-                                  'Days in a row without missed doses',
-                                  'Дни подряд без пропусков',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _SummaryInfoCard(
-                                icon: Icons.timer_outlined,
-                                title: _copy(
-                                  context,
-                                  'Timing accuracy',
-                                  'Точность по времени',
-                                ),
-                                value: '${stats.onTimeRate.round()}%',
-                                color: theme.colorScheme.secondary,
-                                subtitle: _copy(
-                                  context,
-                                  'Taken within 30 minutes',
-                                  'Прием в пределах 30 минут',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _SummaryInfoCard(
-                                icon: Icons.workspace_premium_rounded,
-                                title: _copy(
-                                  context,
-                                  'Best routine',
-                                  'Лучшая серия',
-                                ),
-                                value: isRu
-                                    ? '${stats.longestStreak} дн.'
-                                    : '${stats.longestStreak} days',
-                                color: Colors.orange.shade700,
-                                subtitle: _copy(
-                                  context,
-                                  'Best result in the last 90 days',
-                                  'Лучший результат за 90 дней',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _SummaryInfoCard(
-                                icon: Icons.inventory_2_outlined,
-                                title: _copy(
-                                  context,
-                                  'Refill risk',
-                                  'Контроль запаса',
-                                ),
-                                value: stats.lowStockCourses.toString(),
-                                color: theme.colorScheme.error,
-                                subtitle: _copy(
-                                  context,
-                                  'Courses close to refill threshold',
-                                  'Курсы близки к пополнению',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        GlassContainer(
-                          padding: const EdgeInsets.all(18),
-                          color: theme.colorScheme.surface.withValues(
-                            alpha: 0.42,
+                    return AnimatedReveal(
+                      delay: const Duration(milliseconds: 120),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _SectionHeader(
+                            title: l10n.adherenceRate,
+                            subtitle: l10n.adherenceSubtitle,
                           ),
-                          child: Row(
+                          const SizedBox(height: 12),
+                          _AdherenceHeroCard(
+                            adherenceRate: stats.adherenceRate,
+                            takenDoses: stats.takenDoses,
+                            missedDoses: stats.missedDoses,
+                            rateColor: rateColor,
+                            l10n: l10n,
+                          ),
+                          const SizedBox(height: 12),
+                          GlassContainer(
+                            padding: const EdgeInsets.all(16),
+                            color: theme.colorScheme.surface.withValues(
+                              alpha: 0.42,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.analyticsCourseMix,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  l10n.analyticsCourseMixSubtitle,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.6),
+                                    height: 1.35,
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _CourseTypeBreakdownCard(
+                                        icon: Icons.medication_rounded,
+                                        title: l10n.courseFilterMedications,
+                                        activeCourses:
+                                            stats.activeMedicationCourses,
+                                        takenDoses: stats.medicationTakenDoses,
+                                        missedDoses:
+                                            stats.medicationMissedDoses,
+                                        color: theme.brandPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _CourseTypeBreakdownCard(
+                                        icon: Icons.spa_rounded,
+                                        title: l10n.courseFilterSupplements,
+                                        activeCourses:
+                                            stats.activeSupplementCourses,
+                                        takenDoses: stats.supplementTakenDoses,
+                                        missedDoses:
+                                            stats.supplementMissedDoses,
+                                        color: theme.supplementAccent,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
                             children: [
                               Expanded(
-                                child: _MiniInsight(
-                                  label: isRu
-                                      ? 'Средняя задержка'
-                                      : 'Average delay',
-                                  value: isRu
-                                      ? '${stats.averageDelayMinutes.round()} мин'
-                                      : '${stats.averageDelayMinutes.round()} min',
+                                child: _SummaryInfoCard(
+                                  icon: Icons.local_fire_department_rounded,
+                                  title: l10n.analyticsCurrentRoutine,
+                                  value: '${stats.currentStreak}',
+                                  color: theme.brandPrimary,
+                                  subtitle:
+                                      l10n.analyticsCurrentRoutineSubtitle,
                                 ),
                               ),
-                              Container(
-                                width: 1,
-                                height: 36,
-                                color: theme.dividerColor.withValues(
-                                  alpha: 0.25,
-                                ),
-                              ),
+                              const SizedBox(width: 12),
                               Expanded(
-                                child: _MiniInsight(
-                                  label: isRu
-                                      ? 'Активные курсы'
-                                      : 'Active courses',
-                                  value: stats.activeCourses.toString(),
-                                ),
-                              ),
-                              Container(
-                                width: 1,
-                                height: 36,
-                                color: theme.dividerColor.withValues(
-                                  alpha: 0.25,
-                                ),
-                              ),
-                              Expanded(
-                                child: _MiniInsight(
-                                  label: isRu ? 'Пропуски' : 'Missed doses',
-                                  value: stats.missedDoses.toString(),
+                                child: _SummaryInfoCard(
+                                  icon: Icons.timer_outlined,
+                                  title: l10n.analyticsTimingAccuracy,
+                                  value: '${stats.onTimeRate.round()}%',
+                                  color: theme.successAccent,
+                                  subtitle:
+                                      l10n.analyticsTimingAccuracySubtitle,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        _CoachCard(stats: stats),
-                      ],
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _SummaryInfoCard(
+                                  icon: Icons.workspace_premium_rounded,
+                                  title: l10n.analyticsBestRoutine,
+                                  value: '${stats.longestStreak}',
+                                  color: theme.warningAccent,
+                                  subtitle: l10n.analyticsBestRoutineSubtitle,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _SummaryInfoCard(
+                                  icon: Icons.inventory_2_outlined,
+                                  title: l10n.analyticsRefillRisk,
+                                  value: stats.lowStockCourses.toString(),
+                                  color: theme.dangerAccent,
+                                  subtitle: l10n.analyticsRefillRiskSubtitle,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          GlassContainer(
+                            padding: const EdgeInsets.all(16),
+                            color: theme.colorScheme.surface.withValues(
+                              alpha: 0.42,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _MiniInsight(
+                                    label: l10n.analyticsAverageDelay,
+                                    value:
+                                        '${stats.averageDelayMinutes.round()} ${l10n.analyticsMinutesShort}',
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 36,
+                                  color: theme.dividerColor.withValues(
+                                    alpha: 0.25,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _MiniInsight(
+                                    label: l10n.activeCourses,
+                                    value: stats.activeCourses.toString(),
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 36,
+                                  color: theme.dividerColor.withValues(
+                                    alpha: 0.25,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _MiniInsight(
+                                    label: l10n.analyticsMissedDoses,
+                                    value: stats.missedDoses.toString(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _CoachCard(stats: stats),
+                        ],
+                      ),
                     );
                   },
                   loading: () => const _SectionLoading(height: 320),
@@ -261,90 +364,228 @@ class AnalyticsScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 28),
-                _SectionHeader(
-                  title: l10n.healthCorrelationTitle,
-                  subtitle: l10n.healthCorrelationSubtitle,
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 210),
+                  child: _SectionHeader(
+                    title: l10n.healthCorrelationTitle,
+                    subtitle: l10n.healthCorrelationSubtitle,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _MetricSelector(
-                  selectedMetric: selectedMetric,
-                  getMetricName: getMetricName,
-                  onSelected: (type) {
-                    ref.read(selectedChartMetricProvider.notifier).state = type;
-                  },
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 250),
+                  child: _MetricSelector(
+                    selectedMetric: selectedMetric,
+                    getMetricName: getMetricName,
+                    onSelected: (type) {
+                      ref.read(selectedChartMetricProvider.notifier).state =
+                          type;
+                    },
+                  ),
                 ),
                 const SizedBox(height: 16),
-                GlassContainer(
-                  padding: const EdgeInsets.all(18),
-                  color: theme.colorScheme.surface.withValues(alpha: 0.45),
-                  child: correlationAsync.when(
-                    data: (summary) {
-                      if (summary.dailyData.isEmpty) {
-                        return _EmptyChartState(l10n: l10n);
-                      }
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 300),
+                  child: GlassContainer(
+                    padding: const EdgeInsets.all(16),
+                    color: theme.colorScheme.surface.withValues(alpha: 0.45),
+                    child: correlationAsync.when(
+                      data: (summary) {
+                        if (summary.dailyData.isEmpty) {
+                          return _EmptyChartState(l10n: l10n);
+                        }
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: [
-                              _TopPillBadge(
-                                label: l10n.last7Days,
-                                icon: Icons.calendar_view_week_rounded,
-                              ),
-                              _TopPillBadge(
-                                label: l10n.avgAdherence(
-                                  summary.avgAdherence.toStringAsFixed(0),
-                                ),
-                                icon: Icons.show_chart_rounded,
-                              ),
-                              if (summary.avgMeasurement != null)
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: [
                                 _TopPillBadge(
-                                  label: l10n.avgMetric(
-                                    getMetricName(selectedMetric),
-                                    summary.avgMeasurement!.toStringAsFixed(0),
-                                  ),
-                                  icon: Icons.favorite_outline_rounded,
+                                  label: l10n.last7Days,
+                                  icon: Icons.calendar_view_week_rounded,
                                 ),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _LegendItem(
-                                color: theme.colorScheme.secondary,
-                                label: l10n.pillsTaken,
-                              ),
-                              const SizedBox(width: 18),
-                              _LegendItem(
-                                color: theme.colorScheme.primary,
-                                label: getMetricName(selectedMetric),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 22),
-                          _CorrelationChart(
-                            data: summary.dailyData,
-                            maxMeasurement: summary.maxMeasurement,
-                          ),
-                        ],
-                      );
-                    },
-                    loading: () => const _SectionLoading(height: 250),
-                    error: (e, _) => _SectionError(
-                      title: l10n.failedToLoadChart,
-                      message: e.toString(),
+                                _TopPillBadge(
+                                  label: l10n.avgAdherence(
+                                    summary.avgAdherence.toStringAsFixed(0),
+                                  ),
+                                  icon: Icons.show_chart_rounded,
+                                ),
+                                if (summary.avgMeasurement != null)
+                                  _TopPillBadge(
+                                    label: l10n.avgMetric(
+                                      getMetricName(selectedMetric),
+                                      summary.avgMeasurement!.toStringAsFixed(
+                                        0,
+                                      ),
+                                    ),
+                                    icon: Icons.favorite_outline_rounded,
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _LegendItem(
+                                  color: theme.successAccent,
+                                  label: l10n.pillsTaken,
+                                ),
+                                const SizedBox(width: 18),
+                                _LegendItem(
+                                  color: theme.colorScheme.primary,
+                                  label: getMetricName(selectedMetric),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 22),
+                            _CorrelationChart(
+                              data: summary.dailyData,
+                              maxMeasurement: summary.maxMeasurement,
+                            ),
+                          ],
+                        );
+                      },
+                      loading: () => const _SectionLoading(height: 250),
+                      error: (e, _) => _SectionError(
+                        title: l10n.failedToLoadChart,
+                        message: e.toString(),
+                      ),
                     ),
                   ),
                 ),
+                ],
               ]),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CaregivingAnalyticsCard extends StatelessWidget {
+  final String linkedPatientName;
+  final List<CaregiverCloudAlert> alerts;
+
+  const _CaregivingAnalyticsCard({
+    required this.linkedPatientName,
+    required this.alerts,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
+    final timeFormat = DateFormat.MMMd(locale).add_Hm();
+    final latestAlert = alerts.isEmpty ? null : alerts.first;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(
+          title: linkedPatientName,
+          subtitle: l10n.settingsCaregiverConnectedModeCaregiver(
+            linkedPatientName,
+          ),
+        ),
+        const SizedBox(height: 12),
+        GlassContainer(
+          padding: const EdgeInsets.all(16),
+          color: theme.warningAccent.withValues(alpha: 0.08),
+          child: Row(
+            children: [
+              Expanded(
+                child: _MiniInsight(
+                  label: l10n.settingsCaregiverConnectedInboxTitle,
+                  value: alerts.length.toString(),
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: theme.dividerColor.withValues(alpha: 0.25),
+              ),
+              Expanded(
+                child: _MiniInsight(
+                  label: l10n.last7Days,
+                  value: latestAlert == null
+                      ? '-'
+                      : DateFormat.Hm(locale).format(latestAlert.createdAt),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (alerts.isEmpty)
+          GlassContainer(
+            padding: const EdgeInsets.all(18),
+            color: theme.successAccent.withValues(alpha: 0.06),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.settingsCaregiverConnectedInboxEmpty,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.settingsCaregiverConnectedReady,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ...alerts.map(
+            (alert) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: GlassContainer(
+                padding: const EdgeInsets.all(16),
+                color: theme.colorScheme.surface.withValues(alpha: 0.44),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      alert.patientName,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      alert.message,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        height: 1.4,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      timeFormat.format(alert.createdAt),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -357,25 +598,19 @@ class _CoachCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isRu = AnalyticsScreen._isRussian(context);
+    final l10n = AppLocalizations.of(context)!;
 
     String message;
     if (stats.adherenceRate >= 90 && stats.onTimeRate >= 75) {
-      message = isRu
-          ? 'У вас формируется надежный режим приема. Сохраняйте эту стабильность.'
-          : 'You are building a dependable medication routine. Keep that consistency going.';
+      message = l10n.analyticsCoachGreat;
     } else if (stats.missedDoses > 0) {
-      message = isRu
-          ? 'Большинство пропусков связано не с количеством препаратов, а с непоследовательностью. Сделайте первый прием дня главным приоритетом.'
-          : 'Most missed doses come from inconsistency, not volume. Make the first dose of the day your anchor.';
+      message = l10n.analyticsCoachMissed;
     } else {
-      message = isRu
-          ? 'Ваш режим движется в правильную сторону. Следующий шаг — повысить точность по времени.'
-          : 'Your routine is moving in the right direction. The next win is better timing accuracy.';
+      message = l10n.analyticsCoachTiming;
     }
 
     return GlassContainer(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       color: theme.primaryColor.withValues(alpha: 0.06),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,18 +627,18 @@ class _CoachCard extends StatelessWidget {
               color: theme.primaryColor,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isRu ? 'Совет по приему' : 'Coach note',
+                  l10n.analyticsCoachNote,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   message,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -505,7 +740,7 @@ class _AdherenceHeroCard extends StatelessWidget {
     final total = takenDoses + missedDoses;
 
     return GlassContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       color: rateColor.withValues(alpha: 0.06),
       child: Column(
         children: [
@@ -541,7 +776,7 @@ class _AdherenceHeroCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 18),
           SizedBox(
             width: 180,
             height: 180,
@@ -584,7 +819,7 @@ class _AdherenceHeroCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 18),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -597,7 +832,7 @@ class _AdherenceHeroCard extends StatelessWidget {
                   child: _HeroBottomStat(
                     label: l10n.statTaken,
                     value: takenDoses.toString(),
-                    color: theme.colorScheme.secondary,
+                    color: theme.successAccent,
                   ),
                 ),
                 Container(
@@ -609,7 +844,7 @@ class _AdherenceHeroCard extends StatelessWidget {
                   child: _HeroBottomStat(
                     label: l10n.statSkipped,
                     value: missedDoses.toString(),
-                    color: theme.colorScheme.error,
+                    color: theme.dangerAccent,
                   ),
                 ),
                 Container(
@@ -621,7 +856,7 @@ class _AdherenceHeroCard extends StatelessWidget {
                   child: _HeroBottomStat(
                     label: l10n.statTotal,
                     value: total.toString(),
-                    color: theme.colorScheme.primary,
+                    color: theme.brandPrimary,
                   ),
                 ),
               ],
@@ -725,6 +960,128 @@ class _SummaryInfoCard extends StatelessWidget {
             subtitle,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnalyticsCourseFilterChips extends StatelessWidget {
+  final AnalyticsCourseFilterType selectedFilter;
+  final ValueChanged<AnalyticsCourseFilterType> onSelected;
+  final String Function(AnalyticsCourseFilterType filter) labelBuilder;
+
+  const _AnalyticsCourseFilterChips({
+    required this.selectedFilter,
+    required this.onSelected,
+    required this.labelBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: AnalyticsCourseFilterType.values.map((filter) {
+          final isSelected = filter == selectedFilter;
+          final color = filter == AnalyticsCourseFilterType.supplements
+              ? theme.supplementAccent
+              : theme.brandPrimary;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(labelBuilder(filter)),
+              selected: isSelected,
+              onSelected: (_) => onSelected(filter),
+              selectedColor: color,
+              backgroundColor: theme.colorScheme.surface.withValues(
+                alpha: 0.35,
+              ),
+              side: BorderSide.none,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              showCheckmark: false,
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? Colors.white
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.70),
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _CourseTypeBreakdownCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final int activeCourses;
+  final int takenDoses;
+  final int missedDoses;
+  final Color color;
+
+  const _CourseTypeBreakdownCard({
+    required this.icon,
+    required this.title,
+    required this.activeCourses,
+    required this.takenDoses,
+    required this.missedDoses,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return GlassContainer(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 20,
+      color: color.withValues(alpha: 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            l10n.analyticsActiveShort(activeCourses),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w900,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            l10n.analyticsTakenMissed(takenDoses, missedDoses),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+              height: 1.4,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -858,7 +1215,7 @@ class _CorrelationChart extends StatelessWidget {
                             width: 14,
                             height: chartHeight * adherenceFactor,
                             color: adherenceFactor > 0
-                                ? theme.colorScheme.secondary
+                                ? theme.successAccent
                                 : theme.dividerColor.withValues(alpha: 0.15),
                           ),
                           const SizedBox(width: 4),
@@ -929,12 +1286,10 @@ class _TopPillBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.38),
-        borderRadius: BorderRadius.circular(999),
-      ),
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      borderRadius: 999,
+      color: theme.colorScheme.surface.withValues(alpha: 0.44),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -985,12 +1340,12 @@ class _SectionError extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GlassContainer(
-      padding: const EdgeInsets.all(18),
-      color: theme.colorScheme.error.withValues(alpha: 0.05),
+      padding: const EdgeInsets.all(16),
+      color: theme.dangerAccent.withValues(alpha: 0.05),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline_rounded, color: theme.colorScheme.error),
+          Icon(Icons.error_outline_rounded, color: theme.dangerAccent),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

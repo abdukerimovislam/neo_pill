@@ -1,11 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../data/local/entities/medicine_entity.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/providers/home_controller.dart';
+import '../../../core/presentation/widgets/animated_reveal.dart';
 import '../../../core/presentation/widgets/gradient_scaffold.dart';
 import '../../../core/presentation/widgets/glass_container.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../l10n/l10n_extensions.dart';
+import '../../home/presentation/widgets/pill_icon_widget.dart';
 
 class EditMedicineScreen extends ConsumerStatefulWidget {
   final MedicineEntity medicine;
@@ -23,12 +30,13 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
   late int _pillsRemaining;
   late PillShapeEnum _selectedShape;
   late int _selectedColor;
+  String? _pillImagePath;
 
   late MedicineFormEnum _selectedForm;
   late String _selectedUnit;
   late FoodInstructionEnum _selectedFood;
 
-  final List<String> _units = ['mg', 'ml', 'pcs', 'drops', 'g', 'mcg'];
+  final List<String> _units = ['mg', 'ml', 'pcs', 'drops', 'g', 'mcg', 'IU'];
 
   final List<int> _availableColors = [
     0xFF2196F3,
@@ -57,6 +65,7 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
     _pillsRemaining = widget.medicine.pillsRemaining;
     _selectedShape = widget.medicine.pillShape;
     _selectedColor = widget.medicine.pillColor;
+    _pillImagePath = widget.medicine.pillImagePath;
 
     _selectedForm = widget.medicine.form;
     _selectedUnit = widget.medicine.dosageUnit;
@@ -68,6 +77,18 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
     _nameController.dispose();
     _dosageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1200,
+    );
+    if (pickedFile != null && mounted) {
+      setState(() => _pillImagePath = pickedFile.path);
+    }
   }
 
   Widget _buildPillShape(PillShapeEnum shape, Color color, double size) {
@@ -411,6 +432,9 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
     final dosage = double.tryParse(dosageText) ?? 0.0;
     final title = l10n.notificationTitle(name);
     final body = l10n.notificationBody('$dosage $_selectedUnit');
+    final kindLabel = widget.medicine.kind == CourseKindEnum.supplement
+        ? l10n.courseKindSupplement
+        : l10n.courseKindMedication;
 
     await ref
         .read(homeControllerProvider)
@@ -419,10 +443,11 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
           newName: name,
           newDosage: dosage,
           newDosageUnit: _selectedUnit,
+          newKind: widget.medicine.kind,
           newForm: _selectedForm,
           newFoodInstruction: _selectedFood,
           newPillsRemaining: _pillsRemaining,
-          newPillImagePath: null,
+          newPillImagePath: _pillImagePath,
           newNotificationTitle: title,
           newNotificationBody: body,
           newPillShape: _selectedShape,
@@ -430,7 +455,7 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
         );
 
     if (mounted) {
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(l10n.courseUpdatedMessage(kindLabel, name));
     }
   }
 
@@ -571,6 +596,13 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final isSupplement = widget.medicine.kind == CourseKindEnum.supplement;
+    final screenTitle = isSupplement
+        ? l10n.editSupplementTitle
+        : l10n.editCourse;
+    final nameHint = isSupplement
+        ? l10n.supplementNameHint
+        : l10n.medicineNameHint;
 
     return GradientScaffold(
       extendBodyBehindAppBar: true,
@@ -589,7 +621,7 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
               centerTitle: true,
               titlePadding: const EdgeInsets.only(bottom: 16),
               title: Text(
-                l10n.editCourse,
+                screenTitle,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: theme.colorScheme.onSurface,
@@ -614,119 +646,171 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                Center(
-                  child: GestureDetector(
-                    onTap: () => _showPillConstructorModal(l10n),
-                    child: Container(
-                      height: 110,
-                      width: 110,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Color(_selectedColor).withValues(alpha: 0.5),
-                          width: 3,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(_selectedColor).withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            spreadRadius: 2,
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 40),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () => _showPillConstructorModal(l10n),
+                      child: Container(
+                        height: 110,
+                        width: 110,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: 0.5,
                           ),
-                        ],
-                      ),
-                      child: Center(
-                        child: _buildPillShape(
-                          _selectedShape,
-                          Color(_selectedColor),
-                          48,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Color(_selectedColor).withValues(alpha: 0.5),
+                            width: 3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(
+                                _selectedColor,
+                              ).withValues(alpha: 0.2),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                            ),
+                          ],
                         ),
+                        child: _pillImagePath != null
+                            ? ClipOval(
+                                child: Image.file(
+                                  File(_pillImagePath!),
+                                  width: 110,
+                                  height: 110,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Center(
+                                        child: PillIconWidget(
+                                          shape: _selectedShape,
+                                          colorHex: _selectedColor,
+                                          size: 48,
+                                        ),
+                                      ),
+                                ),
+                              )
+                            : Center(
+                                child: _buildPillShape(
+                                  _selectedShape,
+                                  Color(_selectedColor),
+                                  48,
+                                ),
+                              ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                Center(
-                  child: TextButton.icon(
-                    onPressed: () => _showPillConstructorModal(l10n),
-                    icon: Icon(
-                      Icons.palette_outlined,
-                      size: 18,
-                      color: theme.primaryColor,
-                    ),
-                    label: Text(
-                      l10n.customizePill,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.primaryColor,
-                        fontWeight: FontWeight.w800,
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 90),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => _showPillConstructorModal(l10n),
+                        icon: Icon(
+                          Icons.palette_outlined,
+                          size: 18,
+                          color: theme.primaryColor,
+                        ),
+                        label: Text(
+                          l10n.customizePill,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.primaryColor,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      TextButton.icon(
+                        onPressed: () => _pickImage(ImageSource.camera),
+                        icon: Icon(
+                          Icons.camera_alt_rounded,
+                          size: 18,
+                          color: theme.supplementAccent,
+                        ),
+                        label: Text(
+                          l10n.addPhotoLabel,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.supplementAccent,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 32),
 
-                _buildSectionHeader(l10n.overview),
-                GlassContainer(
-                  padding: const EdgeInsets.all(20),
-                  color: theme.colorScheme.surface.withValues(alpha: 0.45),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildPremiumTextField(
-                        controller: _nameController,
-                        label: l10n.medicineNameHint,
-                        theme: theme,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.form,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.5,
-                          ),
-                          fontWeight: FontWeight.w600,
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 150),
+                  child: _buildSectionHeader(l10n.overview),
+                ),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 180),
+                  child: GlassContainer(
+                    padding: const EdgeInsets.all(20),
+                    color: theme.colorScheme.surface.withValues(alpha: 0.45),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildPremiumTextField(
+                          controller: _nameController,
+                          label: nameHint,
+                          theme: theme,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildScrollableChips<MedicineFormEnum>(
-                        items: MedicineFormEnum.values,
-                        selectedValue: _selectedForm,
-                        labelBuilder: (form) => form.name.toUpperCase(),
-                        onSelected: (val) =>
-                            setState(() => _selectedForm = val),
-                        theme: theme,
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.form,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.5,
+                            ),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildScrollableChips<MedicineFormEnum>(
+                          items: MedicineFormEnum.values,
+                          selectedValue: _selectedForm,
+                          labelBuilder: l10n.medicineFormLabel,
+                          onSelected: (val) =>
+                              setState(() => _selectedForm = val),
+                          theme: theme,
+                        ),
+                        const SizedBox(height: 16),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: _buildPremiumTextField(
-                              controller: _dosageController,
-                              label: l10n.dosageHint,
-                              theme: theme,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: _buildPremiumTextField(
+                                controller: _dosageController,
+                                label: l10n.dosageHint,
+                                theme: theme,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 3,
-                            child: _buildScrollableChips<String>(
-                              items: _units,
-                              selectedValue: _selectedUnit,
-                              labelBuilder: (unit) => unit,
-                              onSelected: (val) =>
-                                  setState(() => _selectedUnit = val),
-                              theme: theme,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 3,
+                              child: _buildScrollableChips<String>(
+                                items: _units,
+                                selectedValue: _selectedUnit,
+                                labelBuilder: l10n.dosageUnitLabel,
+                                onSelected: (val) =>
+                                    setState(() => _selectedUnit = val),
+                                theme: theme,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -751,7 +835,7 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
                       _buildScrollableChips<FoodInstructionEnum>(
                         items: FoodInstructionEnum.values,
                         selectedValue: _selectedFood,
-                        labelBuilder: (food) => food.name,
+                        labelBuilder: l10n.foodInstructionLabel,
                         onSelected: (val) =>
                             setState(() => _selectedFood = val),
                         theme: theme,

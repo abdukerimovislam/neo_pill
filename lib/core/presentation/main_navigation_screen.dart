@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../theme/app_motion.dart';
 import '../../features/analytics/presentation/analytics_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
@@ -18,12 +19,25 @@ class MainNavigationScreen extends ConsumerStatefulWidget {
 
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   int _currentIndex = 0;
+  late final PageController _pageController;
 
   final List<Widget> _screens = const [
     HomeScreen(),
     AnalyticsScreen(),
     SettingsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +49,15 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
       backgroundColor: Colors.transparent,
       selectedIndex: _currentIndex,
       onDestinationSelected: (index) {
+        if (_currentIndex == index) {
+          return;
+        }
         setState(() => _currentIndex = index);
+        _pageController.animateToPage(
+          index,
+          duration: AppMotion.tabSwitchDuration,
+          curve: AppMotion.emphasizedCurve,
+        );
       },
       indicatorColor: theme.primaryColor.withValues(
         alpha: comfortMode ? 0.18 : 0.15,
@@ -75,7 +97,22 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.transparent,
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          if (_currentIndex != index) {
+            setState(() => _currentIndex = index);
+          }
+        },
+        children: _screens
+            .map(
+              (screen) => RepaintBoundary(
+                key: ValueKey(screen.runtimeType),
+                child: screen,
+              ),
+            )
+            .toList(),
+      ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: EdgeInsets.only(
@@ -88,20 +125,20 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             curve: Curves.easeOutCubic,
             child: comfortMode
                 ? Container(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: theme.dividerColor.withValues(alpha: 0.12),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 18,
-                        offset: const Offset(0, 8),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: theme.dividerColor.withValues(alpha: 0.12),
                       ),
-                    ],
-                  ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(28),
                       child: navigation,

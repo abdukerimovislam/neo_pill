@@ -6,27 +6,41 @@ import '../../../data/local/entities/medicine_entity.dart';
 import '../../../data/local/entities/measurement_entity.dart';
 import '../../../data/local/isar_service.dart';
 
+enum AnalyticsCourseFilterType { all, medications, supplements }
+
 class AnalyticsStats {
   final double adherenceRate;
   final int takenDoses;
   final int missedDoses;
   final int activeCourses;
+  final int activeMedicationCourses;
+  final int activeSupplementCourses;
   final int currentStreak;
   final int longestStreak;
   final double onTimeRate;
   final double averageDelayMinutes;
   final int lowStockCourses;
+  final int medicationTakenDoses;
+  final int medicationMissedDoses;
+  final int supplementTakenDoses;
+  final int supplementMissedDoses;
 
   AnalyticsStats({
     required this.adherenceRate,
     required this.takenDoses,
     required this.missedDoses,
     required this.activeCourses,
+    required this.activeMedicationCourses,
+    required this.activeSupplementCourses,
     required this.currentStreak,
     required this.longestStreak,
     required this.onTimeRate,
     required this.averageDelayMinutes,
     required this.lowStockCourses,
+    required this.medicationTakenDoses,
+    required this.medicationMissedDoses,
+    required this.supplementTakenDoses,
+    required this.supplementMissedDoses,
   });
 }
 
@@ -67,11 +81,17 @@ final selectedChartMetricProvider = StateProvider<MeasurementTypeEnum>(
   (ref) => MeasurementTypeEnum.bloodPressure,
 );
 
+final selectedAnalyticsCourseFilterProvider =
+    StateProvider<AnalyticsCourseFilterType>(
+      (ref) => AnalyticsCourseFilterType.all,
+    );
+
 final analyticsStatsProvider = FutureProvider.autoDispose<AnalyticsStats>((
   ref,
 ) async {
   final isarService = ref.read(localDbProvider);
   final isar = await isarService.db;
+  final courseFilter = ref.watch(selectedAnalyticsCourseFilterProvider);
 
   final now = DateTime.now();
   final startOf7Days = DateTime(
@@ -89,27 +109,97 @@ final analyticsStatsProvider = FutureProvider.autoDispose<AnalyticsStats>((
 
   int taken = 0;
   int missed = 0;
+  int medicationTaken = 0;
+  int medicationMissed = 0;
+  int supplementTaken = 0;
+  int supplementMissed = 0;
 
-  for (var log in logs) {
-    if (log.status == DoseStatusEnum.taken) taken++;
-    if (log.status == DoseStatusEnum.skipped) missed++;
+  final medicineIds = logs.map((log) => log.medicineSyncId).toSet().toList();
+  final medicines = medicineIds.isEmpty
+      ? <MedicineEntity>[]
+      : await isar.medicineEntitys
+            .filter()
+            .anyOf(medicineIds, (q, String id) => q.syncIdEqualTo(id))
+            .findAll();
+  final medicineMap = {
+    for (final medicine in medicines) medicine.syncId: medicine,
+  };
+  final filteredLogs = logs.where((log) {
+    final kind =
+        medicineMap[log.medicineSyncId]?.kind ?? CourseKindEnum.medication;
+    return switch (courseFilter) {
+      AnalyticsCourseFilterType.all => true,
+      AnalyticsCourseFilterType.medications =>
+        kind == CourseKindEnum.medication,
+      AnalyticsCourseFilterType.supplements =>
+        kind == CourseKindEnum.supplement,
+    };
+  }).toList();
+
+  for (final log in filteredLogs) {
+    final kind =
+        medicineMap[log.medicineSyncId]?.kind ?? CourseKindEnum.medication;
+    if (log.status == DoseStatusEnum.taken) {
+      taken++;
+      if (kind == CourseKindEnum.supplement) {
+        supplementTaken++;
+      } else {
+        medicationTaken++;
+      }
+    }
+    if (log.status == DoseStatusEnum.skipped) {
+      missed++;
+      if (kind == CourseKindEnum.supplement) {
+        supplementMissed++;
+      } else {
+        medicationMissed++;
+      }
+    }
   }
 
   final total = taken + missed;
   final rate = total > 0 ? (taken / total) * 100 : 0.0;
 
-  final activeCourses = await isar.medicineEntitys
-      .filter()
-      .isPausedEqualTo(false)
-      .count();
   final allMedicines = await isar.medicineEntitys.where().findAll();
+  final filteredCourses = allMedicines.where((medicine) {
+    return switch (courseFilter) {
+      AnalyticsCourseFilterType.all => true,
+      AnalyticsCourseFilterType.medications =>
+        medicine.kind == CourseKindEnum.medication,
+      AnalyticsCourseFilterType.supplements =>
+        medicine.kind == CourseKindEnum.supplement,
+    };
+  }).toList();
+  final activeCourses = filteredCourses
+      .where((medicine) => !medicine.isPaused)
+      .length;
+  final activeMedicationCourses = allMedicines
+      .where(
+        (medicine) =>
+            !medicine.isPaused && medicine.kind == CourseKindEnum.medication,
+      )
+      .length;
+  final activeSupplementCourses = allMedicines
+      .where(
+        (medicine) =>
+            !medicine.isPaused && medicine.kind == CourseKindEnum.supplement,
+      )
+      .length;
   final lowStockCourses = allMedicines
       .where(
-        (medicine) => medicine.pillsRemaining <= medicine.refillAlertThreshold,
+        (medicine) =>
+            medicine.pillsRemaining <= medicine.refillAlertThreshold &&
+            switch (courseFilter) {
+              AnalyticsCourseFilterType.all => true,
+              AnalyticsCourseFilterType.medications =>
+                medicine.kind == CourseKindEnum.medication,
+              AnalyticsCourseFilterType.supplements =>
+                medicine.kind == CourseKindEnum.supplement,
+            },
       )
       .length;
 
-  final takenLogs = logs
+  final takenLogs = filteredLogs
       .where(
         (log) => log.status == DoseStatusEnum.taken && log.actualTime != null,
       )
@@ -134,11 +224,17 @@ final analyticsStatsProvider = FutureProvider.autoDispose<AnalyticsStats>((
     takenDoses: taken,
     missedDoses: missed,
     activeCourses: activeCourses,
+    activeMedicationCourses: activeMedicationCourses,
+    activeSupplementCourses: activeSupplementCourses,
     currentStreak: streakData.current,
     longestStreak: streakData.longest,
     onTimeRate: onTimeRate,
     averageDelayMinutes: averageDelayMinutes,
     lowStockCourses: lowStockCourses,
+    medicationTakenDoses: medicationTaken,
+    medicationMissedDoses: medicationMissed,
+    supplementTakenDoses: supplementTaken,
+    supplementMissedDoses: supplementMissed,
   );
 });
 
@@ -147,6 +243,7 @@ final correlationChartProvider = FutureProvider.autoDispose<CorrelationSummary>(
     final isarService = ref.read(localDbProvider);
     final isar = await isarService.db;
     final metricType = ref.watch(selectedChartMetricProvider);
+    final courseFilter = ref.watch(selectedAnalyticsCourseFilterProvider);
 
     final today = DateTime.now();
     final List<DailyCorrelation> result = [];
@@ -165,9 +262,33 @@ final correlationChartProvider = FutureProvider.autoDispose<CorrelationSummary>(
           .filter()
           .scheduledTimeBetween(startOfDay, endOfDay)
           .findAll();
+      final medicineIds = logs
+          .map((log) => log.medicineSyncId)
+          .toSet()
+          .toList();
+      final medicines = medicineIds.isEmpty
+          ? <MedicineEntity>[]
+          : await isar.medicineEntitys
+                .filter()
+                .anyOf(medicineIds, (q, String id) => q.syncIdEqualTo(id))
+                .findAll();
+      final medicineMap = {
+        for (final medicine in medicines) medicine.syncId: medicine,
+      };
+      final filteredLogs = logs.where((log) {
+        final kind =
+            medicineMap[log.medicineSyncId]?.kind ?? CourseKindEnum.medication;
+        return switch (courseFilter) {
+          AnalyticsCourseFilterType.all => true,
+          AnalyticsCourseFilterType.medications =>
+            kind == CourseKindEnum.medication,
+          AnalyticsCourseFilterType.supplements =>
+            kind == CourseKindEnum.supplement,
+        };
+      }).toList();
 
       double adherence = 0.0;
-      final finishedLogs = logs
+      final finishedLogs = filteredLogs
           .where((l) => l.status != DoseStatusEnum.pending)
           .toList();
       if (finishedLogs.isNotEmpty) {

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../l10n/l10n_extensions.dart';
+
 final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError(
     'SharedPreferences must be overridden in main().',
@@ -17,6 +19,7 @@ const _userNameKey = 'settings.user_name';
 const _comfortModeKey = 'settings.comfort_mode';
 const _onboardingCompleteKey = 'settings.onboarding_complete';
 const _caregiverProfileKey = 'settings.caregiver_profile';
+const _caregiverAlertSettingsKey = 'settings.caregiver_alert_settings';
 
 final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
   ThemeModeNotifier.new,
@@ -37,6 +40,10 @@ final onboardingCompleteProvider =
 final caregiverProfileProvider =
     NotifierProvider<CaregiverProfileNotifier, CaregiverProfile?>(
       CaregiverProfileNotifier.new,
+    );
+final caregiverAlertSettingsProvider =
+    NotifierProvider<CaregiverAlertSettingsNotifier, CaregiverAlertSettings>(
+      CaregiverAlertSettingsNotifier.new,
     );
 
 class CaregiverProfile {
@@ -69,10 +76,70 @@ class CaregiverProfile {
   }
 }
 
+class CaregiverAlertSettings {
+  final bool enabled;
+  final int graceMinutes;
+  final bool includeSkipped;
+  final bool includeOverdue;
+  final bool includeSupplements;
+
+  const CaregiverAlertSettings({
+    required this.enabled,
+    required this.graceMinutes,
+    required this.includeSkipped,
+    required this.includeOverdue,
+    required this.includeSupplements,
+  });
+
+  factory CaregiverAlertSettings.defaults() => const CaregiverAlertSettings(
+    enabled: true,
+    graceMinutes: 45,
+    includeSkipped: true,
+    includeOverdue: true,
+    includeSupplements: false,
+  );
+
+  CaregiverAlertSettings copyWith({
+    bool? enabled,
+    int? graceMinutes,
+    bool? includeSkipped,
+    bool? includeOverdue,
+    bool? includeSupplements,
+  }) {
+    return CaregiverAlertSettings(
+      enabled: enabled ?? this.enabled,
+      graceMinutes: graceMinutes ?? this.graceMinutes,
+      includeSkipped: includeSkipped ?? this.includeSkipped,
+      includeOverdue: includeOverdue ?? this.includeOverdue,
+      includeSupplements: includeSupplements ?? this.includeSupplements,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'enabled': enabled,
+    'graceMinutes': graceMinutes,
+    'includeSkipped': includeSkipped,
+    'includeOverdue': includeOverdue,
+    'includeSupplements': includeSupplements,
+  };
+
+  factory CaregiverAlertSettings.fromJson(Map<String, dynamic> json) {
+    return CaregiverAlertSettings(
+      enabled: json['enabled'] as bool? ?? true,
+      graceMinutes: json['graceMinutes'] as int? ?? 45,
+      includeSkipped: json['includeSkipped'] as bool? ?? true,
+      includeOverdue: json['includeOverdue'] as bool? ?? true,
+      includeSupplements: json['includeSupplements'] as bool? ?? false,
+    );
+  }
+}
+
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
-    final rawValue = ref.read(sharedPreferencesProvider).getString(_themeModeKey);
+    final rawValue = ref
+        .read(sharedPreferencesProvider)
+        .getString(_themeModeKey);
     switch (rawValue) {
       case 'light':
         return ThemeMode.light;
@@ -128,7 +195,7 @@ class UserNameNotifier extends Notifier<String> {
       return savedName;
     }
 
-    return ref.read(localeProvider).languageCode == 'ru' ? 'Друг' : 'Friend';
+    return ref.read(localeProvider).l10n.defaultUserName;
   }
 
   Future<void> setUserName(String name) async {
@@ -138,7 +205,9 @@ class UserNameNotifier extends Notifier<String> {
     }
 
     state = normalized;
-    await ref.read(sharedPreferencesProvider).setString(_userNameKey, normalized);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_userNameKey, normalized);
   }
 }
 
@@ -157,24 +226,33 @@ class ComfortModeNotifier extends Notifier<bool> {
 class OnboardingCompleteNotifier extends Notifier<bool> {
   @override
   bool build() {
-    return ref.read(sharedPreferencesProvider).getBool(_onboardingCompleteKey) ?? false;
+    return ref
+            .read(sharedPreferencesProvider)
+            .getBool(_onboardingCompleteKey) ??
+        false;
   }
 
   Future<void> complete() async {
     state = true;
-    await ref.read(sharedPreferencesProvider).setBool(_onboardingCompleteKey, true);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setBool(_onboardingCompleteKey, true);
   }
 
   Future<void> reset() async {
     state = false;
-    await ref.read(sharedPreferencesProvider).setBool(_onboardingCompleteKey, false);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setBool(_onboardingCompleteKey, false);
   }
 }
 
 class CaregiverProfileNotifier extends Notifier<CaregiverProfile?> {
   @override
   CaregiverProfile? build() {
-    final raw = ref.read(sharedPreferencesProvider).getString(_caregiverProfileKey);
+    final raw = ref
+        .read(sharedPreferencesProvider)
+        .getString(_caregiverProfileKey);
     if (raw == null || raw.isEmpty) {
       return null;
     }
@@ -205,5 +283,31 @@ class CaregiverProfileNotifier extends Notifier<CaregiverProfile?> {
   Future<void> clear() async {
     state = null;
     await ref.read(sharedPreferencesProvider).remove(_caregiverProfileKey);
+  }
+}
+
+class CaregiverAlertSettingsNotifier extends Notifier<CaregiverAlertSettings> {
+  @override
+  CaregiverAlertSettings build() {
+    final raw = ref
+        .read(sharedPreferencesProvider)
+        .getString(_caregiverAlertSettingsKey);
+    if (raw == null || raw.isEmpty) {
+      return CaregiverAlertSettings.defaults();
+    }
+
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      return CaregiverAlertSettings.fromJson(decoded);
+    } catch (_) {
+      return CaregiverAlertSettings.defaults();
+    }
+  }
+
+  Future<void> save(CaregiverAlertSettings settings) async {
+    state = settings;
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_caregiverAlertSettingsKey, jsonEncode(settings.toJson()));
   }
 }

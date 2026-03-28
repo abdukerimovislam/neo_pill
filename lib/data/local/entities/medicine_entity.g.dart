@@ -67,73 +67,79 @@ const MedicineEntitySchema = CollectionSchema(
       type: IsarType.long,
     ),
     r'isPaused': PropertySchema(id: 10, name: r'isPaused', type: IsarType.bool),
-    r'name': PropertySchema(id: 11, name: r'name', type: IsarType.string),
-    r'notes': PropertySchema(id: 12, name: r'notes', type: IsarType.string),
+    r'kind': PropertySchema(
+      id: 11,
+      name: r'kind',
+      type: IsarType.byte,
+      enumMap: _MedicineEntitykindEnumValueMap,
+    ),
+    r'name': PropertySchema(id: 12, name: r'name', type: IsarType.string),
+    r'notes': PropertySchema(id: 13, name: r'notes', type: IsarType.string),
     r'notificationBody': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'notificationBody',
       type: IsarType.string,
     ),
     r'notificationTitle': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'notificationTitle',
       type: IsarType.string,
     ),
     r'pillColor': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'pillColor',
       type: IsarType.long,
     ),
     r'pillImagePath': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'pillImagePath',
       type: IsarType.string,
     ),
     r'pillShape': PropertySchema(
-      id: 17,
+      id: 18,
       name: r'pillShape',
       type: IsarType.byte,
       enumMap: _MedicineEntitypillShapeEnumValueMap,
     ),
     r'pillsInPackage': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'pillsInPackage',
       type: IsarType.long,
     ),
     r'pillsRemaining': PropertySchema(
-      id: 19,
+      id: 20,
       name: r'pillsRemaining',
       type: IsarType.long,
     ),
     r'prnMaxDailyDoses': PropertySchema(
-      id: 20,
+      id: 21,
       name: r'prnMaxDailyDoses',
       type: IsarType.long,
     ),
     r'refillAlertThreshold': PropertySchema(
-      id: 21,
+      id: 22,
       name: r'refillAlertThreshold',
       type: IsarType.long,
     ),
     r'selectedWeekDays': PropertySchema(
-      id: 22,
+      id: 23,
       name: r'selectedWeekDays',
       type: IsarType.longList,
     ),
     r'startDate': PropertySchema(
-      id: 23,
+      id: 24,
       name: r'startDate',
       type: IsarType.dateTime,
     ),
-    r'syncId': PropertySchema(id: 24, name: r'syncId', type: IsarType.string),
+    r'syncId': PropertySchema(id: 25, name: r'syncId', type: IsarType.string),
     r'taperingSteps': PropertySchema(
-      id: 25,
+      id: 26,
       name: r'taperingSteps',
       type: IsarType.objectList,
       target: r'TaperingStep',
     ),
     r'timesPerDay': PropertySchema(
-      id: 26,
+      id: 27,
       name: r'timesPerDay',
       type: IsarType.long,
     ),
@@ -248,27 +254,28 @@ void _medicineEntitySerialize(
   writer.writeString(offsets[8], object.instructions);
   writer.writeLong(offsets[9], object.intervalDays);
   writer.writeBool(offsets[10], object.isPaused);
-  writer.writeString(offsets[11], object.name);
-  writer.writeString(offsets[12], object.notes);
-  writer.writeString(offsets[13], object.notificationBody);
-  writer.writeString(offsets[14], object.notificationTitle);
-  writer.writeLong(offsets[15], object.pillColor);
-  writer.writeString(offsets[16], object.pillImagePath);
-  writer.writeByte(offsets[17], object.pillShape.index);
-  writer.writeLong(offsets[18], object.pillsInPackage);
-  writer.writeLong(offsets[19], object.pillsRemaining);
-  writer.writeLong(offsets[20], object.prnMaxDailyDoses);
-  writer.writeLong(offsets[21], object.refillAlertThreshold);
-  writer.writeLongList(offsets[22], object.selectedWeekDays);
-  writer.writeDateTime(offsets[23], object.startDate);
-  writer.writeString(offsets[24], object.syncId);
+  writer.writeByte(offsets[11], object.kind.index);
+  writer.writeString(offsets[12], object.name);
+  writer.writeString(offsets[13], object.notes);
+  writer.writeString(offsets[14], object.notificationBody);
+  writer.writeString(offsets[15], object.notificationTitle);
+  writer.writeLong(offsets[16], object.pillColor);
+  writer.writeString(offsets[17], object.pillImagePath);
+  writer.writeByte(offsets[18], object.pillShape.index);
+  writer.writeLong(offsets[19], object.pillsInPackage);
+  writer.writeLong(offsets[20], object.pillsRemaining);
+  writer.writeLong(offsets[21], object.prnMaxDailyDoses);
+  writer.writeLong(offsets[22], object.refillAlertThreshold);
+  writer.writeLongList(offsets[23], object.selectedWeekDays);
+  writer.writeDateTime(offsets[24], object.startDate);
+  writer.writeString(offsets[25], object.syncId);
   writer.writeObjectList<TaperingStep>(
-    offsets[25],
+    offsets[26],
     allOffsets,
     TaperingStepSchema.serialize,
     object.taperingSteps,
   );
-  writer.writeLong(offsets[26], object.timesPerDay);
+  writer.writeLong(offsets[27], object.timesPerDay);
 }
 
 MedicineEntity _medicineEntityDeserialize(
@@ -298,31 +305,34 @@ MedicineEntity _medicineEntityDeserialize(
   object.instructions = reader.readStringOrNull(offsets[8]);
   object.intervalDays = reader.readLongOrNull(offsets[9]);
   object.isPaused = reader.readBool(offsets[10]);
-  object.name = reader.readString(offsets[11]);
-  object.notes = reader.readStringOrNull(offsets[12]);
-  object.notificationBody = reader.readStringOrNull(offsets[13]);
-  object.notificationTitle = reader.readStringOrNull(offsets[14]);
-  object.pillColor = reader.readLong(offsets[15]);
-  object.pillImagePath = reader.readStringOrNull(offsets[16]);
+  object.kind =
+      _MedicineEntitykindValueEnumMap[reader.readByteOrNull(offsets[11])] ??
+      CourseKindEnum.medication;
+  object.name = reader.readString(offsets[12]);
+  object.notes = reader.readStringOrNull(offsets[13]);
+  object.notificationBody = reader.readStringOrNull(offsets[14]);
+  object.notificationTitle = reader.readStringOrNull(offsets[15]);
+  object.pillColor = reader.readLong(offsets[16]);
+  object.pillImagePath = reader.readStringOrNull(offsets[17]);
   object.pillShape =
       _MedicineEntitypillShapeValueEnumMap[reader.readByteOrNull(
-        offsets[17],
+        offsets[18],
       )] ??
       PillShapeEnum.circle;
-  object.pillsInPackage = reader.readLong(offsets[18]);
-  object.pillsRemaining = reader.readLong(offsets[19]);
-  object.prnMaxDailyDoses = reader.readLongOrNull(offsets[20]);
-  object.refillAlertThreshold = reader.readLong(offsets[21]);
-  object.selectedWeekDays = reader.readLongList(offsets[22]);
-  object.startDate = reader.readDateTime(offsets[23]);
-  object.syncId = reader.readString(offsets[24]);
+  object.pillsInPackage = reader.readLong(offsets[19]);
+  object.pillsRemaining = reader.readLong(offsets[20]);
+  object.prnMaxDailyDoses = reader.readLongOrNull(offsets[21]);
+  object.refillAlertThreshold = reader.readLong(offsets[22]);
+  object.selectedWeekDays = reader.readLongList(offsets[23]);
+  object.startDate = reader.readDateTime(offsets[24]);
+  object.syncId = reader.readString(offsets[25]);
   object.taperingSteps = reader.readObjectList<TaperingStep>(
-    offsets[25],
+    offsets[26],
     TaperingStepSchema.deserialize,
     allOffsets,
     TaperingStep(),
   );
-  object.timesPerDay = reader.readLong(offsets[26]);
+  object.timesPerDay = reader.readLong(offsets[27]);
   return object;
 }
 
@@ -366,38 +376,42 @@ P _medicineEntityDeserializeProp<P>(
     case 10:
       return (reader.readBool(offset)) as P;
     case 11:
-      return (reader.readString(offset)) as P;
+      return (_MedicineEntitykindValueEnumMap[reader.readByteOrNull(offset)] ??
+              CourseKindEnum.medication)
+          as P;
     case 12:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 13:
       return (reader.readStringOrNull(offset)) as P;
     case 14:
       return (reader.readStringOrNull(offset)) as P;
     case 15:
-      return (reader.readLong(offset)) as P;
-    case 16:
       return (reader.readStringOrNull(offset)) as P;
+    case 16:
+      return (reader.readLong(offset)) as P;
     case 17:
+      return (reader.readStringOrNull(offset)) as P;
+    case 18:
       return (_MedicineEntitypillShapeValueEnumMap[reader.readByteOrNull(
                 offset,
               )] ??
               PillShapeEnum.circle)
           as P;
-    case 18:
-      return (reader.readLong(offset)) as P;
     case 19:
       return (reader.readLong(offset)) as P;
     case 20:
-      return (reader.readLongOrNull(offset)) as P;
-    case 21:
       return (reader.readLong(offset)) as P;
+    case 21:
+      return (reader.readLongOrNull(offset)) as P;
     case 22:
-      return (reader.readLongList(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 23:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readLongList(offset)) as P;
     case 24:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 25:
+      return (reader.readString(offset)) as P;
+    case 26:
       return (reader.readObjectList<TaperingStep>(
             offset,
             TaperingStepSchema.deserialize,
@@ -405,7 +419,7 @@ P _medicineEntityDeserializeProp<P>(
             TaperingStep(),
           ))
           as P;
-    case 26:
+    case 27:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -463,6 +477,11 @@ const _MedicineEntityfrequencyValueEnumMap = {
   3: FrequencyTypeEnum.interval,
   4: FrequencyTypeEnum.cycle,
   5: FrequencyTypeEnum.tapering,
+};
+const _MedicineEntitykindEnumValueMap = {'medication': 0, 'supplement': 1};
+const _MedicineEntitykindValueEnumMap = {
+  0: CourseKindEnum.medication,
+  1: CourseKindEnum.supplement,
 };
 const _MedicineEntitypillShapeEnumValueMap = {
   'circle': 0,
@@ -1582,6 +1601,61 @@ extension MedicineEntityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'isPaused', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<MedicineEntity, MedicineEntity, QAfterFilterCondition>
+  kindEqualTo(CourseKindEnum value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'kind', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<MedicineEntity, MedicineEntity, QAfterFilterCondition>
+  kindGreaterThan(CourseKindEnum value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'kind',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MedicineEntity, MedicineEntity, QAfterFilterCondition>
+  kindLessThan(CourseKindEnum value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'kind',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MedicineEntity, MedicineEntity, QAfterFilterCondition>
+  kindBetween(
+    CourseKindEnum lower,
+    CourseKindEnum upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'kind',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
@@ -3332,6 +3406,18 @@ extension MedicineEntityQuerySortBy
     });
   }
 
+  QueryBuilder<MedicineEntity, MedicineEntity, QAfterSortBy> sortByKind() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'kind', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MedicineEntity, MedicineEntity, QAfterSortBy> sortByKindDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'kind', Sort.desc);
+    });
+  }
+
   QueryBuilder<MedicineEntity, MedicineEntity, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -3683,6 +3769,18 @@ extension MedicineEntityQuerySortThenBy
     });
   }
 
+  QueryBuilder<MedicineEntity, MedicineEntity, QAfterSortBy> thenByKind() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'kind', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MedicineEntity, MedicineEntity, QAfterSortBy> thenByKindDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'kind', Sort.desc);
+    });
+  }
+
   QueryBuilder<MedicineEntity, MedicineEntity, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -3948,6 +4046,12 @@ extension MedicineEntityQueryWhereDistinct
     });
   }
 
+  QueryBuilder<MedicineEntity, MedicineEntity, QDistinct> distinctByKind() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'kind');
+    });
+  }
+
   QueryBuilder<MedicineEntity, MedicineEntity, QDistinct> distinctByName({
     bool caseSensitive = true,
   }) {
@@ -4141,6 +4245,13 @@ extension MedicineEntityQueryProperty
   QueryBuilder<MedicineEntity, bool, QQueryOperations> isPausedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isPaused');
+    });
+  }
+
+  QueryBuilder<MedicineEntity, CourseKindEnum, QQueryOperations>
+  kindProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'kind');
     });
   }
 

@@ -8,7 +8,12 @@ import '../../../../data/local/isar_service.dart';
 import '../../../../l10n/app_localizations.dart';
 
 class AddMeasurementModal extends ConsumerStatefulWidget {
-  const AddMeasurementModal({super.key});
+  final MeasurementTypeEnum initialType;
+
+  const AddMeasurementModal({
+    super.key,
+    this.initialType = MeasurementTypeEnum.bloodPressure,
+  });
 
   @override
   ConsumerState<AddMeasurementModal> createState() =>
@@ -16,7 +21,7 @@ class AddMeasurementModal extends ConsumerStatefulWidget {
 }
 
 class _AddMeasurementModalState extends ConsumerState<AddMeasurementModal> {
-  MeasurementTypeEnum _selectedType = MeasurementTypeEnum.bloodPressure;
+  late MeasurementTypeEnum _selectedType;
 
   int _sysValue = 120;
   int _diaValue = 80;
@@ -25,6 +30,12 @@ class _AddMeasurementModalState extends ConsumerState<AddMeasurementModal> {
   int _weightDec = 0;
   int _sugarInt = 5;
   int _sugarDec = 5;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = widget.initialType;
+  }
 
   void _save() async {
     final isarService = ref.read(localDbProvider);

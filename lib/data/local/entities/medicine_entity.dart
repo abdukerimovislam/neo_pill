@@ -24,6 +24,8 @@ enum FrequencyTypeEnum {
   tapering, // 🚀 НОВОЕ: Динамическая дозировка (Титрация)
 }
 
+enum CourseKindEnum { medication, supplement }
+
 enum FoodInstructionEnum { noMatter, beforeFood, withFood, afterFood }
 
 // Перечисление для формы таблетки в визуальном конструкторе
@@ -58,6 +60,9 @@ class MedicineEntity {
 
   @enumerated
   late FrequencyTypeEnum frequency;
+
+  @enumerated
+  CourseKindEnum kind = CourseKindEnum.medication;
 
   // --- ПОЛЯ ДЛЯ СЛОЖНЫХ РАСПИСАНИЙ ---
   List<int>? selectedWeekDays;

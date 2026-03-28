@@ -8,6 +8,7 @@ class GlassContainer extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final double borderRadius;
   final Color? color;
+  final Gradient? gradient;
   final VoidCallback? onTap;
 
   const GlassContainer({
@@ -17,6 +18,7 @@ class GlassContainer extends StatelessWidget {
     this.margin,
     this.borderRadius = 24.0,
     this.color,
+    this.gradient,
     this.onTap,
   });
 
@@ -26,12 +28,12 @@ class GlassContainer extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final defaultColor = isDark
-        ? Colors.white.withValues(alpha: 0.06)
-        : Colors.white.withValues(alpha: 0.4);
+        ? theme.colorScheme.surface.withValues(alpha: 0.76)
+        : theme.colorScheme.surface.withValues(alpha: 0.88);
 
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.15)
-        : Colors.white.withValues(alpha: 0.8);
+        ? theme.dividerColor.withValues(alpha: 0.85)
+        : theme.dividerColor.withValues(alpha: 0.72);
 
     final container = Container(
       margin: margin,
@@ -40,23 +42,24 @@ class GlassContainer extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            blurRadius: isDark ? 30 : 22,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+          filter: ImageFilter.blur(sigmaX: 14.0, sigmaY: 14.0),
           child: Stack(
             children: [
               Container(
                 padding: padding,
                 decoration: BoxDecoration(
-                  color: color ?? defaultColor,
+                  color: gradient == null ? (color ?? defaultColor) : null,
+                  gradient: gradient,
                   borderRadius: BorderRadius.circular(borderRadius),
-                  border: Border.all(color: borderColor, width: 1.5),
+                  border: Border.all(color: borderColor, width: 1.2),
                 ),
                 child: child,
               ),
@@ -66,7 +69,7 @@ class GlassContainer extends StatelessWidget {
                 right: 0,
                 child: IgnorePointer(
                   child: Container(
-                    height: 42,
+                    height: 48,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(borderRadius),
@@ -75,7 +78,9 @@ class GlassContainer extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.white.withValues(alpha: isDark ? 0.08 : 0.18),
+                          theme.colorScheme.secondary.withValues(
+                            alpha: isDark ? 0.10 : 0.20,
+                          ),
                           Colors.white.withValues(alpha: 0),
                         ],
                       ),

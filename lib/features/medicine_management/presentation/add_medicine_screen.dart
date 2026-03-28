@@ -6,11 +6,19 @@ import 'package:image_picker/image_picker.dart'; // 🚀 ПАКЕТ ДЛЯ КА�
 import '../../../l10n/app_localizations.dart';
 import '../../home/providers/home_controller.dart';
 import '../../../data/local/entities/medicine_entity.dart';
+import '../../../core/presentation/widgets/animated_reveal.dart';
 import '../../../core/presentation/widgets/gradient_scaffold.dart';
 import '../../../core/presentation/widgets/glass_container.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../l10n/l10n_extensions.dart';
 
 class AddMedicineScreen extends ConsumerStatefulWidget {
-  const AddMedicineScreen({super.key});
+  final CourseKindEnum initialKind;
+
+  const AddMedicineScreen({
+    super.key,
+    this.initialKind = CourseKindEnum.medication,
+  });
 
   @override
   ConsumerState<AddMedicineScreen> createState() => _AddMedicineScreenState();
@@ -26,13 +34,14 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
   int _prnMaxDoses = 4;
   bool _isLifetime = false;
 
+  late CourseKindEnum _selectedKind;
   MedicineFormEnum _selectedForm = MedicineFormEnum.pill;
   String _selectedUnit = 'mg';
   FrequencyTypeEnum _selectedFrequency = FrequencyTypeEnum.daily;
   FoodInstructionEnum _selectedFood = FoodInstructionEnum.noMatter;
 
   final List<TimeOfDay> _selectedTimes = [const TimeOfDay(hour: 8, minute: 0)];
-  final List<String> _units = ['mg', 'ml', 'pcs', 'drops', 'g', 'mcg'];
+  final List<String> _units = ['mg', 'ml', 'pcs', 'drops', 'g', 'mcg', 'IU'];
 
   // Стейт Визуального Конструктора
   PillShapeEnum _selectedShape = PillShapeEnum.circle;
@@ -59,6 +68,12 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     0xFF607D8B,
     0xFF000000,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedKind = widget.initialKind;
+  }
 
   @override
   void dispose() {
@@ -457,10 +472,14 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
 
     final title = l10n.notificationTitle(name);
     final body = l10n.notificationBody('$dosageToSave $_selectedUnit');
+    final kindLabel = _selectedKind == CourseKindEnum.supplement
+        ? l10n.courseKindSupplement
+        : l10n.courseKindMedication;
 
     await ref
         .read(homeControllerProvider)
         .addMedicineAndGenerateSchedule(
+          kind: _selectedKind,
           name: name,
           dosage: dosageToSave,
           dosageUnit: _selectedUnit,
@@ -486,19 +505,76 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
           notificationBody: body,
         );
 
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) {
+      Navigator.of(context).pop(l10n.courseAddedMessage(kindLabel, name));
+    }
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, {String? step}) {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
-      child: Text(
-        title,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w800,
-          color: theme.colorScheme.onSurface,
-        ),
+      child: Row(
+        children: [
+          if (step != null) ...[
+            Container(
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: theme.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                step,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKindSelector(ThemeData theme, AppLocalizations l10n) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(8),
+      color: theme.colorScheme.surface.withValues(alpha: 0.45),
+      child: Row(
+        children: [
+          Expanded(
+            child: _KindOptionButton(
+              label: l10n.courseKindMedication,
+              icon: Icons.medication_rounded,
+              isSelected: _selectedKind == CourseKindEnum.medication,
+              selectedColor: theme.brandPrimary,
+              onTap: () =>
+                  setState(() => _selectedKind = CourseKindEnum.medication),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _KindOptionButton(
+              label: l10n.courseKindSupplement,
+              icon: Icons.spa_rounded,
+              isSelected: _selectedKind == CourseKindEnum.supplement,
+              selectedColor: theme.supplementAccent,
+              onTap: () =>
+                  setState(() => _selectedKind = CourseKindEnum.supplement),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -777,6 +853,12 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final screenTitle = _selectedKind == CourseKindEnum.supplement
+        ? l10n.addSupplementScreenTitle
+        : l10n.addMedicationTitle;
+    final nameHint = _selectedKind == CourseKindEnum.supplement
+        ? l10n.supplementNameHint
+        : l10n.medicineNameHint;
 
     return GradientScaffold(
       extendBodyBehindAppBar: true,
@@ -795,7 +877,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
               centerTitle: true,
               titlePadding: const EdgeInsets.only(bottom: 16),
               title: Text(
-                l10n.addMedicationTitle,
+                screenTitle,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: theme.colorScheme.onSurface,
@@ -817,180 +899,201 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // 🚀 БЛОК: ФОТО ИЛИ КОНСТРУКТОР
-                Center(
-                  child: GestureDetector(
-                    onTap: () => _showPillConstructorModal(l10n),
-                    child: Container(
-                      height: 120,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Color(_selectedColor).withValues(alpha: 0.5),
-                          width: 3,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(_selectedColor).withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            spreadRadius: 2,
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 40),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () => _showPillConstructorModal(l10n),
+                      child: Container(
+                        height: 120,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: 0.5,
                           ),
-                        ],
-                      ),
-                      child: _pillImagePath != null
-                          ? ClipOval(
-                              child: Image.file(
-                                File(_pillImagePath!),
-                                width: 120,
-                                height: 120,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Center(
-                              child: _buildPillShape(
-                                _selectedShape,
-                                Color(_selectedColor),
-                                56,
-                              ),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Color(_selectedColor).withValues(alpha: 0.5),
+                            width: 3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(
+                                _selectedColor,
+                              ).withValues(alpha: 0.2),
+                              blurRadius: 20,
+                              spreadRadius: 2,
                             ),
+                          ],
+                        ),
+                        child: _pillImagePath != null
+                            ? ClipOval(
+                                child: Image.file(
+                                  File(_pillImagePath!),
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Center(
+                                child: _buildPillShape(
+                                  _selectedShape,
+                                  Color(_selectedColor),
+                                  56,
+                                ),
+                              ),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // 🚀 ДВЕ КНОПКИ: Конструктор ИЛИ Камера
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton.icon(
-                      style: TextButton.styleFrom(
-                        backgroundColor: theme.primaryColor.withValues(
-                          alpha: 0.1,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                      ),
-                      onPressed: () => _showPillConstructorModal(l10n),
-                      icon: Icon(
-                        Icons.palette_rounded,
-                        size: 18,
-                        color: theme.primaryColor,
-                      ),
-                      label: Text(
-                        l10n.customizePill,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.primaryColor,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton.icon(
-                      style: TextButton.styleFrom(
-                        backgroundColor: theme.colorScheme.secondary.withValues(
-                          alpha: 0.1,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                      ),
-                      onPressed: () => _pickImage(ImageSource.camera),
-                      icon: Icon(
-                        Icons.camera_alt_rounded,
-                        size: 18,
-                        color: theme.colorScheme.secondary,
-                      ),
-                      label: Text(
-                        "Photo",
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.secondary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // --- BENTO БЛОК 1: ОСНОВНОЕ ---
-                _buildSectionHeader(l10n.overview),
-                GlassContainer(
-                  padding: const EdgeInsets.all(20),
-                  color: theme.colorScheme.surface.withValues(alpha: 0.45),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 90),
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
-                      _buildPremiumTextField(
-                        controller: _nameController,
-                        label: l10n.medicineNameHint,
-                        theme: theme,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.formTitle,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.5,
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          backgroundColor: theme.primaryColor.withValues(
+                            alpha: 0.1,
                           ),
-                          fontWeight: FontWeight.w600,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                        ),
+                        onPressed: () => _showPillConstructorModal(l10n),
+                        icon: Icon(
+                          Icons.palette_rounded,
+                          size: 18,
+                          color: theme.primaryColor,
+                        ),
+                        label: Text(
+                          l10n.customizePill,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.primaryColor,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      _buildScrollableChips<MedicineFormEnum>(
-                        items: MedicineFormEnum.values,
-                        selectedValue: _selectedForm,
-                        labelBuilder: (form) => form.name.toUpperCase(),
-                        onSelected: (val) =>
-                            setState(() => _selectedForm = val),
-                        theme: theme,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          if (_selectedFrequency !=
-                              FrequencyTypeEnum.tapering) ...[
-                            Expanded(
-                              flex: 2,
-                              child: _buildPremiumTextField(
-                                controller: _dosageController,
-                                label: l10n.dosageHint,
-                                theme: theme,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                          ],
-                          Expanded(
-                            flex: 3,
-                            child: _buildScrollableChips<String>(
-                              items: _units,
-                              selectedValue: _selectedUnit,
-                              labelBuilder: (unit) => unit,
-                              onSelected: (val) =>
-                                  setState(() => _selectedUnit = val),
-                              theme: theme,
-                            ),
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          backgroundColor: theme.colorScheme.secondary
+                              .withValues(alpha: 0.1),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
                           ),
-                        ],
+                        ),
+                        onPressed: () => _pickImage(ImageSource.camera),
+                        icon: Icon(
+                          Icons.camera_alt_rounded,
+                          size: 18,
+                          color: theme.colorScheme.secondary,
+                        ),
+                        label: Text(
+                          l10n.addPhotoLabel,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.secondary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 32),
 
+                // --- BENTO БЛОК 1: ОСНОВНОЕ ---
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 120),
+                  child: _buildKindSelector(theme, l10n),
+                ),
+                const SizedBox(height: 24),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 150),
+                  child: _buildSectionHeader(l10n.overview, step: '1'),
+                ),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 180),
+                  child: GlassContainer(
+                    padding: const EdgeInsets.all(20),
+                    color: theme.colorScheme.surface.withValues(alpha: 0.45),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildPremiumTextField(
+                          controller: _nameController,
+                          label: nameHint,
+                          theme: theme,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.formTitle,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.5,
+                            ),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildScrollableChips<MedicineFormEnum>(
+                          items: MedicineFormEnum.values,
+                          selectedValue: _selectedForm,
+                          labelBuilder: l10n.medicineFormLabel,
+                          onSelected: (val) =>
+                              setState(() => _selectedForm = val),
+                          theme: theme,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            if (_selectedFrequency !=
+                                FrequencyTypeEnum.tapering) ...[
+                              Expanded(
+                                flex: 2,
+                                child: _buildPremiumTextField(
+                                  controller: _dosageController,
+                                  label: l10n.dosageHint,
+                                  theme: theme,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            Expanded(
+                              flex: 3,
+                              child: _buildScrollableChips<String>(
+                                items: _units,
+                                selectedValue: _selectedUnit,
+                                labelBuilder: l10n.dosageUnitLabel,
+                                onSelected: (val) =>
+                                    setState(() => _selectedUnit = val),
+                                theme: theme,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
                 // --- BENTO БЛОК 2: ПРАВИЛА ---
-                _buildSectionHeader(l10n.scheduleAndRules),
+                _buildSectionHeader(l10n.scheduleAndRules, step: '2'),
                 GlassContainer(
                   padding: const EdgeInsets.all(20),
                   color: theme.colorScheme.surface.withValues(alpha: 0.45),
@@ -1000,10 +1103,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                       _buildScrollableChips<FrequencyTypeEnum>(
                         items: FrequencyTypeEnum.values,
                         selectedValue: _selectedFrequency,
-                        labelBuilder: (freq) =>
-                            freq == FrequencyTypeEnum.tapering
-                            ? l10n.taperingFrequency
-                            : freq.name.toUpperCase(),
+                        labelBuilder: l10n.frequencyLabel,
                         onSelected: (val) =>
                             setState(() => _selectedFrequency = val),
                         theme: theme,
@@ -1179,7 +1279,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                       _buildScrollableChips<FoodInstructionEnum>(
                         items: FoodInstructionEnum.values,
                         selectedValue: _selectedFood,
-                        labelBuilder: (food) => food.name,
+                        labelBuilder: l10n.foodInstructionLabel,
                         onSelected: (val) =>
                             setState(() => _selectedFood = val),
                         theme: theme,
@@ -1190,7 +1290,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                 const SizedBox(height: 32),
 
                 // --- BENTO БЛОК 3: ИНВЕНТАРЬ ---
-                _buildSectionHeader(l10n.inventory),
+                _buildSectionHeader(l10n.inventory, step: '3'),
                 GlassContainer(
                   padding: const EdgeInsets.all(20),
                   color: theme.colorScheme.surface.withValues(alpha: 0.45),
@@ -1198,14 +1298,17 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                     children: [
                       if (_selectedFrequency != FrequencyTypeEnum.tapering) ...[
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              l10n.lifetimeCourse,
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
+                            Expanded(
+                              child: Text(
+                                l10n.lifetimeCourse,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 2,
                               ),
                             ),
+                            const SizedBox(width: 12),
                             Switch.adaptive(
                               value: _isLifetime,
                               activeTrackColor: theme.primaryColor,
@@ -1262,7 +1365,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
 
                 // --- BENTO БЛОК 4: ВРЕМЯ ---
                 if (_selectedFrequency != FrequencyTypeEnum.asNeeded) ...[
-                  _buildSectionHeader(l10n.reminders),
+                  _buildSectionHeader(l10n.reminders, step: '4'),
                   GlassContainer(
                     padding: const EdgeInsets.all(20),
                     color: theme.colorScheme.surface.withValues(alpha: 0.45),
@@ -1413,6 +1516,69 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _KindOptionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final Color selectedColor;
+  final VoidCallback onTap;
+
+  const _KindOptionButton({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.selectedColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? selectedColor
+              : theme.colorScheme.surface.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected
+                  ? Colors.white
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isSelected
+                      ? Colors.white
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.78),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -22,10 +22,81 @@ final asNeededMedicinesProvider = StreamProvider<List<MedicineEntity>>((
       .watch(fireImmediately: true);
 });
 
+class TimedDoseInput {
+  final TimeOfDay time;
+  final double dosage;
+
+  const TimedDoseInput({required this.time, required this.dosage});
+}
+
 class HomeController {
   final Ref ref;
 
   HomeController(this.ref);
+
+  String _smartReminderTitle({
+    required MedicineEntity medicine,
+    required DateTime scheduledTime,
+  }) {
+    return NotificationService.buildSmartReminderTitle(
+      medicine: medicine,
+      scheduledTime: scheduledTime,
+    );
+  }
+
+  String _smartReminderBody({
+    required MedicineEntity medicine,
+    required DateTime scheduledTime,
+    required double dosage,
+  }) {
+    return NotificationService.buildSmartReminderBody(
+      medicine: medicine,
+      scheduledTime: scheduledTime,
+      dosage: dosage,
+    );
+  }
+
+  Map<TimeOfDay, double> _mapDailyDosagesFromLogs(List<DoseLogEntity> logs) {
+    final sortedLogs = [...logs]
+      ..sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
+    final mapped = <TimeOfDay, double>{};
+
+    for (final log in sortedLogs) {
+      final time = TimeOfDay.fromDateTime(log.scheduledTime);
+      mapped.putIfAbsent(time, () => log.dosage);
+    }
+
+    return mapped;
+  }
+
+  Future<void> _cancelNotificationsForLogs({
+    required NotificationService notificationService,
+    required MedicineEntity medicine,
+    required List<DoseLogEntity> logs,
+  }) async {
+    if (logs.isEmpty) return;
+
+    if (medicine.frequency == FrequencyTypeEnum.daily) {
+      final uniqueTimes = logs
+          .map((log) => TimeOfDay.fromDateTime(log.scheduledTime))
+          .toSet();
+      for (final time in uniqueTimes) {
+        final stableNotificationId =
+            (medicine.id * 10000) + (time.hour * 100) + time.minute;
+        await notificationService.cancelNotification(stableNotificationId);
+      }
+      return;
+    }
+
+    for (final log in logs) {
+      final stableNotificationId =
+          (medicine.id * 100000) +
+          log.scheduledTime.day * 1000 +
+          log.scheduledTime.hour * 100 +
+          log.scheduledTime.minute;
+      await notificationService.cancelNotification(stableNotificationId);
+    }
+  }
 
   Future<void> updateDoseStatus(
     DoseLogEntity log,
@@ -56,7 +127,7 @@ class HomeController {
             .findFirst();
         if (medicine != null && medicine.pillsRemaining > 0) {
           final oldStock = medicine.pillsRemaining;
-          // 🚀 ИСПОЛЬЗУЕМ ИНДИВИДУАЛЬНУЮ ДОЗУ ЛОГА ДЛЯ СПИСАНИЯ СО СКЛАДА (ЕСЛИ ОНА > 0)
+          // ðŸš€ Ð˜Ð¡ÐŸÐžÐ›Ð¬Ð—Ð£Ð•Ðœ Ð˜ÐÐ”Ð˜Ð’Ð˜Ð”Ð£ÐÐ›Ð¬ÐÐ£Ð® Ð”ÐžÐ—Ð£ Ð›ÐžÐ“Ð Ð”Ð›Ð¯ Ð¡ÐŸÐ˜Ð¡ÐÐÐ˜Ð¯ Ð¡Ðž Ð¡ÐšÐ›ÐÐ”Ð (Ð•Ð¡Ð›Ð˜ ÐžÐÐ > 0)
           final deduction = log.dosage > 0 ? log.dosage.ceil() : 1;
           medicine.pillsRemaining -= deduction;
 
@@ -67,9 +138,8 @@ class HomeController {
               medicine.pillsRemaining <= medicine.refillAlertThreshold) {
             await notificationService.showImmediateNotification(
               id: medicine.id * 1000,
-              title: '⚠️ Low Stock: ${medicine.name}',
-              body:
-                  'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
+              title: NotificationService.buildLowStockTitle(medicine),
+              body: NotificationService.buildLowStockBody(medicine),
             );
           }
         }
@@ -155,7 +225,7 @@ class HomeController {
       ..scheduledTime = now
       ..actualTime = now
       ..status = DoseStatusEnum.taken
-      ..dosage = medicine.dosage; // 🚀 ПРИСВАИВАЕМ ДОЗУ
+      ..dosage = medicine.dosage; // ðŸš€ ÐŸÐ Ð˜Ð¡Ð’ÐÐ˜Ð’ÐÐ•Ðœ Ð”ÐžÐ—Ð£
 
     await isar.writeTxn(() async {
       await isar.doseLogEntitys.put(log);
@@ -173,9 +243,8 @@ class HomeController {
           final notificationService = ref.read(notificationServiceProvider);
           await notificationService.showImmediateNotification(
             id: medicine.id * 1000,
-            title: '⚠️ Low Stock: ${medicine.name}',
-            body:
-                'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
+            title: NotificationService.buildLowStockTitle(medicine),
+            body: NotificationService.buildLowStockBody(medicine),
           );
         }
       }
@@ -207,10 +276,8 @@ class HomeController {
     if (newPausedState) {
       if (logs.isNotEmpty) {
         if (medicine.frequency == FrequencyTypeEnum.daily) {
-          final uniqueTimes = logs
-              .map((l) => TimeOfDay.fromDateTime(l.scheduledTime))
-              .toSet();
-          for (var time in uniqueTimes) {
+          final dailyDosages = _mapDailyDosagesFromLogs(logs);
+          for (final time in dailyDosages.keys) {
             final stableNotificationId =
                 (medicine.id * 10000) + (time.hour * 100) + time.minute;
             await notificationService.cancelNotification(stableNotificationId);
@@ -228,16 +295,35 @@ class HomeController {
       }
     } else {
       if (medicine.frequency == FrequencyTypeEnum.daily) {
-        final uniqueTimes = logs
-            .map((l) => TimeOfDay.fromDateTime(l.scheduledTime))
-            .toSet();
-        for (var time in uniqueTimes) {
+        final now = DateTime.now();
+        final dailyDosages = _mapDailyDosagesFromLogs(logs);
+        for (final entry in dailyDosages.entries) {
+          final time = entry.key;
           final stableNotificationId =
               (medicine.id * 10000) + (time.hour * 100) + time.minute;
           await notificationService.scheduleDailyRepeatingNotification(
             id: stableNotificationId,
-            title: medicine.notificationTitle ?? 'Medicine Reminder',
-            body: medicine.notificationBody ?? 'Time to take your medicine',
+            title: _smartReminderTitle(
+              medicine: medicine,
+              scheduledTime: DateTime(
+                now.year,
+                now.month,
+                now.day,
+                time.hour,
+                time.minute,
+              ),
+            ),
+            body: _smartReminderBody(
+              medicine: medicine,
+              scheduledTime: DateTime(
+                now.year,
+                now.month,
+                now.day,
+                time.hour,
+                time.minute,
+              ),
+              dosage: entry.value,
+            ),
             time: time,
             payload: NotificationPayload.daily(
               medicineSyncId: medicine.syncId,
@@ -258,8 +344,15 @@ class HomeController {
                 log.scheduledTime.minute;
             await notificationService.scheduleExactNotification(
               id: stableNotificationId,
-              title: medicine.notificationTitle ?? 'Medicine Reminder',
-              body: medicine.notificationBody ?? 'Time to take your medicine',
+              title: _smartReminderTitle(
+                medicine: medicine,
+                scheduledTime: log.scheduledTime,
+              ),
+              body: _smartReminderBody(
+                medicine: medicine,
+                scheduledTime: log.scheduledTime,
+                dosage: log.dosage > 0 ? log.dosage : medicine.dosage,
+              ),
               scheduledTime: log.scheduledTime,
               payload: NotificationPayload.log(log.syncId),
             );
@@ -276,6 +369,7 @@ class HomeController {
     required String name,
     required double dosage,
     required String dosageUnit,
+    required CourseKindEnum kind,
     required MedicineFormEnum form,
     required FrequencyTypeEnum frequency,
     required FoodInstructionEnum foodInstruction,
@@ -286,7 +380,9 @@ class HomeController {
     int? intervalDays,
     int? cycleOnDays,
     int? cycleOffDays,
-    List<TaperingStep>? taperingSteps, // 🚀 НОВОЕ: Шаги титрации
+    List<TaperingStep>?
+    taperingSteps, // ðŸš€ ÐÐžÐ’ÐžÐ•: Ð¨Ð°Ð³Ð¸ Ñ‚Ð¸Ñ‚Ñ€Ð°Ñ†Ð¸Ð¸
+    List<TimedDoseInput>? customDailyDoses,
     String? pillImagePath,
     int? prnMaxDailyDoses,
     required String notificationTitle,
@@ -306,6 +402,7 @@ class HomeController {
       ..name = name
       ..dosage = dosage
       ..dosageUnit = dosageUnit
+      ..kind = kind
       ..form = form
       ..frequency = frequency
       ..foodInstruction = foodInstruction
@@ -314,8 +411,8 @@ class HomeController {
       ..cycleOnDays = cycleOnDays
       ..cycleOffDays = cycleOffDays
       ..taperingSteps =
-          taperingSteps // 🚀 СОХРАНЯЕМ ШАГИ ТИТРАЦИИ
-      ..timesPerDay = times.length
+          taperingSteps // ðŸš€ Ð¡ÐžÐ¥Ð ÐÐÐ¯Ð•Ðœ Ð¨ÐÐ“Ð˜ Ð¢Ð˜Ð¢Ð ÐÐ¦Ð˜Ð˜
+      ..timesPerDay = customDailyDoses?.length ?? times.length
       ..startDate = now
       ..pillsInPackage = pillsInPackage
       ..pillsRemaining = pillsInPackage
@@ -328,11 +425,11 @@ class HomeController {
 
     final List<DoseLogEntity> logsToInsert = [];
 
-    // 🚀 СМАРТ-ГЕНЕРАТОР РАСПИСАНИЯ
+    // ðŸš€ Ð¡ÐœÐÐ Ð¢-Ð“Ð•ÐÐ•Ð ÐÐ¢ÐžÐ  Ð ÐÐ¡ÐŸÐ˜Ð¡ÐÐÐ˜Ð¯
     if (frequency == FrequencyTypeEnum.tapering &&
         taperingSteps != null &&
         taperingSteps.isNotEmpty) {
-      // 1. ЛОГИКА ДЛЯ ДИНАМИЧЕСКИХ ДОЗ (Tapering)
+      // 1. Ð›ÐžÐ“Ð˜ÐšÐ Ð”Ð›Ð¯ Ð”Ð˜ÐÐÐœÐ˜Ð§Ð•Ð¡ÐšÐ˜Ð¥ Ð”ÐžÐ— (Tapering)
       int dayOffset = 0;
 
       for (var step in taperingSteps) {
@@ -352,7 +449,8 @@ class HomeController {
               ..medicineSyncId = syncId
               ..scheduledTime = specificTime
               ..status = DoseStatusEnum.pending
-              ..dosage = step.dosage; // 🚀 УНИКАЛЬНАЯ ДОЗА ИЗ ШАГА
+              ..dosage = step
+                  .dosage; // ðŸš€ Ð£ÐÐ˜ÐšÐÐ›Ð¬ÐÐÐ¯ Ð”ÐžÐ—Ð Ð˜Ð— Ð¨ÐÐ“Ð
 
             logsToInsert.add(log);
           }
@@ -360,7 +458,7 @@ class HomeController {
         }
       }
     } else if (frequency != FrequencyTypeEnum.asNeeded) {
-      // 2. СТАНДАРТНАЯ ЛОГИКА ДЛЯ ОБЫЧНЫХ КУРСОВ
+      // 2. Ð¡Ð¢ÐÐÐ”ÐÐ Ð¢ÐÐÐ¯ Ð›ÐžÐ“Ð˜ÐšÐ Ð”Ð›Ð¯ ÐžÐ‘Ð«Ð§ÐÐ«Ð¥ ÐšÐ£Ð Ð¡ÐžÐ’
       for (int day = 0; day < durationDays; day++) {
         final scheduledDate = now.add(Duration(days: day));
         bool shouldAddDose = false;
@@ -394,20 +492,26 @@ class HomeController {
         }
 
         if (shouldAddDose) {
-          for (var time in times) {
+          final doseMoments =
+              customDailyDoses ??
+              times
+                  .map((time) => TimedDoseInput(time: time, dosage: dosage))
+                  .toList();
+
+          for (final doseMoment in doseMoments) {
             final specificTime = DateTime(
               scheduledDate.year,
               scheduledDate.month,
               scheduledDate.day,
-              time.hour,
-              time.minute,
+              doseMoment.time.hour,
+              doseMoment.time.minute,
             );
             final log = DoseLogEntity()
               ..syncId = const Uuid().v4()
               ..medicineSyncId = syncId
               ..scheduledTime = specificTime
               ..status = DoseStatusEnum.pending
-              ..dosage = dosage; // 🚀 ОБЫЧНАЯ ДОЗА
+              ..dosage = doseMoment.dosage;
             logsToInsert.add(log);
           }
         }
@@ -422,20 +526,47 @@ class HomeController {
       }
     });
 
-    // Настройка уведомлений
+    // ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ° ÑƒÐ²ÐµÐ´Ð¾Ð¼Ð»ÐµÐ½Ð¸Ð¹
     if (frequency == FrequencyTypeEnum.daily) {
-      for (var time in times) {
+      final dailyDoseMoments =
+          customDailyDoses ??
+          times
+              .map((time) => TimedDoseInput(time: time, dosage: dosage))
+              .toList();
+
+      for (final doseMoment in dailyDoseMoments) {
         final stableNotificationId =
-            (medicineLocalId * 10000) + (time.hour * 100) + time.minute;
+            (medicineLocalId * 10000) +
+            (doseMoment.time.hour * 100) +
+            doseMoment.time.minute;
         await notificationService.scheduleDailyRepeatingNotification(
           id: stableNotificationId,
-          title: notificationTitle,
-          body: notificationBody,
-          time: time,
+          title: _smartReminderTitle(
+            medicine: medicine,
+            scheduledTime: DateTime(
+              now.year,
+              now.month,
+              now.day,
+              doseMoment.time.hour,
+              doseMoment.time.minute,
+            ),
+          ),
+          body: _smartReminderBody(
+            medicine: medicine,
+            scheduledTime: DateTime(
+              now.year,
+              now.month,
+              now.day,
+              doseMoment.time.hour,
+              doseMoment.time.minute,
+            ),
+            dosage: doseMoment.dosage,
+          ),
+          time: doseMoment.time,
           payload: NotificationPayload.daily(
             medicineSyncId: syncId,
-            hour: time.hour,
-            minute: time.minute,
+            hour: doseMoment.time.hour,
+            minute: doseMoment.time.minute,
           ),
         );
       }
@@ -447,18 +578,18 @@ class HomeController {
             log.scheduledTime.hour * 100 +
             log.scheduledTime.minute;
         if (log.scheduledTime.difference(DateTime.now()).inDays < 30) {
-          // 🚀 Если это титрация, показываем правильную дозу в пуше
-          final customBody = frequency == FrequencyTypeEnum.tapering
-              ? notificationBody.replaceAll(
-                  dosage.toString(),
-                  log.dosage.toString(),
-                )
-              : notificationBody;
-
+          // ðŸš€ Ð•ÑÐ»Ð¸ ÑÑ‚Ð¾ Ñ‚Ð¸Ñ‚Ñ€Ð°Ñ†Ð¸Ñ, Ð¿Ð¾ÐºÐ°Ð·Ñ‹Ð²Ð°ÐµÐ¼ Ð¿Ñ€Ð°Ð²Ð¸Ð»ÑŒÐ½ÑƒÑŽ Ð´Ð¾Ð·Ñƒ Ð² Ð¿ÑƒÑˆÐµ
           await notificationService.scheduleExactNotification(
             id: stableNotificationId,
-            title: notificationTitle,
-            body: customBody,
+            title: _smartReminderTitle(
+              medicine: medicine,
+              scheduledTime: log.scheduledTime,
+            ),
+            body: _smartReminderBody(
+              medicine: medicine,
+              scheduledTime: log.scheduledTime,
+              dosage: log.dosage,
+            ),
             scheduledTime: log.scheduledTime,
             payload: NotificationPayload.log(log.syncId),
           );
@@ -475,6 +606,7 @@ class HomeController {
     required String newName,
     required double newDosage,
     required String newDosageUnit,
+    required CourseKindEnum newKind,
     required MedicineFormEnum newForm,
     required FoodInstructionEnum newFoodInstruction,
     required int newPillsRemaining,
@@ -483,16 +615,25 @@ class HomeController {
     required String newNotificationBody,
     required PillShapeEnum newPillShape,
     required int newPillColor,
-    List<TaperingStep>? newTaperingSteps, // 🚀 Опциональное обновление шагов
+    List<TaperingStep>?
+    newTaperingSteps, // ðŸš€ ÐžÐ¿Ñ†Ð¸Ð¾Ð½Ð°Ð»ÑŒÐ½Ð¾Ðµ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ðµ ÑˆÐ°Ð³Ð¾Ð²
+    List<TimedDoseInput>? updatedDoseSchedule,
   }) async {
     final isarService = ref.read(localDbProvider);
     final notificationService = ref.read(notificationServiceProvider);
     final isar = await isarService.db;
+    final existingPendingLogs = await isar.doseLogEntitys
+        .filter()
+        .medicineSyncIdEqualTo(medicine.syncId)
+        .statusEqualTo(DoseStatusEnum.pending)
+        .findAll();
+    final regeneratedLogs = <DoseLogEntity>[];
 
     await isar.writeTxn(() async {
       medicine.name = newName;
       medicine.dosage = newDosage;
       medicine.dosageUnit = newDosageUnit;
+      medicine.kind = newKind;
       medicine.form = newForm;
       medicine.foodInstruction = newFoodInstruction;
       medicine.pillsRemaining = newPillsRemaining;
@@ -512,28 +653,104 @@ class HomeController {
       medicine.notificationBody = newNotificationBody;
 
       await isar.medicineEntitys.put(medicine);
+
+      if (updatedDoseSchedule != null &&
+          medicine.frequency != FrequencyTypeEnum.asNeeded &&
+          medicine.frequency != FrequencyTypeEnum.tapering) {
+        final pendingIds = existingPendingLogs.map((log) => log.id).toList();
+        if (pendingIds.isNotEmpty) {
+          await isar.doseLogEntitys.deleteAll(pendingIds);
+        }
+
+        final upcomingDates =
+            existingPendingLogs
+                .map(
+                  (log) => DateTime(
+                    log.scheduledTime.year,
+                    log.scheduledTime.month,
+                    log.scheduledTime.day,
+                  ),
+                )
+                .toSet()
+                .toList()
+              ..sort((a, b) => a.compareTo(b));
+
+        for (final date in upcomingDates) {
+          for (final doseMoment in updatedDoseSchedule) {
+            regeneratedLogs.add(
+              DoseLogEntity()
+                ..syncId = const Uuid().v4()
+                ..medicineSyncId = medicine.syncId
+                ..scheduledTime = DateTime(
+                  date.year,
+                  date.month,
+                  date.day,
+                  doseMoment.time.hour,
+                  doseMoment.time.minute,
+                )
+                ..status = DoseStatusEnum.pending
+                ..dosage = doseMoment.dosage,
+            );
+          }
+        }
+
+        if (regeneratedLogs.isNotEmpty) {
+          await isar.doseLogEntitys.putAll(regeneratedLogs);
+        }
+
+        medicine.timesPerDay = updatedDoseSchedule.length;
+        medicine.dosage = updatedDoseSchedule.first.dosage;
+        await isar.medicineEntitys.put(medicine);
+      }
     });
 
     if (!medicine.isPaused &&
         medicine.frequency != FrequencyTypeEnum.asNeeded) {
-      final logs = await isar.doseLogEntitys
-          .filter()
-          .medicineSyncIdEqualTo(medicine.syncId)
-          .statusEqualTo(DoseStatusEnum.pending)
-          .findAll();
+      await _cancelNotificationsForLogs(
+        notificationService: notificationService,
+        medicine: medicine,
+        logs: existingPendingLogs,
+      );
+
+      final logs = updatedDoseSchedule != null
+          ? regeneratedLogs
+          : await isar.doseLogEntitys
+                .filter()
+                .medicineSyncIdEqualTo(medicine.syncId)
+                .statusEqualTo(DoseStatusEnum.pending)
+                .findAll();
 
       if (logs.isNotEmpty) {
         if (medicine.frequency == FrequencyTypeEnum.daily) {
-          final uniqueTimes = logs
-              .map((l) => TimeOfDay.fromDateTime(l.scheduledTime))
-              .toSet();
-          for (var time in uniqueTimes) {
+          final now = DateTime.now();
+          final dailyDosages = _mapDailyDosagesFromLogs(logs);
+          for (final entry in dailyDosages.entries) {
+            final time = entry.key;
             final stableNotificationId =
                 (medicine.id * 10000) + (time.hour * 100) + time.minute;
             await notificationService.scheduleDailyRepeatingNotification(
               id: stableNotificationId,
-              title: newNotificationTitle,
-              body: newNotificationBody,
+              title: _smartReminderTitle(
+                medicine: medicine,
+                scheduledTime: DateTime(
+                  now.year,
+                  now.month,
+                  now.day,
+                  time.hour,
+                  time.minute,
+                ),
+              ),
+              body: _smartReminderBody(
+                medicine: medicine,
+                scheduledTime: DateTime(
+                  now.year,
+                  now.month,
+                  now.day,
+                  time.hour,
+                  time.minute,
+                ),
+                dosage: entry.value,
+              ),
               time: time,
               payload: NotificationPayload.daily(
                 medicineSyncId: medicine.syncId,
@@ -553,18 +770,17 @@ class HomeController {
                   log.scheduledTime.hour * 100 +
                   log.scheduledTime.minute;
 
-              final customBody =
-                  medicine.frequency == FrequencyTypeEnum.tapering
-                  ? newNotificationBody.replaceAll(
-                      newDosage.toString(),
-                      log.dosage.toString(),
-                    )
-                  : newNotificationBody;
-
               await notificationService.scheduleExactNotification(
                 id: stableNotificationId,
-                title: newNotificationTitle,
-                body: customBody,
+                title: _smartReminderTitle(
+                  medicine: medicine,
+                  scheduledTime: log.scheduledTime,
+                ),
+                body: _smartReminderBody(
+                  medicine: medicine,
+                  scheduledTime: log.scheduledTime,
+                  dosage: log.dosage,
+                ),
                 scheduledTime: log.scheduledTime,
                 payload: NotificationPayload.log(log.syncId),
               );

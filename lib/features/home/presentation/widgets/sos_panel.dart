@@ -4,6 +4,7 @@ import 'package:neo_pill/features/home/presentation/widgets/pill_icon_widget.dar
 
 import '../../../../data/local/entities/medicine_entity.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../l10n/l10n_extensions.dart';
 import '../../../medicine_management/presentation/add_medicine_screen.dart';
 import '../../providers/home_controller.dart';
 
@@ -50,7 +51,7 @@ class SosPanel extends ConsumerWidget {
             SizedBox(
               height: 64,
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: prnMedicines.length + 1,
@@ -130,7 +131,7 @@ class SosPanel extends ConsumerWidget {
                 ),
               ),
               Text(
-                '${medicine.dosage} ${medicine.dosageUnit}',
+                '${medicine.dosage} ${l10n.dosageUnitLabel(medicine.dosageUnit)}',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   fontWeight: FontWeight.w600,
@@ -168,12 +169,19 @@ class SosPanel extends ConsumerWidget {
     AppLocalizations l10n,
   ) {
     return GestureDetector(
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const AddMedicineScreen())),
+      onTap: () async {
+        final result = await Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const AddMedicineScreen()));
+        if (context.mounted && result is String && result.isNotEmpty) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(result)));
+        }
+      },
       child: Container(
         margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: theme.primaryColor.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),

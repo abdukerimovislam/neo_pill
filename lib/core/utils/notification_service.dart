@@ -4,12 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'dart:ui';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../data/local/entities/dose_log_entity.dart';
 import '../../data/local/entities/measurement_entity.dart';
 import '../../data/local/entities/medicine_entity.dart';
+
+enum ReminderDayPeriod { morning, afternoon, evening, night }
 
 @pragma('vm:entry-point')
 void notificationTapBackground(
@@ -159,9 +162,8 @@ Future<void> _processDoseAction(String actionId, String rawPayload) async {
               medicine.pillsRemaining <= medicine.refillAlertThreshold) {
             await NotificationService().showImmediateNotification(
               id: medicine.id * 1000,
-              title: 'Low Stock: ${medicine.name}',
-              body:
-                  'Only ${medicine.pillsRemaining} ${medicine.dosageUnit} left. Time to refill!',
+              title: NotificationService.buildLowStockTitle(medicine),
+              body: NotificationService.buildLowStockBody(medicine),
             );
           }
         }
@@ -178,8 +180,18 @@ Future<void> _processDoseAction(String actionId, String rawPayload) async {
             snoozeTime.minute;
         await NotificationService().scheduleExactNotification(
           id: stableNotificationId,
-          title: medicine.notificationTitle ?? 'Snoozed: ${medicine.name}',
-          body: medicine.notificationBody ?? 'Time to take your medicine',
+          title: NotificationService.buildSmartReminderTitle(
+            medicine: medicine,
+            scheduledTime: snoozeTime,
+            snoozed: true,
+          ),
+          body: NotificationService.buildSmartReminderBody(
+            medicine: medicine,
+            scheduledTime: snoozeTime,
+            dosage: logToUpdate.dosage > 0
+                ? logToUpdate.dosage
+                : medicine.dosage,
+          ),
           scheduledTime: snoozeTime,
           payload: NotificationPayload.log(logToUpdate.syncId),
         );
@@ -211,6 +223,139 @@ class NotificationService {
   static const String actionSnooze = 'action_snooze';
   static const String categoryMedication = 'category_medication';
 
+  static ReminderDayPeriod periodForTime(DateTime scheduledTime) {
+    final hour = scheduledTime.hour;
+    if (hour >= 5 && hour < 12) return ReminderDayPeriod.morning;
+    if (hour >= 12 && hour < 17) return ReminderDayPeriod.afternoon;
+    if (hour >= 17 && hour < 22) return ReminderDayPeriod.evening;
+    return ReminderDayPeriod.night;
+  }
+
+  static String _periodLabel(ReminderDayPeriod period) {
+    return switch (period) {
+      ReminderDayPeriod.morning => _isRussian ? 'Утренний' : 'Morning',
+      ReminderDayPeriod.afternoon => _isRussian ? 'Дневной' : 'Afternoon',
+      ReminderDayPeriod.evening => _isRussian ? 'Вечерний' : 'Evening',
+      ReminderDayPeriod.night => _isRussian ? 'Ночной' : 'Night',
+    };
+  }
+
+  static String _formatDosage(double dosage) {
+    return dosage % 1 == 0 ? dosage.toInt().toString() : dosage.toString();
+  }
+
+  static bool get _isRussian =>
+      PlatformDispatcher.instance.locale.languageCode.toLowerCase() == 'ru';
+
+  static String _localizedUnit(String unit) {
+    return switch (unit.toLowerCase()) {
+      'mg' => _isRussian ? 'мг' : 'mg',
+      'ml' => _isRussian ? 'мл' : 'ml',
+      'drops' => _isRussian ? 'капель' : 'drops',
+      'pcs' => _isRussian ? 'шт' : 'pcs',
+      'g' => _isRussian ? 'г' : 'g',
+      'mcg' => _isRussian ? 'мкг' : 'mcg',
+      'iu' => _isRussian ? 'МЕ' : 'IU',
+      _ => unit,
+    };
+  }
+
+  static String _foodCue(
+    FoodInstructionEnum instruction,
+    ReminderDayPeriod period,
+  ) {
+    return switch (instruction) {
+      FoodInstructionEnum.beforeFood =>
+        _isRussian ? 'Принимайте до еды.' : 'Take before food.',
+      FoodInstructionEnum.withFood =>
+        _isRussian ? 'Принимайте во время еды.' : 'Take with food.',
+      FoodInstructionEnum.afterFood => switch (period) {
+        ReminderDayPeriod.morning =>
+          _isRussian ? 'Лучше после завтрака.' : 'Best after breakfast.',
+        ReminderDayPeriod.afternoon =>
+          _isRussian ? 'Лучше после обеда.' : 'Best after lunch.',
+        ReminderDayPeriod.evening =>
+          _isRussian ? 'Лучше после ужина.' : 'Best after dinner.',
+        ReminderDayPeriod.night =>
+          _isRussian
+              ? 'Примите после вечернего приема пищи.'
+              : 'Take after your evening meal.',
+      },
+      FoodInstructionEnum.noMatter => switch (period) {
+        ReminderDayPeriod.morning =>
+          _isRussian
+              ? 'Хорошее время, чтобы закрепить утренний режим.'
+              : 'A good time to anchor your morning routine.',
+        ReminderDayPeriod.afternoon =>
+          _isRussian
+              ? 'Короткая проверка помогает не сбиться в течение дня.'
+              : 'A quick check-in keeps your day on track.',
+        ReminderDayPeriod.evening =>
+          _isRussian
+              ? 'Спокойный вечерний режим помогает сохранять регулярность.'
+              : 'A calm evening routine helps you stay consistent.',
+        ReminderDayPeriod.night =>
+          _isRussian
+              ? 'Примите, когда будете готовиться ко сну.'
+              : 'Take it when you are settling down for the night.',
+      },
+    };
+  }
+
+  static String buildSmartReminderTitle({
+    required MedicineEntity medicine,
+    required DateTime scheduledTime,
+    bool snoozed = false,
+  }) {
+    final period = _periodLabel(periodForTime(scheduledTime));
+    final typeLead = medicine.kind == CourseKindEnum.supplement
+        ? (_isRussian ? 'wellness' : 'wellness')
+        : (_isRussian ? 'курс' : 'care');
+    if (snoozed) {
+      return _isRussian
+          ? '$period напоминание: ${medicine.name}'
+          : '$period $typeLead reminder: ${medicine.name}';
+    }
+    return _isRussian
+        ? '$period прием: ${medicine.name}'
+        : '$period $typeLead: ${medicine.name}';
+  }
+
+  static String buildSmartReminderBody({
+    required MedicineEntity medicine,
+    required DateTime scheduledTime,
+    required double dosage,
+  }) {
+    final amount =
+        '${_formatDosage(dosage)} ${_localizedUnit(medicine.dosageUnit)}'
+            .trim();
+    final cue = _foodCue(
+      medicine.foodInstruction,
+      periodForTime(scheduledTime),
+    );
+    final lead = medicine.kind == CourseKindEnum.supplement
+        ? (_isRussian
+              ? 'Мягкое напоминание для вашего режима.'
+              : 'A gentle check-in for your routine.')
+        : (_isRussian
+              ? 'Спокойное напоминание по вашему курсу.'
+              : 'A calm reminder for your treatment plan.');
+    return '$lead $amount. $cue';
+  }
+
+  static String buildLowStockTitle(MedicineEntity medicine) {
+    return _isRussian
+        ? '⚠️ Заканчивается: ${medicine.name}'
+        : '⚠️ Low Stock: ${medicine.name}';
+  }
+
+  static String buildLowStockBody(MedicineEntity medicine) {
+    final unit = _localizedUnit(medicine.dosageUnit);
+    return _isRussian
+        ? 'Осталось только ${medicine.pillsRemaining} $unit. Пора пополнить запас.'
+        : 'Only ${medicine.pillsRemaining} $unit left. Time to refill!';
+  }
+
   Future<void> init() async {
     tz.initializeTimeZones();
 
@@ -225,11 +370,17 @@ class NotificationService {
       DarwinNotificationCategory(
         categoryMedication,
         actions: [
-          DarwinNotificationAction.plain(actionTake, 'Take'),
-          DarwinNotificationAction.plain(actionSnooze, 'Snooze 30m'),
+          DarwinNotificationAction.plain(
+            actionTake,
+            _isRussian ? 'Принять' : 'Take',
+          ),
+          DarwinNotificationAction.plain(
+            actionSnooze,
+            _isRussian ? 'Отложить 30м' : 'Snooze 30m',
+          ),
           DarwinNotificationAction.plain(
             actionSkip,
-            'Skip',
+            _isRussian ? 'Пропустить' : 'Skip',
             options: <DarwinNotificationActionOption>{
               DarwinNotificationActionOption.destructive,
             },

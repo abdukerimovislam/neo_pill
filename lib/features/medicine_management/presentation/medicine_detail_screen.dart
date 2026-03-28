@@ -9,10 +9,15 @@ import '../../../data/local/isar_service.dart';
 import '../../../core/utils/pdf_generator_service.dart';
 import '../../../data/local/entities/medicine_entity.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/l10n_extensions.dart';
 import '../../home/presentation/widgets/pill_icon_widget.dart';
 import '../../home/providers/home_controller.dart';
 import '../../../core/presentation/widgets/gradient_scaffold.dart';
 import '../../../core/presentation/widgets/glass_container.dart';
+import '../../../core/presentation/widgets/animated_reveal.dart';
+import '../../../core/presentation/widgets/ambient_glow.dart';
+import '../../../core/presentation/widgets/state_card.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../settings/provider/settings_provider.dart';
 import 'edit_medicine_screen.dart';
 
@@ -29,9 +34,39 @@ final medicineHistoryProvider =
           .findAll();
     });
 
+final medicineSchedulePreviewProvider =
+    FutureProvider.family<List<DoseLogEntity>, String>((ref, syncId) async {
+      final isar = await ref.read(localDbProvider).db;
+      final pendingLogs = await isar.doseLogEntitys
+          .filter()
+          .medicineSyncIdEqualTo(syncId)
+          .statusEqualTo(DoseStatusEnum.pending)
+          .findAll();
+
+      pendingLogs.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
+      if (pendingLogs.isEmpty) return [];
+
+      final firstDay = DateTime(
+        pendingLogs.first.scheduledTime.year,
+        pendingLogs.first.scheduledTime.month,
+        pendingLogs.first.scheduledTime.day,
+      );
+
+      return pendingLogs.where((log) {
+        final currentDay = DateTime(
+          log.scheduledTime.year,
+          log.scheduledTime.month,
+          log.scheduledTime.day,
+        );
+        return currentDay.isAtSameMomentAs(firstDay);
+      }).toList();
+    });
+
 class MedicineDetailScreen extends ConsumerStatefulWidget {
   final MedicineEntity medicine;
-  const MedicineDetailScreen({super.key, required this.medicine});
+  final String? heroTag;
+
+  const MedicineDetailScreen({super.key, required this.medicine, this.heroTag});
 
   @override
   ConsumerState<MedicineDetailScreen> createState() =>
@@ -51,14 +86,11 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
 
     _breathingController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 700),
+    )..forward();
 
-    _breathingAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
-      CurvedAnimation(
-        parent: _breathingController,
-        curve: Curves.easeInOutSine,
-      ),
+    _breathingAnimation = Tween<double>(begin: 0.985, end: 1.0).animate(
+      CurvedAnimation(parent: _breathingController, curve: Curves.easeOutCubic),
     );
   }
 
@@ -72,7 +104,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteCourse),
+        title: Text('${l10n.deleteCourse}: ${widget.medicine.name}'),
         content: Text(l10n.deleteConfirmation),
         actions: [
           TextButton(
@@ -89,7 +121,15 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
               await ref
                   .read(homeControllerProvider)
                   .deleteMedicine(widget.medicine);
-              if (mounted) navigator.pop();
+              if (mounted) {
+                final kindLabel =
+                    widget.medicine.kind == CourseKindEnum.supplement
+                    ? l10n.courseKindSupplement
+                    : l10n.courseKindMedication;
+                navigator.pop(
+                  l10n.courseDeletedMessage(kindLabel, widget.medicine.name),
+                );
+              }
             },
             child: Text(l10n.delete),
           ),
@@ -100,7 +140,22 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
 
   Future<void> _togglePause() async {
     await ref.read(homeControllerProvider).togglePauseMedicine(widget.medicine);
-    setState(() => _isPaused = !_isPaused);
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    final nextPausedState = !_isPaused;
+    final kindLabel = widget.medicine.kind == CourseKindEnum.supplement
+        ? l10n.courseKindSupplement
+        : l10n.courseKindMedication;
+    setState(() => _isPaused = nextPausedState);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          nextPausedState
+              ? l10n.coursePausedMessage(kindLabel, widget.medicine.name)
+              : l10n.courseResumedMessage(kindLabel, widget.medicine.name),
+        ),
+      ),
+    );
   }
 
   Future<void> _generatePdfReport(AppLocalizations l10n) async {
@@ -131,6 +186,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
       final logs = await isar.doseLogEntitys
           .filter()
           .medicineSyncIdEqualTo(widget.medicine.syncId)
+          .sortByScheduledTimeDesc()
           .findAll();
       await PdfGeneratorService.generateAndShareReport(
         medicine: widget.medicine,
@@ -196,12 +252,137 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
     );
   }
 
+  String _localizedFrequency(AppLocalizations l10n) {
+    return switch (widget.medicine.frequency) {
+      FrequencyTypeEnum.daily => l10n.medicineFrequencyDaily,
+      FrequencyTypeEnum.asNeeded => l10n.asNeededFrequency,
+      FrequencyTypeEnum.tapering => l10n.taperingFrequency,
+      FrequencyTypeEnum.specificDays => l10n.medicineFrequencySpecificDays,
+      FrequencyTypeEnum.interval => l10n.medicineFrequencyInterval,
+      FrequencyTypeEnum.cycle => l10n.medicineFrequencyCycle,
+    };
+  }
+
+  String _localizedForm(AppLocalizations l10n) {
+    return switch (widget.medicine.form) {
+      MedicineFormEnum.pill => l10n.medicineFormTablet,
+      MedicineFormEnum.capsule => l10n.medicineFormCapsule,
+      MedicineFormEnum.liquid => l10n.medicineFormLiquid,
+      MedicineFormEnum.injection => l10n.medicineFormInjection,
+      MedicineFormEnum.drops => l10n.medicineFormDrops,
+      MedicineFormEnum.ointment => l10n.medicineFormOintment,
+      MedicineFormEnum.spray => l10n.medicineFormSpray,
+      MedicineFormEnum.inhaler => l10n.medicineFormInhaler,
+      MedicineFormEnum.patch => l10n.medicineFormPatch,
+      MedicineFormEnum.suppository => l10n.medicineFormSuppository,
+    };
+  }
+
+  String _formatDosage(double dosage) {
+    return dosage % 1 == 0 ? dosage.toInt().toString() : dosage.toString();
+  }
+
+  Widget _buildCourseTypeBadge({
+    required ThemeData theme,
+    required bool isComplexCourse,
+  }) {
+    final label = isComplexCourse
+        ? AppLocalizations.of(context)!.medicineComplexCourse
+        : AppLocalizations.of(context)!.medicineStandardCourse;
+    final color = widget.medicine.kind == CourseKindEnum.supplement
+        ? theme.supplementAccent
+        : theme.brandPrimary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isComplexCourse ? Icons.timeline_rounded : Icons.checklist_rounded,
+            size: 16,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _kindLabel() {
+    return switch (widget.medicine.kind) {
+      CourseKindEnum.medication => AppLocalizations.of(
+        context,
+      )!.courseKindMedication,
+      CourseKindEnum.supplement => AppLocalizations.of(
+        context,
+      )!.courseKindSupplement,
+    };
+  }
+
+  IconData _kindIcon() {
+    return widget.medicine.kind == CourseKindEnum.supplement
+        ? Icons.spa_rounded
+        : Icons.local_hospital_rounded;
+  }
+
+  Gradient _heroGradient() {
+    if (widget.medicine.kind == CourseKindEnum.supplement) {
+      return LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          const Color(0xFFBFD7F2).withValues(alpha: 0.92),
+          const Color(0xFF9FB8D4).withValues(alpha: 0.98),
+        ],
+      );
+    }
+
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        const Color(0xFF8ED1A6).withValues(alpha: 0.92),
+        const Color(0xFF6BBFB2).withValues(alpha: 0.98),
+      ],
+    );
+  }
+
+  Color _heroPrimaryColor() {
+    return widget.medicine.kind == CourseKindEnum.supplement
+        ? const Color(0xFF24415F)
+        : const Color(0xFF1C4A3A);
+  }
+
+  Color _heroSecondaryColor() {
+    return widget.medicine.kind == CourseKindEnum.supplement
+        ? const Color(0xFF355675)
+        : const Color(0xFF2B6050);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final heroPrimaryColor = _heroPrimaryColor();
+    final heroSecondaryColor = _heroSecondaryColor();
     final historyAsync = ref.watch(
       medicineHistoryProvider(widget.medicine.syncId),
+    );
+    final schedulePreviewAsync = ref.watch(
+      medicineSchedulePreviewProvider(widget.medicine.syncId),
     );
 
     final progress = widget.medicine.pillsInPackage > 0
@@ -212,13 +393,8 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
         ? rawDosage.toInt().toString()
         : rawDosage.toString();
 
-    String freqStr = widget.medicine.frequency.name.toUpperCase();
-    if (widget.medicine.frequency == FrequencyTypeEnum.asNeeded) {
-      freqStr = l10n.asNeededFrequency;
-    }
-    if (widget.medicine.frequency == FrequencyTypeEnum.tapering) {
-      freqStr = l10n.taperingFrequency;
-    }
+    final freqStr = _localizedFrequency(l10n);
+    final formLabel = _localizedForm(l10n);
 
     return GradientScaffold(
       extendBodyBehindAppBar: true,
@@ -245,7 +421,13 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                               EditMedicineScreen(medicine: widget.medicine),
                         ),
                       )
-                      .then((_) {
+                      .then((result) {
+                        if (!context.mounted) return;
+                        if (result is String && result.isNotEmpty) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(result)));
+                        }
                         setState(() {});
                         ref.invalidate(
                           medicineHistoryProvider(widget.medicine.syncId),
@@ -273,82 +455,206 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
 
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 🚀 АНИМИРОВАННАЯ КАРТОЧКА: ФОТО ИЛИ ИКОНКА
-                  ScaleTransition(
-                    scale: _breathingAnimation,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Color(
-                            widget.medicine.pillColor,
-                          ).withValues(alpha: 0.3),
-                          width: 3,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(
-                              widget.medicine.pillColor,
-                            ).withValues(alpha: 0.2),
-                            blurRadius: 40,
-                            spreadRadius: 10,
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 40),
+                    child: ScaleTransition(
+                      scale: _breathingAnimation,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          AmbientGlow(
+                            color: Color(widget.medicine.pillColor),
+                            size: 210,
+                            opacity: 0.16,
+                          ),
+                          Hero(
+                            tag:
+                                widget.heroTag ??
+                                'medicine-${widget.medicine.syncId}',
+                            child: Material(
+                              color: Colors.transparent,
+                              child: Container(
+                                width: 140,
+                                height: 140,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surface,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Color(
+                                      widget.medicine.pillColor,
+                                    ).withValues(alpha: 0.3),
+                                    width: 3,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Color(
+                                        widget.medicine.pillColor,
+                                      ).withValues(alpha: 0.2),
+                                      blurRadius: 40,
+                                      spreadRadius: 10,
+                                    ),
+                                  ],
+                                ),
+                                child: widget.medicine.pillImagePath != null
+                                    ? ClipOval(
+                                        child: Image.file(
+                                          File(widget.medicine.pillImagePath!),
+                                          width: 140,
+                                          height: 140,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (
+                                                context,
+                                                error,
+                                                stackTrace,
+                                              ) => Center(
+                                                child: PillIconWidget(
+                                                  shape:
+                                                      widget.medicine.pillShape,
+                                                  colorHex:
+                                                      widget.medicine.pillColor,
+                                                  size: 60,
+                                                ),
+                                              ),
+                                        ),
+                                      )
+                                    : Center(
+                                        child: PillIconWidget(
+                                          shape: widget.medicine.pillShape,
+                                          colorHex: widget.medicine.pillColor,
+                                          size: 60,
+                                        ),
+                                      ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      child:
-                          widget.medicine.pillImagePath != null &&
-                              File(widget.medicine.pillImagePath!).existsSync()
-                          ? ClipOval(
-                              child: Image.file(
-                                File(widget.medicine.pillImagePath!),
-                                width: 140,
-                                height: 140,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Center(
-                              child: PillIconWidget(
-                                shape: widget.medicine.pillShape,
-                                colorHex: widget.medicine.pillColor,
-                                size: 60,
-                              ),
-                            ),
                     ),
                   ),
                   const SizedBox(height: 24),
 
-                  Text(
-                    widget.medicine.name,
-                    style: theme.textTheme.displayLarge?.copyWith(
-                      fontSize: 32,
-                      letterSpacing: -1.0,
-                      color: _isPaused ? theme.disabledColor : null,
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 100),
+                    child: Text(
+                      widget.medicine.name,
+                      style: theme.textTheme.displayLarge?.copyWith(
+                        fontSize: 32,
+                        letterSpacing: -1.0,
+                        fontWeight: FontWeight.w900,
+                        color: _isPaused ? theme.disabledColor : null,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 130),
+                    child: GlassContainer(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      gradient: _heroGradient(),
+                      borderRadius: 20,
+                      child: Text(
+                        '$dosage ${l10n.dosageUnitLabel(widget.medicine.dosageUnit)}',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: heroPrimaryColor,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
+                      horizontal: 12,
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white.withValues(alpha: 0.46),
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                    child: Text(
-                      '$dosage ${widget.medicine.dosageUnit}',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: theme.primaryColor,
-                        fontWeight: FontWeight.w900,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(_kindIcon(), size: 14, color: heroPrimaryColor),
+                        const SizedBox(width: 6),
+                        Text(
+                          _kindLabel(),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: heroPrimaryColor,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 170),
+                    child: GlassContainer(
+                      padding: const EdgeInsets.all(14),
+                      gradient: _heroGradient(),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            widget.medicine.kind == CourseKindEnum.supplement
+                                ? Icons.spa_rounded
+                                : Icons.local_hospital_rounded,
+                            size: 18,
+                            color: heroPrimaryColor,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              widget.medicine.kind == CourseKindEnum.supplement
+                                  ? l10n.medicineTimelineSupplementInfo
+                                  : l10n.medicineTimelineMedicationInfo,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: heroSecondaryColor,
+                                height: 1.35,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  schedulePreviewAsync.when(
+                    data: (logs) {
+                      final uniqueDosages = logs
+                          .map((log) => _formatDosage(log.dosage))
+                          .toSet();
+                      final isComplexCourse =
+                          widget.medicine.frequency ==
+                              FrequencyTypeEnum.tapering ||
+                          uniqueDosages.length > 1;
+                      return _buildCourseTypeBadge(
+                        theme: theme,
+                        isComplexCourse: isComplexCourse,
+                      );
+                    },
+                    loading: () => _buildCourseTypeBadge(
+                      theme: theme,
+                      isComplexCourse:
+                          widget.medicine.frequency ==
+                          FrequencyTypeEnum.tapering,
+                    ),
+                    error: (error, stack) => _buildCourseTypeBadge(
+                      theme: theme,
+                      isComplexCourse:
+                          widget.medicine.frequency ==
+                          FrequencyTypeEnum.tapering,
                     ),
                   ),
 
@@ -360,25 +666,25 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.1),
+                        color: theme.warningAccent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.orange.withValues(alpha: 0.5),
+                          color: theme.warningAccent.withValues(alpha: 0.5),
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.pause_circle_filled,
-                            color: Colors.orange,
+                            color: theme.warningAccent,
                             size: 16,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             l10n.coursePaused,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: Colors.orange,
+                              color: theme.warningAccent,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -388,31 +694,151 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                   ],
                   const SizedBox(height: 32),
 
-                  Row(
-                    children: [
-                      _buildBentoCard(
-                        l10n.frequency,
-                        freqStr,
-                        Icons.calendar_month_rounded,
-                        theme.primaryColor,
-                        theme,
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      l10n.scheduleAndRules,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: theme.colorScheme.onSurface,
                       ),
-                      const SizedBox(width: 16),
-                      _buildBentoCard(
-                        l10n.form,
-                        widget.medicine.form.name.toUpperCase(),
-                        Icons.medication_rounded,
-                        theme.colorScheme.secondary,
-                        theme,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 220),
+                    child: GlassContainer(
+                      padding: const EdgeInsets.all(16),
+                      color: theme.colorScheme.surface.withValues(alpha: 0.45),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              _buildBentoCard(
+                                l10n.frequency,
+                                freqStr,
+                                Icons.calendar_month_rounded,
+                                theme.primaryColor,
+                                theme,
+                              ),
+                              const SizedBox(width: 16),
+                              _buildBentoCard(
+                                l10n.form,
+                                formLabel,
+                                widget.medicine.kind ==
+                                        CourseKindEnum.supplement
+                                    ? Icons.spa_rounded
+                                    : Icons.medication_rounded,
+                                widget.medicine.kind ==
+                                        CourseKindEnum.supplement
+                                    ? theme.supplementAccent
+                                    : theme.brandPrimary,
+                                theme,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          schedulePreviewAsync.when(
+                            data: (logs) {
+                              final uniqueDosages = logs
+                                  .map((log) => _formatDosage(log.dosage))
+                                  .toSet();
+                              if (logs.isEmpty ||
+                                  widget.medicine.frequency ==
+                                      FrequencyTypeEnum.asNeeded ||
+                                  uniqueDosages.length <= 1) {
+                                return const SizedBox.shrink();
+                              }
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.medicineDoseScheduleTitle,
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w800),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    l10n.medicineDoseScheduleSubtitle,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Wrap(
+                                    spacing: 10,
+                                    runSpacing: 10,
+                                    children: logs.map((log) {
+                                      final time = DateFormat.Hm(
+                                        Localizations.localeOf(
+                                          context,
+                                        ).languageCode,
+                                      ).format(log.scheduledTime);
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: theme.brandPrimary.withValues(
+                                            alpha: 0.08,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                          border: Border.all(
+                                            color: theme.brandPrimary
+                                                .withValues(alpha: 0.12),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              time,
+                                              style: theme.textTheme.titleMedium
+                                                  ?.copyWith(
+                                                    color: theme.brandPrimary,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${_formatDosage(log.dosage)} ${l10n.dosageUnitLabel(widget.medicine.dosageUnit)}',
+                                              style: theme.textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w700,
+                                                    color: theme
+                                                        .colorScheme
+                                                        .onSurface,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              );
+                            },
+                            loading: () => const SizedBox.shrink(),
+                            error: (error, stack) => const SizedBox.shrink(),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 16),
 
                   GlassContainer(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(16),
                     color: widget.medicine.pillsRemaining == 0
-                        ? theme.colorScheme.error.withValues(alpha: 0.05)
+                        ? theme.dangerAccent.withValues(alpha: 0.05)
                         : theme.colorScheme.surface.withValues(alpha: 0.45),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,7 +860,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.error.withValues(
+                                  color: theme.dangerAccent.withValues(
                                     alpha: 0.12,
                                   ),
                                   borderRadius: BorderRadius.circular(999),
@@ -442,7 +868,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                                 child: Text(
                                   l10n.outOfStockBadge,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.error,
+                                    color: theme.dangerAccent,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -456,13 +882,15 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withValues(alpha: 0.12),
+                                  color: theme.warningAccent.withValues(
+                                    alpha: 0.12,
+                                  ),
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
                                   l10n.lowStockAlert,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: Colors.orange,
+                                    color: theme.warningAccent,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -481,10 +909,10 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                                   backgroundColor: theme.dividerColor
                                       .withValues(alpha: 0.15),
                                   color: widget.medicine.pillsRemaining == 0
-                                      ? theme.colorScheme.error
+                                      ? theme.dangerAccent
                                       : (progress > 0.2
-                                            ? theme.colorScheme.secondary
-                                            : Colors.orange),
+                                            ? theme.successAccent
+                                            : theme.warningAccent),
                                 ),
                               ),
                             ),
@@ -516,23 +944,19 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                   historyAsync.when(
                     data: (logs) {
                       if (logs.isEmpty) {
-                        return Center(
-                          child: Text(
-                            l10n.noHistoryYet,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.55,
-                              ),
-                            ),
-                          ),
+                        return StateCard(
+                          icon: Icons.history_rounded,
+                          title: l10n.recentHistory,
+                          subtitle: l10n.noHistoryYet,
+                          color: theme.brandPrimary,
                         );
                       }
                       return Column(
                         children: logs.map((log) {
                           final isTaken = log.status == DoseStatusEnum.taken;
                           final statusColor = isTaken
-                              ? theme.colorScheme.secondary
-                              : theme.colorScheme.error;
+                              ? theme.successAccent
+                              : theme.dangerAccent;
                           final dateStr = DateFormat(
                             'MMM d',
                             Localizations.localeOf(context).languageCode,
@@ -619,7 +1043,8 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                     },
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
-                    error: (err, stack) => const Center(child: Text('Error')),
+                    error: (err, stack) =>
+                        Center(child: Text(l10n.medicineHistoryLoadError)),
                   ),
                   const SizedBox(height: 32),
 
@@ -630,13 +1055,11 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             backgroundColor: _isPaused
-                                ? theme.colorScheme.secondary.withValues(
-                                    alpha: 0.1,
-                                  )
-                                : Colors.orange.withValues(alpha: 0.1),
+                                ? theme.successAccent.withValues(alpha: 0.1)
+                                : theme.warningAccent.withValues(alpha: 0.1),
                             foregroundColor: _isPaused
-                                ? theme.colorScheme.secondary
-                                : Colors.orange,
+                                ? theme.successAccent
+                                : theme.warningAccent,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -659,10 +1082,10 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: theme.primaryColor.withValues(
+                            backgroundColor: theme.brandPrimary.withValues(
                               alpha: 0.1,
                             ),
-                            foregroundColor: theme.primaryColor,
+                            foregroundColor: theme.brandPrimary,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -682,7 +1105,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen>
 
                   TextButton.icon(
                     style: TextButton.styleFrom(
-                      foregroundColor: theme.colorScheme.error,
+                      foregroundColor: theme.dangerAccent,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     onPressed: () => _confirmDelete(context, l10n),

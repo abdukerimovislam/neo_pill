@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "AI Medication Manager",
+  "appTitle": "Pillora",
   "@appTitle": {
     "description": "The title of the application"
   },
@@ -17,6 +17,10 @@
   "dosageUnitMg": "mg",
   "dosageUnitMl": "ml",
   "dosageUnitDrops": "drops",
+  "dosageUnitPcs": "pcs",
+  "dosageUnitG": "g",
+  "dosageUnitMcg": "mcg",
+  "dosageUnitIu": "IU",
   "addMedicationTitle": "Add Medication",
     "medicineNameHint": "Medicine Name (e.g. Vitamin D)",
     "dosageHint": "Dosage (e.g. 500)",
@@ -49,14 +53,35 @@
         "keepItUp": "Great job! Keep it up.",
         "needsAttention": "Needs attention. Try not to miss doses.",
         "medicineDetails": "Medicine Details",
-          "pillsRemaining": "Pills Remaining",
+          "pillsRemaining": "Remaining in stock",
           "deleteCourse": "Delete Course",
-          "deleteConfirmation": "Are you sure you want to delete this medication and all its reminders?",
+          "deleteConfirmation": "Are you sure you want to delete this course and all its reminders?",
+          "courseAddedMessage": "{type} \"{name}\" added.",
+          "@courseAddedMessage": {
+            "placeholders": {
+              "type": { "type": "String" },
+              "name": { "type": "String" }
+            }
+          },
+          "courseUpdatedMessage": "{type} \"{name}\" updated.",
+          "@courseUpdatedMessage": {
+            "placeholders": {
+              "type": { "type": "String" },
+              "name": { "type": "String" }
+            }
+          },
+          "courseDeletedMessage": "{type} \"{name}\" deleted.",
+          "@courseDeletedMessage": {
+            "placeholders": {
+              "type": { "type": "String" },
+              "name": { "type": "String" }
+            }
+          },
           "cancel": "Cancel",
           "delete": "Delete",
           "timeOfDay": "Time of Day",
           "courseDuration": "Course Duration (days)",
-            "pillsInPackage": "Pills in Package",
+            "pillsInPackage": "Amount in package",
             "addTime": "Add Time",
             "timeLabel": "Time {number}",
             "@timeLabel": {
@@ -69,6 +94,7 @@
             "foodBefore": "Before food",
             "foodWith": "With food",
             "foodAfter": "After food",
+            "foodNoMatter": "Any time",
             "unknownMedicine": "Unknown medicine",
             "addPhoto": "Add Photo",
               "takePhoto": "Take a photo",
@@ -91,6 +117,20 @@
               "coursePaused": "Course Paused",
                 "resumeCourse": "Resume",
                 "pauseCourse": "Pause",
+                "coursePausedMessage": "{type} \"{name}\" paused.",
+                "@coursePausedMessage": {
+                  "placeholders": {
+                    "type": { "type": "String" },
+                    "name": { "type": "String" }
+                  }
+                },
+                "courseResumedMessage": "{type} \"{name}\" resumed.",
+                "@courseResumedMessage": {
+                  "placeholders": {
+                    "type": { "type": "String" },
+                    "name": { "type": "String" }
+                  }
+                },
                 "doctorReport": "Doctor Report",
                 "generatingReport": "Generating Doctor Report...",
                 "errorGeneratingReport": "Error generating PDF: {error}",
@@ -239,5 +279,541 @@
                                             "contactSupport": "Contact Support",
                                             "privacyPolicy": "Privacy Policy",
                                             "logout": "Log Out",
-                                            "tabSettings": "Profile"
+                                            "tabSettings": "Profile",
+                                            "defaultUserName": "Friend",
+                                            "courseKindMedication": "Medication",
+                                            "courseKindSupplement": "Supplement",
+                                            "courseFilterAll": "All",
+                                            "courseFilterMedications": "Medications",
+                                            "courseFilterSupplements": "Supplements",
+                                            "homeTakeMedicationNow": "Take this medication now",
+                                            "homeTakeSupplementNow": "Take this supplement now",
+                                            "homeEmptyAllTitle": "You have a quiet moment",
+                                            "homeEmptyMedicationsTitle": "Medications are all set",
+                                            "homeEmptySupplementsTitle": "Supplements are all set",
+                                            "homeEmptyAllSubtitle": "Nothing needs attention right now. You can check another day or add a new course when you are ready.",
+                                            "homeEmptyMedicationsSubtitle": "No medications need attention on this date. It is a good moment for a calm pause.",
+                                            "homeEmptySupplementsSubtitle": "No supplements need attention on this date. Your wellness routine is clear for now.",
+                                            "homeAddSupplementTitle": "Add supplement",
+                                            "homeAddSupplementSubtitle": "Schedule vitamins and wellness supplements",
+                                            "homeForThisDay": "For this day",
+                                            "homeMorningRoutine": "Morning routine",
+                                            "homeAfternoonRoutine": "Afternoon routine",
+                                            "homeEveningRoutine": "Evening routine",
+                                            "homeNightRoutine": "Night routine",
+                                            "homeRoutineSupplementsOnly": "supplements only",
+                                            "homeRoutineMedicationsOnly": "medications only",
+                                            "homeRoutineMixed": "mixed routine",
+                                            "homeRoutineItemCount": "{count, plural, one{1 item} other{{count} items}}",
+                                            "@homeRoutineItemCount": {
+                                              "placeholders": {
+                                                "count": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "homeNeedsAttentionTitle": "Needs attention",
+                                            "homeNeedsAttentionSubtitle": "{count, plural, one{1 scheduled item should be taken or reviewed now.} other{{count} scheduled items should be taken or reviewed now.}}",
+                                            "@homeNeedsAttentionSubtitle": {
+                                              "placeholders": {
+                                                "count": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "homeNextUpTitle": "Next up",
+                                            "homeRefillReminderTitle": "Refill reminder",
+                                            "homeRefillReminderSubtitle": "{count, plural, one{1 course may need a refill soon.} other{{count} courses may need a refill soon.}}",
+                                            "@homeRefillReminderSubtitle": {
+                                              "placeholders": {
+                                                "count": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "homeEverythingCalmTitle": "Everything is calm",
+                                            "homeEverythingCalmSubtitle": "No urgent medication or supplement tasks right now.",
+                                            "homeNoUpcomingItem": "No upcoming item scheduled.",
+                                            "homeScheduledFor": "Scheduled for {time}",
+                                            "@homeScheduledFor": {
+                                              "placeholders": {
+                                                "time": {
+                                                  "type": "String"
+                                                }
+                                              }
+                                            },
+                                            "calendarToday": "Today",
+                                            "calendarSelectedDay": "Selected day",
+                                            "calendarShowingToday": "Showing today's schedule",
+                                            "calendarBrowseNearbyDays": "Scroll the wheel to browse nearby days",
+                                            "calendarPreviewAnotherDay": "The wheel lets you preview another day before the screen updates.",
+                                            "calendarDayWheelSemantics": "Day wheel",
+                                            "analyticsCourseMix": "Course mix",
+                                            "analyticsCourseMixSubtitle": "Treatment courses and supplements are tracked together, but measured separately here.",
+                                            "analyticsCurrentRoutine": "Current routine",
+                                            "analyticsCurrentRoutineSubtitle": "Days in a row without missed doses",
+                                            "analyticsTimingAccuracy": "Timing accuracy",
+                                            "analyticsTimingAccuracySubtitle": "Taken within 30 minutes",
+                                            "analyticsBestRoutine": "Best routine",
+                                            "analyticsBestRoutineSubtitle": "Best result in the last 90 days",
+                                            "analyticsRefillRisk": "Refill risk",
+                                            "analyticsRefillRiskSubtitle": "Courses close to refill threshold",
+                                            "analyticsAverageDelay": "Average delay",
+                                            "analyticsMinutesShort": "min",
+                                            "analyticsCoachNote": "Coach note",
+                                            "analyticsMissedDoses": "Missed doses",
+                                            "analyticsActiveShort": "{count} active",
+                                            "@analyticsActiveShort": {
+                                              "placeholders": {
+                                                "count": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "analyticsTakenMissed": "Taken: {taken}  Missed: {missed}",
+                                            "@analyticsTakenMissed": {
+                                              "placeholders": {
+                                                "taken": {
+                                                  "type": "int"
+                                                },
+                                                "missed": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "settingsContactSupportTitle": "Contact support",
+                                            "settingsContactSupportBody": "If something feels confusing or isn't working as expected, we can help. Include your device model, app version, and a short description of the issue.",
+                                            "settingsSupportEmailCopied": "Support email copied",
+                                            "settingsCopySupportEmail": "Copy support email",
+                                            "settingsPrivacyTitle": "Privacy policy",
+                                            "settingsPrivacyBodyPrimary": "Pillora stores your course details, reminder settings, and dose history on your device so the app can show your schedule and generate reports.",
+                                            "settingsPrivacyBodySecondary": "Medication photos and report exports are created only when you choose to use them. Before launch, replace this in-app summary with your final hosted privacy policy URL.",
+                                            "settingsPrivacyLaunchNote": "Launch note: publish a full privacy policy on your website or store listing before release.",
+                                            "settingsLanguageEnglish": "English",
+                                            "settingsLanguageRussian": "Russian",
+                                            "settingsYourProfilePreferences": "Your profile and important preferences",
+                                            "settingsComfortModeTitle": "Comfort mode",
+                                            "settingsComfortModeSubtitle": "Larger text and calmer visuals",
+                                            "settingsNotificationsEnabled": "Medication reminders are enabled",
+                                            "settingsOn": "On",
+                                            "settingsSupportAndSafety": "Support and safety",
+                                            "settingsShowOnboardingAgain": "Show onboarding again",
+                                            "settingsShowOnboardingAgainSubtitle": "Open the first-run guide again",
+                                            "settingsFeaturePolishing": "This feature is being polished for a later release",
+                                            "settingsCaregiverTitle": "Caregiver sharing",
+                                            "settingsCaregiverDescription": "Add a trusted person so reports can include their contact details and shared care stays organized.",
+                                            "settingsCaregiverName": "Caregiver name",
+                                            "settingsCaregiverRelation": "Relation",
+                                            "settingsCaregiverPhone": "Phone number",
+                                            "settingsCaregiverShareReports": "Include caregiver in reports",
+                                            "settingsCaregiverShareReportsSubtitle": "Doctor reports can include caregiver contact details when you share them.",
+                                            "settingsCaregiverSaved": "Caregiver settings saved",
+                                            "settingsCaregiverRemoved": "Caregiver removed",
+                                            "settingsCaregiverRemove": "Remove caregiver",
+                                            "settingsCaregiverEmpty": "Add a trusted person for shared care and reports",
+                                            "settingsCaregiverAlertsTitle": "Caregiver alerts",
+                                            "settingsCaregiverAlertsDescription": "If an important dose is late or marked as skipped, Pillora can prepare a ready alert for your caregiver on this device.",
+                                            "settingsCaregiverAlertsEmpty": "Add a caregiver first to prepare missed-dose alerts",
+                                            "settingsCaregiverAlertsDisabled": "Alerts for your caregiver are turned off",
+                                            "settingsCaregiverAlertsEnabledSummary": "An alert is prepared after {minutes} minutes if attention is needed",
+                                            "@settingsCaregiverAlertsEnabledSummary": {
+                                              "placeholders": {
+                                                "minutes": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "settingsCaregiverAlertsSwitchTitle": "Prepare caregiver alerts",
+                                            "settingsCaregiverAlertsSwitchSubtitle": "When a dose needs attention, Pillora will prepare a message you can copy and send.",
+                                            "settingsCaregiverAlertsGraceTitle": "Grace period",
+                                            "settingsCaregiverAlertsGraceDescription": "Wait {minutes} minutes before preparing an alert for an overdue item.",
+                                            "@settingsCaregiverAlertsGraceDescription": {
+                                              "placeholders": {
+                                                "minutes": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "settingsCaregiverAlertsGraceChip": "{minutes} min",
+                                            "@settingsCaregiverAlertsGraceChip": {
+                                              "placeholders": {
+                                                "minutes": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "settingsCaregiverAlertsOverdueTitle": "Include overdue doses",
+                                            "settingsCaregiverAlertsOverdueSubtitle": "Prepare an alert when a planned dose is still pending after the grace period.",
+                                            "settingsCaregiverAlertsSkippedTitle": "Include skipped doses",
+                                            "settingsCaregiverAlertsSkippedSubtitle": "Prepare an alert when a dose is explicitly marked as skipped.",
+                                            "settingsCaregiverAlertsSupplementsTitle": "Include supplements",
+                                            "settingsCaregiverAlertsSupplementsSubtitle": "Use the same alert flow for supplements, not only medications.",
+                                            "settingsCaregiverAlertsSaved": "Caregiver alert rules saved",
+                                            "settingsCaregiverConnectedTitle": "Connected caregiver delivery",
+                                            "settingsCaregiverConnectedDescription": "This app-side layer keeps a stable link code and a sync-ready outbox, so direct caregiver device alerts can be connected cleanly when cloud delivery is enabled.",
+                                            "settingsCaregiverConnectedReady": "Link-ready code is prepared. No alerts are waiting in the outbox.",
+                                            "settingsCaregiverConnectedPending": "{count} alert(s) are waiting in the connected-delivery outbox.",
+                                            "@settingsCaregiverConnectedPending": {
+                                              "placeholders": {
+                                                "count": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "settingsCaregiverConnectedCodeTitle": "Caregiver link code",
+                                            "settingsCaregiverConnectedCodeSubtitle": "Keep this code ready for linking the caregiver device when direct delivery is enabled.",
+                                            "settingsCaregiverConnectedOutboxTitle": "Alert outbox",
+                                            "settingsCaregiverConnectedLastQueued": "Last queued: {value}",
+                                            "@settingsCaregiverConnectedLastQueued": {
+                                              "placeholders": {
+                                                "value": {
+                                                  "type": "String"
+                                                }
+                                              }
+                                            },
+                                            "settingsCaregiverConnectedCopyCode": "Copy link code",
+                                            "settingsCaregiverConnectedCodeCopied": "Caregiver link code copied",
+                                            "settingsCaregiverConnectedClearOutbox": "Clear outbox",
+                                            "settingsCaregiverConnectedOutboxCleared": "Caregiver outbox cleared",
+                                            "settingsCaregiverConnectedCloudTitle": "Cloud link mode",
+                                            "settingsCaregiverConnectedModePatient": "This device is acting as the patient device and mirrors alerts to Firestore.",
+                                            "settingsCaregiverConnectedModeCaregiver": "This device is linked as the caregiver device for {patientName}.",
+                                            "@settingsCaregiverConnectedModeCaregiver": {
+                                              "placeholders": {
+                                                "patientName": {
+                                                  "type": "String"
+                                                }
+                                              }
+                                            },
+                                            "settingsCaregiverConnectedModeNone": "This device is not linked to the cloud caregiver flow yet.",
+                                            "settingsCaregiverConnectedCloudCode": "Linked code: {code}",
+                                            "@settingsCaregiverConnectedCloudCode": {
+                                              "placeholders": {
+                                                "code": {
+                                                  "type": "String"
+                                                }
+                                              }
+                                            },
+                                            "settingsCaregiverConnectedInboxTitle": "Caregiver inbox preview",
+                                            "settingsCaregiverConnectedInboxEmpty": "No cloud alerts are waiting right now.",
+                                            "settingsCaregiverConnectedUsePatientDevice": "Use this device as patient",
+                                            "settingsCaregiverConnectedPatientModeSaved": "This device is now linked as the patient device",
+                                            "settingsCaregiverConnectedUseCaregiverDevice": "Connect this device as caregiver",
+                                            "settingsCaregiverConnectedJoinTitle": "Join caregiver link",
+                                            "settingsCaregiverConnectedJoinSubtitle": "Enter the caregiver link code from the patient device to receive alerts in this app while it is active.",
+                                            "settingsCaregiverConnectedJoinAction": "Connect caregiver device",
+                                            "settingsCaregiverConnectedCaregiverModeSaved": "This device is now linked as the caregiver device",
+                                            "settingsCaregiverConnectedJoinFailed": "The caregiver link code was not found",
+                                            "settingsCaregiverConnectedDisconnect": "Disconnect cloud link",
+                                            "settingsCaregiverConnectedDisconnected": "This device has been disconnected from the cloud caregiver flow",
+                                            "caregiverCloudNotificationTitle": "Caregiver alert",
+                                            "caregiverAlertCardTitle": "Caregiver alert is ready",
+                                            "caregiverAlertCardSubtitle": "{caregiverName} can be notified about {count} item(s) that need attention today.",
+                                            "@caregiverAlertCardSubtitle": {
+                                              "placeholders": {
+                                                "caregiverName": {
+                                                  "type": "String"
+                                                },
+                                                "count": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "caregiverAlertReviewAction": "Review and copy",
+                                            "caregiverAlertSheetTitle": "Caregiver alert",
+                                            "caregiverAlertSheetSubtitle": "Pillora prepared a ready message for {caregiverName} about {count} item(s) that need attention.",
+                                            "@caregiverAlertSheetSubtitle": {
+                                              "placeholders": {
+                                                "caregiverName": {
+                                                  "type": "String"
+                                                },
+                                                "count": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "caregiverAlertReasonOverdue": "Late by {minutes} min",
+                                            "@caregiverAlertReasonOverdue": {
+                                              "placeholders": {
+                                                "minutes": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "caregiverAlertReasonSkipped": "Marked as skipped",
+                                            "caregiverAlertItemSchedule": "Scheduled for {time}. {reason}.",
+                                            "@caregiverAlertItemSchedule": {
+                                              "placeholders": {
+                                                "time": {
+                                                  "type": "String"
+                                                },
+                                                "reason": {
+                                                  "type": "String"
+                                                }
+                                              }
+                                            },
+                                            "caregiverAlertManualShareNote": "This release prepares a ready alert on your device, so you can quickly copy it and send it to your caregiver.",
+                                            "caregiverAlertCopyMessage": "Copy alert text",
+                                            "caregiverAlertCopyPhone": "Copy caregiver phone",
+                                            "caregiverAlertNoPhone": "Add caregiver phone in Settings",
+                                            "caregiverAlertMessageCopied": "Caregiver alert copied",
+                                            "caregiverAlertPhoneCopied": "Caregiver phone copied",
+                                            "caregiverAlertMessageGreeting": "Hello, {caregiverName}.",
+                                            "@caregiverAlertMessageGreeting": {
+                                              "placeholders": {
+                                                "caregiverName": {
+                                                  "type": "String"
+                                                }
+                                              }
+                                            },
+                                            "caregiverAlertMessageIntro": "Pillora prepared this update for {patientName}. The following doses need attention today:",
+                                            "@caregiverAlertMessageIntro": {
+                                              "placeholders": {
+                                                "patientName": {
+                                                  "type": "String"
+                                                }
+                                              }
+                                            },
+                                            "caregiverAlertMessageLineOverdue": "{courseName} — scheduled for {time}, now overdue by {minutes} min",
+                                            "@caregiverAlertMessageLineOverdue": {
+                                              "placeholders": {
+                                                "courseName": {
+                                                  "type": "String"
+                                                },
+                                                "time": {
+                                                  "type": "String"
+                                                },
+                                                "minutes": {
+                                                  "type": "int"
+                                                }
+                                              }
+                                            },
+                                            "caregiverAlertMessageLineSkipped": "{courseName} — scheduled for {time}, marked as skipped",
+                                            "@caregiverAlertMessageLineSkipped": {
+                                              "placeholders": {
+                                                "courseName": {
+                                                  "type": "String"
+                                                },
+                                                "time": {
+                                                  "type": "String"
+                                                }
+                                              }
+                                            },
+                                            "caregiverAlertMessageFooter": "Please check in if support is needed.",
+                                            "settingsSupportEmailSubtitle": "Support email and launch contact details",
+                                            "settingsPrivacySubtitle": "How reminder data, photos, and reports are handled",
+                                            "settingsExampleName": "For example, Alex",
+                                            "settingsSave": "Save",
+                                            "onboardingStartUsing": "Start using Pillora",
+                                            "onboardingContinue": "Continue",
+                                            "onboardingBack": "Back",
+                                            "onboardingWelcomeTitle": "Pillora helps you stay on track",
+                                            "onboardingWelcomeTagline": "Calm, clear, and focused.",
+                                            "onboardingWelcomeBody": "Right after opening the app, you will see what medication needs to be taken now and what comes next.",
+                                            "onboardingFeatureEasyInterface": "Large, easy-to-read interface",
+                                            "onboardingFeatureNextDose": "Focus on the next dose",
+                                            "onboardingFeatureReminders": "Reminders and refill awareness",
+                                            "onboardingTailorTitle": "Let us tailor the app for you",
+                                            "onboardingTailorSubtitle": "You can change these settings later in Profile.",
+                                            "onboardingNamePrompt": "What should we call you?",
+                                            "onboardingLanguageTitle": "Language",
+                                            "onboardingReadingComfort": "Reading comfort",
+                                            "onboardingComfortModeTitle": "Comfort mode",
+                                            "onboardingComfortModeSubtitle": "Larger text, bigger buttons, and less visual clutter.",
+                                            "onboardingReadyTitle": "You are all set",
+                                            "onboardingReadyBanner": "The first screen focuses on what to take and when.",
+                                            "onboardingReadyBody": "The home screen shows medications that need attention first, while statistics stay on a separate tab.",
+                                            "onboardingReadySummaryHome": "A simpler home screen with less clutter",
+                                            "onboardingReadySummaryActions": "Clear actions: take, skip, add",
+                                            "onboardingReadySummaryComfortOn": "Comfort mode is already on",
+                                            "onboardingReadySummaryComfortLater": "Comfort mode can be turned on later in Profile",
+                                            "medicineStandardCourse": "Standard course",
+                                            "medicineComplexCourse": "Complex course",
+                                            "schedulePreviewTitle": "Schedule preview",
+                                            "scheduleDoseAtTime": "Dose at this time",
+                                            "courseTypeLabel": "Course type",
+                                            "addSupplementScreenTitle": "Add Supplement",
+                                            "editSupplementTitle": "Edit Supplement"
+                                            ,"settingsLanguageChangeLater": "You can change this later in Profile"
+                                            ,"homeNothingDueTitle": "Nothing is due right now"
+                                            ,"homeUseDayWheelSubtitle": "Use the day wheel above if you want to check another day."
+                                            ,"homeNoAttentionRightNow": "No scheduled medications or supplements need attention right now."
+                                            ,"homeAddItemFab": "Add medication, supplement or measurement"
+                                            ,"homeTimelineSubtitle": "Medications and supplements are shown in time order."
+                                            ,"analyticsCoachGreat": "You are building a dependable medication routine. Keep that consistency going."
+                                            ,"analyticsCoachMissed": "Most missed doses come from inconsistency, not volume. Make the first dose of the day your anchor."
+                                            ,"analyticsCoachTiming": "Your routine is moving in the right direction. The next win is better timing accuracy."
+                                            ,"medicineFrequencyDaily": "Daily"
+                                            ,"medicineFrequencySpecificDays": "Specific days"
+                                            ,"medicineFrequencyInterval": "Interval"
+                                            ,"medicineFrequencyCycle": "Cycle"
+                                            ,"medicineFormTablet": "Tablet"
+                                            ,"medicineFormCapsule": "Capsule"
+                                            ,"medicineFormLiquid": "Liquid"
+                                            ,"medicineFormInjection": "Injection"
+                                            ,"medicineFormDrops": "Drops"
+                                            ,"medicineFormOintment": "Ointment"
+                                            ,"medicineFormSpray": "Spray"
+                                            ,"medicineFormInhaler": "Inhaler"
+                                            ,"medicineFormPatch": "Patch"
+                                            ,"medicineFormSuppository": "Suppository"
+                                            ,"medicineTimelineSupplementInfo": "This supplement appears in the shared daily timeline, while staying separate as a wellness course."
+                                            ,"medicineTimelineMedicationInfo": "This medication appears in the shared daily timeline and stays part of your main treatment plan."
+                                            ,"medicineDoseScheduleTitle": "Dose schedule"
+                                            ,"medicineDoseScheduleSubtitle": "The next day of treatment with time-by-time dosage."
+                                            ,"medicineHistoryLoadError": "Error"
+                                            ,"scheduleDoseTabletsAtTime": "Tablets at this time"
+                                            ,"scheduleDoseAmountAtTime": "Dose at this time"
+                                            ,"schedulePreviewFutureRebuilt": "Future doses will be rebuilt using this schedule."
+                                            ,"scheduleComplexTitle": "Complex schedule"
+                                            ,"scheduleComplexEditSubtitle": "You can edit both time and dosage for each dose."
+                                            ,"courseTimelineSupplementInfo": "This supplement stays in its own category, but appears in the shared time-based timeline."
+                                            ,"courseTimelineMedicationInfo": "This medication stays in the medical category and appears in the shared time-based timeline."
+                                            ,"supplementNameHint": "Supplement Name (e.g. Magnesium)"
+                                            ,"addDoseAction": "Add dose"
+                                            ,"addConditionSuggestionsTitle": "Condition-based suggestions"
+                                            ,"addConditionSuggestionsSubtitle": "Pick a condition to see common course templates. These are only starting points and should match the real prescription."
+                                            ,"addConditionSuggestionsEmpty": "There are no visible suggestions left for this condition. You can choose another condition or continue manually."
+                                            ,"addFlowSupplementTitle": "How would you like to add this supplement?"
+                                            ,"addFlowMedicationTitle": "How would you like to start?"
+                                            ,"addFlowSupplementSubtitle": "Most people add supplements manually, but you can still use quick templates when they fit."
+                                            ,"addFlowMedicationSubtitle": "Choose the easiest path first. You can still adjust every detail below."
+                                            ,"addFlowByConditionTitle": "By condition"
+                                            ,"addFlowByConditionSubtitle": "See the most common templates for a condition"
+                                            ,"addFlowQuickTemplateTitle": "Quick template"
+                                            ,"addFlowQuickTemplateSubtitle": "Use one of the common ready-made courses"
+                                            ,"addFlowManualTitle": "Manual"
+                                            ,"addFlowManualSubtitle": "Fill the course yourself from the start"
+                                            ,"addAppearanceTitle": "Appearance"
+                                            ,"addAppearanceSubtitle": "Optional step. Add a photo or customize the pill so it is easier to recognize later."
+                                            ,"addPhotoLabel": "Photo"
+                                            ,"addQuickStartTitle": "Quick start"
+                                            ,"addQuickStartSubtitle": "Use one of the most common course templates in a single tap."
+                                            ,"addSkipTemplate": "Skip"
+                                            ,"addUseTemplate": "Use template"
+                                            ,"addRecommendedMetricsTitle": "Recommended health metrics"
+                                            ,"addRecommendedMetricsSubtitle": "These measurements are often tracked together with this condition. You can log the first reading right now."
+                                            ,"addSupplementTimelineInfo": "This supplement will appear together with medications in the daily timeline."
+                                            ,"addMedicationTimelineInfo": "This medication will appear in the shared daily timeline with your other courses."
+                                            ,"conditionDiabetesTitle": "Diabetes"
+                                            ,"conditionDiabetesSubtitle": "Common long-term therapy patterns"
+                                            ,"conditionHypertensionTitle": "Hypertension"
+                                            ,"conditionHypertensionSubtitle": "Frequent blood pressure medications"
+                                            ,"conditionCholesterolTitle": "High cholesterol"
+                                            ,"conditionCholesterolSubtitle": "Common evening lipid-lowering therapy"
+                                            ,"conditionThyroidTitle": "Hypothyroidism"
+                                            ,"conditionThyroidSubtitle": "Typical morning thyroid replacement"
+                                            ,"conditionGerdTitle": "Acid reflux / GERD"
+                                            ,"conditionGerdSubtitle": "Frequent acid symptom control"
+                                            ,"conditionAsthmaTitle": "Asthma"
+                                            ,"conditionAsthmaSubtitle": "Common controller and rescue patterns"
+                                            ,"conditionAllergyTitle": "Allergy"
+                                            ,"conditionAllergySubtitle": "Frequent antihistamine symptom control"
+                                            ,"conditionHeartPreventionTitle": "Heart disease / prevention"
+                                            ,"conditionHeartPreventionSubtitle": "Frequent long-term cardiology patterns"
+                                            ,"conditionHeartFailureTitle": "Heart failure"
+                                            ,"conditionHeartFailureSubtitle": "Frequent fluid and blood pressure support therapy"
+                                            ,"conditionAtrialFibrillationTitle": "Atrial fibrillation"
+                                            ,"conditionAtrialFibrillationSubtitle": "Common rhythm and stroke prevention therapy"
+                                            ,"conditionJointPainTitle": "Joint pain / arthritis"
+                                            ,"conditionJointPainSubtitle": "Frequent pain and inflammation control"
+                                            ,"conditionBphTitle": "Prostate / BPH"
+                                            ,"conditionBphSubtitle": "Common urinary symptom control"
+                                            ,"conditionOsteoporosisTitle": "Osteoporosis / bone health"
+                                            ,"conditionOsteoporosisSubtitle": "Frequent bone support therapy patterns"
+                                            ,"conditionAnemiaTitle": "Iron deficiency / anemia"
+                                            ,"conditionAnemiaSubtitle": "Frequent iron replacement patterns"
+                                            ,"suggestionMetforminName": "Metformin"
+                                            ,"suggestionMetforminNote": "Typical oral therapy. Confirm the exact dose with the prescription."
+                                            ,"suggestionInsulinName": "Insulin"
+                                            ,"suggestionInsulinNote": "Injection template. Adjust insulin type, dose, and timing to the real regimen."
+                                            ,"suggestionAmlodipineName": "Amlodipine"
+                                            ,"suggestionAmlodipineNote": "Common once-daily blood pressure control."
+                                            ,"suggestionLosartanName": "Losartan"
+                                            ,"suggestionLosartanNote": "Often used as daily long-term therapy."
+                                            ,"suggestionAtorvastatinName": "Atorvastatin"
+                                            ,"suggestionAtorvastatinNote": "A common daily statin template."
+                                            ,"suggestionLevothyroxineName": "Levothyroxine"
+                                            ,"suggestionLevothyroxineNote": "Usually taken in the morning before food."
+                                            ,"suggestionOmeprazoleName": "Omeprazole"
+                                            ,"suggestionOmeprazoleNote": "Often taken in the morning before food."
+                                            ,"suggestionFamotidineName": "Famotidine"
+                                            ,"suggestionFamotidineNote": "Used for acid symptoms, often in the evening."
+                                            ,"suggestionBudesonideFormoterolName": "Budesonide/Formoterol"
+                                            ,"suggestionBudesonideFormoterolNote": "Common maintenance inhaler template."
+                                            ,"suggestionAlbuterolName": "Albuterol"
+                                            ,"suggestionAlbuterolNote": "Common rescue inhaler kept as needed."
+                                            ,"suggestionCetirizineName": "Cetirizine"
+                                            ,"suggestionCetirizineNote": "Often used once daily for allergy symptoms."
+                                            ,"suggestionLoratadineName": "Loratadine"
+                                            ,"suggestionLoratadineNote": "Common daytime antihistamine template."
+                                            ,"suggestionAspirinName": "Aspirin"
+                                            ,"suggestionAspirinNote": "Common low-dose cardiovascular prevention template."
+                                            ,"suggestionClopidogrelName": "Clopidogrel"
+                                            ,"suggestionClopidogrelNote": "Often used as once-daily antiplatelet therapy."
+                                            ,"suggestionFurosemideName": "Furosemide"
+                                            ,"suggestionFurosemideNote": "Diuretic template often taken earlier in the day."
+                                            ,"suggestionSpironolactoneName": "Spironolactone"
+                                            ,"suggestionSpironolactoneNote": "Common once-daily support therapy pattern."
+                                            ,"suggestionApixabanName": "Apixaban"
+                                            ,"suggestionApixabanNote": "Common twice-daily anticoagulant pattern."
+                                            ,"suggestionMetoprololName": "Metoprolol"
+                                            ,"suggestionMetoprololNote": "Often used for heart rate control."
+                                            ,"suggestionIbuprofenName": "Ibuprofen"
+                                            ,"suggestionIbuprofenNote": "Common short-term pain relief template."
+                                            ,"suggestionDiclofenacGelName": "Diclofenac gel"
+                                            ,"suggestionDiclofenacGelNote": "Topical anti-inflammatory symptom relief template."
+                                            ,"suggestionTamsulosinName": "Tamsulosin"
+                                            ,"suggestionTamsulosinNote": "Often taken in the evening after food."
+                                            ,"suggestionFinasterideName": "Finasteride"
+                                            ,"suggestionFinasterideNote": "Common once-daily long-term support."
+                                            ,"suggestionAlendronateName": "Alendronate"
+                                            ,"suggestionAlendronateNote": "Typical weekly morning template before food."
+                                            ,"suggestionCalciumVitaminDName": "Calcium + Vitamin D"
+                                            ,"suggestionCalciumVitaminDNote": "Common bone support supplement routine."
+                                            ,"suggestionFerrousSulfateName": "Ferrous sulfate"
+                                            ,"suggestionFerrousSulfateNote": "Common oral iron replacement template."
+                                            ,"suggestionFolicAcidName": "Folic acid"
+                                            ,"suggestionFolicAcidNote": "Common supportive vitamin template."
+                                            ,"pdfDoctorReportTitle": "Doctor report"
+                                            ,"pdfSupplementCourseSummary": "Supplement course summary"
+                                            ,"pdfMedicationCourseSummary": "Medication course summary"
+                                            ,"pdfCourseProfileTitle": "Course profile"
+                                            ,"pdfScheduleSnapshotTitle": "Schedule snapshot"
+                                            ,"pdfScheduleSnapshotSubtitle": "A representative day of the course with time and dosage."
+                                            ,"pdfAdministrationHistoryTitle": "Administration history"
+                                            ,"pdfAdministrationHistorySubtitle": "Shows what was taken and how it matched the planned schedule."
+                                            ,"pdfAdherenceLabel": "Adherence"
+                                            ,"pdfSnoozedLabel": "Snoozed"
+                                            ,"pdfClinicalSummaryTitle": "Clinical summary"
+                                            ,"pdfPatientLabel": "Patient"
+                                            ,"pdfCaregiverLabel": "Caregiver"
+                                            ,"pdfReportPeriodLabel": "Report period"
+                                            ,"pdfOnTimeRateLabel": "On-time rate"
+                                            ,"pdfAverageDelayLabel": "Average delay"
+                                            ,"pdfUpcomingDosesLabel": "Upcoming doses"
+                                            ,"pdfStockLeftLabel": "Stock left"
+                                            ,"pdfNameLabel": "Name"
+                                            ,"pdfCourseTypeLabel": "Course type"
+                                            ,"pdfDosageLabel": "Dosage"
+                                            ,"pdfFrequencyLabel": "Frequency"
+                                            ,"pdfStartedLabel": "Started"
+                                            ,"pdfInstructionLabel": "Instruction"
+                                            ,"pdfNotesLabel": "Notes"
+                                            ,"pdfTimelineEmpty": "No recorded administration history yet."
+                                            ,"pdfTimelineTruncated": "This PDF shows the latest {visible} entries out of {total}."
+                                            ,"@pdfTimelineTruncated": {
+                                              "placeholders": {
+                                                "visible": { "type": "int" },
+                                                "total": { "type": "int" }
+                                              }
+                                            }
+                                            ,"pdfTableScheduled": "Scheduled"
+                                            ,"pdfTableActual": "Actual"
+                                            ,"pdfTableDose": "Dose"
+                                            ,"pdfTableStatus": "Status"
+                                            ,"pdfTableDelay": "Delay"
+                                            ,"pdfOnTime": "On time"
+                                            ,"pdfMinuteShort": "min"
+                                            ,"pdfNoFoodRestriction": "No food restriction"
 }

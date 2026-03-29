@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412916134730",
+    "project_id": "neopill-d5bfc",
+    "storage_bucket": "neopill-d5bfc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412916134730:android:a8950f05d824aba29e07b3",
+        "android_client_info": {
+          "package_name": "com.midas.neo_pill"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCledXkcdz21_i1DD3PRk0B3gLBpQedML4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

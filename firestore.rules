@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function networkDoc(shareCode) {
+      return get(/databases/$(database)/documents/care_networks/$(shareCode));
+    }
+
+    function networkExists(shareCode) {
+      return exists(/databases/$(database)/documents/care_networks/$(shareCode));
+    }
+
+    function isPatientOwner(shareCode) {
+      return isSignedIn() &&
+        networkExists(shareCode) &&
+        networkDoc(shareCode).data.patientUid == request.auth.uid;
+    }
+
+    function isMember(shareCode) {
+      return isSignedIn() &&
+        exists(
+          /databases/$(database)/documents/care_networks/$(shareCode)/members/$(request.auth.uid)
+        );
+    }
+
+    function isPatientMember(shareCode) {
+      return isMember(shareCode) &&
+        get(
+          /databases/$(database)/documents/care_networks/$(shareCode)/members/$(request.auth.uid)
+        ).data.role == 'patient';
+    }
+
+    function isCaregiverMember(shareCode) {
+      return isMember(shareCode) &&
+        get(
+          /databases/$(database)/documents/care_networks/$(shareCode)/members/$(request.auth.uid)
+        ).data.role == 'caregiver';
+    }
+
+    function validMemberRole(shareCode) {
+      return request.resource.data.role in ['patient', 'caregiver'] &&
+        (
+          (request.resource.data.role == 'patient' &&
+            networkDoc(shareCode).data.patientUid == request.auth.uid) ||
+          (request.resource.data.role == 'caregiver' &&
+            networkDoc(shareCode).data.patientUid != request.auth.uid)
+        );
+    }
+
+    match /care_networks/{shareCode} {
+      allow read: if isMember(shareCode) || isPatientOwner(shareCode);
+
+      allow create: if isSignedIn() &&
+        request.resource.data.patientUid == request.auth.uid &&
+        request.resource.data.shareCode == shareCode;
+
+      allow update: if isPatientOwner(shareCode) &&
+        request.resource.data.patientUid == resource.data.patientUid &&
+        request.resource.data.shareCode == resource.data.shareCode;
+
+      allow delete: if false;
+
+      match /members/{uid} {
+        allow read: if isMember(shareCode) || isPatientOwner(shareCode);
+
+        allow create, update: if isSignedIn() &&
+          uid == request.auth.uid &&
+          networkExists(shareCode) &&
+          request.resource.data.uid == request.auth.uid &&
+          validMemberRole(shareCode);
+
+        allow delete: if isSignedIn() && uid == request.auth.uid;
+      }
+
+      match /alerts/{alertId} {
+        allow read: if isMember(shareCode);
+
+        allow create: if isPatientMember(shareCode) &&
+          request.resource.data.patientName is string &&
+          request.resource.data.message is string &&
+          request.resource.data.itemCount is int &&
+          request.resource.data.seen == false;
+
+        allow update: if (
+            isCaregiverMember(shareCode) &&
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['seen']) &&
+            request.resource.data.seen is bool
+          ) || (
+            isPatientMember(shareCode) &&
+            request.resource.data.diff(resource.data).changedKeys().hasOnly(['seen']) &&
+            request.resource.data.seen is bool
+          );
+
+        allow delete: if false;
+      }
+    }
+  }
+}

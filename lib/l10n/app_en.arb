@@ -815,5 +815,33 @@
                                             ,"pdfTableDelay": "Delay"
                                             ,"pdfOnTime": "On time"
                                             ,"pdfMinuteShort": "min"
-                                            ,"pdfNoFoodRestriction": "No food restriction"
+                                            ,"pdfNoFoodRestriction": "No food restriction",
+                                              "homeEmptyAddMedicinePrompt": "Add a new medication or supplement to see it here.",
+                                              "@homeEmptyAddMedicinePrompt": {
+                                                "description": "Prompt shown on the home screen when the medicine list is empty"
+                                              },
+
+                                              "homeEmptyAllTitle": "No medicines yet",
+                                              "@homeEmptyAllTitle": {
+                                                "description": "Empty state title on home screen when there are no medicines or supplements"
+                                              },
+
+                                              "homeEmptyMedicationsTitle": "No medications yet",
+                                              "@homeEmptyMedicationsTitle": {
+                                                "description": "Empty state title on home screen when there are no medications"
+                                              },
+
+                                              "homeEmptySupplementsTitle": "No supplements yet",
+                                              "@homeEmptySupplementsTitle": {
+                                                "description": "Empty state title on home screen when there are no supplements"
+                                              },
+                                              "advancedFeatures": "Advanced settings",
+                                                "@advancedFeatures": {
+                                                  "description": "Label for expanding the advanced options in add medicine screen"
+                                                },
+                                                "customizePillTitle": "Customize Pill",
+                                                "@customizePillTitle": {
+                                                  "description": "Title for the modal to change pill color and shape"
+                                                }
+
 }

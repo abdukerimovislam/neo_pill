@@ -510,7 +510,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifications => 'Notifications';
 
   @override
-  String get advancedFeatures => 'Advanced Features';
+  String get advancedFeatures => 'Advanced settings';
 
   @override
   String get caregivers => 'Med-Friends & Caregivers';
@@ -561,13 +561,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTakeSupplementNow => 'Take this supplement now';
 
   @override
-  String get homeEmptyAllTitle => 'You have a quiet moment';
+  String get homeEmptyAllTitle => 'No medicines yet';
 
   @override
-  String get homeEmptyMedicationsTitle => 'Medications are all set';
+  String get homeEmptyMedicationsTitle => 'No medications yet';
 
   @override
-  String get homeEmptySupplementsTitle => 'Supplements are all set';
+  String get homeEmptySupplementsTitle => 'No supplements yet';
 
   @override
   String get homeEmptyAllSubtitle =>
@@ -1796,4 +1796,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pdfNoFoodRestriction => 'No food restriction';
+
+  @override
+  String get homeEmptyAddMedicinePrompt =>
+      'Add a new medication or supplement to see it here.';
 }

@@ -19,9 +19,9 @@ class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
 
   static String _courseFilterLabel(
-    BuildContext context,
-    AnalyticsCourseFilterType filter,
-  ) {
+      BuildContext context,
+      AnalyticsCourseFilterType filter,
+      ) {
     return switch (filter) {
       AnalyticsCourseFilterType.all => AppLocalizations.of(
         context,
@@ -42,7 +42,7 @@ class AnalyticsScreen extends ConsumerWidget {
     final caregiverCloudState = ref.watch(caregiverCloudProvider);
     final caregiverCloudAlerts =
         ref.watch(caregiverCloudAlertsProvider).valueOrNull ??
-        const <CaregiverCloudAlert>[];
+            const <CaregiverCloudAlert>[];
     final displayName = ref.watch(userNameProvider).trim().isEmpty
         ? l10n.defaultUserName
         : ref.watch(userNameProvider).trim();
@@ -138,7 +138,7 @@ class AnalyticsScreen extends ConsumerWidget {
                       selectedContext: selectedContext,
                       personalLabel: displayName,
                       caregivingLabel:
-                          caregiverCloudState.caregiverLinkedPatientName ??
+                      caregiverCloudState.caregiverLinkedPatientName ??
                           l10n.settingsCaregiverConnectedTitle,
                       onChanged: (value) {
                         ref.read(selectedCareContextProvider.notifier).state =
@@ -153,308 +153,312 @@ class AnalyticsScreen extends ConsumerWidget {
                     delay: const Duration(milliseconds: 90),
                     child: _CaregivingAnalyticsCard(
                       linkedPatientName:
-                          caregiverCloudState.caregiverLinkedPatientName ??
+                      caregiverCloudState.caregiverLinkedPatientName ??
                           l10n.defaultUserName,
                       alerts: caregiverCloudAlerts,
                     ),
                   )
                 else ...[
-                AnimatedReveal(
-                  delay: const Duration(milliseconds: 50),
-                  child: _AnalyticsCourseFilterChips(
-                    selectedFilter: selectedCourseFilter,
-                    labelBuilder: (filter) =>
-                        _courseFilterLabel(context, filter),
-                    onSelected: (filter) {
-                      ref
-                              .read(
-                                selectedAnalyticsCourseFilterProvider.notifier,
-                              )
-                              .state =
-                          filter;
-                    },
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 50),
+                    child: _AnalyticsCourseFilterChips(
+                      selectedFilter: selectedCourseFilter,
+                      labelBuilder: (filter) =>
+                          _courseFilterLabel(context, filter),
+                      onSelected: (filter) {
+                        ref
+                            .read(
+                          selectedAnalyticsCourseFilterProvider.notifier,
+                        )
+                            .state =
+                            filter;
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                statsAsync.when(
-                  data: (stats) {
-                    final isGoodRate = stats.adherenceRate >= 80.0;
-                    final rateColor = isGoodRate
-                        ? theme.successAccent
-                        : theme.dangerAccent;
+                  const SizedBox(height: 20),
+                  statsAsync.when(
+                    data: (stats) {
+                      final isGoodRate = stats.adherenceRate >= 80.0;
+                      final rateColor = isGoodRate
+                          ? theme.successAccent
+                          : theme.dangerAccent;
 
-                    return AnimatedReveal(
-                      delay: const Duration(milliseconds: 120),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _SectionHeader(
-                            title: l10n.adherenceRate,
-                            subtitle: l10n.adherenceSubtitle,
-                          ),
-                          const SizedBox(height: 12),
-                          _AdherenceHeroCard(
-                            adherenceRate: stats.adherenceRate,
-                            takenDoses: stats.takenDoses,
-                            missedDoses: stats.missedDoses,
-                            rateColor: rateColor,
-                            l10n: l10n,
-                          ),
-                          const SizedBox(height: 12),
-                          GlassContainer(
-                            padding: const EdgeInsets.all(16),
-                            color: theme.colorScheme.surface.withValues(
-                              alpha: 0.42,
+                      return AnimatedReveal(
+                        delay: const Duration(milliseconds: 120),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _SectionHeader(
+                              title: l10n.adherenceRate,
+                              subtitle: l10n.adherenceSubtitle,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l10n.analyticsCourseMix,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  l10n.analyticsCourseMixSubtitle,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.6),
-                                    height: 1.35,
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _CourseTypeBreakdownCard(
-                                        icon: Icons.medication_rounded,
-                                        title: l10n.courseFilterMedications,
-                                        activeCourses:
-                                            stats.activeMedicationCourses,
-                                        takenDoses: stats.medicationTakenDoses,
-                                        missedDoses:
-                                            stats.medicationMissedDoses,
-                                        color: theme.brandPrimary,
-                                      ),
+                            const SizedBox(height: 12),
+                            _AdherenceHeroCard(
+                              adherenceRate: stats.adherenceRate,
+                              takenDoses: stats.takenDoses,
+                              missedDoses: stats.missedDoses,
+                              rateColor: rateColor,
+                              l10n: l10n,
+                            ),
+                            const SizedBox(height: 12),
+                            GlassContainer(
+                              padding: const EdgeInsets.all(16),
+                              color: theme.colorScheme.surface.withValues(
+                                alpha: 0.42,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.analyticsCourseMix,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w800,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _CourseTypeBreakdownCard(
-                                        icon: Icons.spa_rounded,
-                                        title: l10n.courseFilterSupplements,
-                                        activeCourses:
-                                            stats.activeSupplementCourses,
-                                        takenDoses: stats.supplementTakenDoses,
-                                        missedDoses:
-                                            stats.supplementMissedDoses,
-                                        color: theme.supplementAccent,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    l10n.analyticsCourseMixSubtitle,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.6),
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _CourseTypeBreakdownCard(
+                                          icon: Icons.medication_rounded,
+                                          title: l10n.courseFilterMedications,
+                                          activeCourses:
+                                          stats.activeMedicationCourses,
+                                          takenDoses: stats.medicationTakenDoses,
+                                          missedDoses:
+                                          stats.medicationMissedDoses,
+                                          color: theme.brandPrimary,
+                                        ),
                                       ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _CourseTypeBreakdownCard(
+                                          icon: Icons.spa_rounded,
+                                          title: l10n.courseFilterSupplements,
+                                          activeCourses:
+                                          stats.activeSupplementCourses,
+                                          takenDoses: stats.supplementTakenDoses,
+                                          missedDoses:
+                                          stats.supplementMissedDoses,
+                                          color: theme.supplementAccent,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _SummaryInfoCard(
+                                    icon: Icons.local_fire_department_rounded,
+                                    title: l10n.analyticsCurrentRoutine,
+                                    value: '${stats.currentStreak}',
+                                    color: theme.brandPrimary,
+                                    subtitle:
+                                    l10n.analyticsCurrentRoutineSubtitle,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _SummaryInfoCard(
+                                    icon: Icons.timer_outlined,
+                                    title: l10n.analyticsTimingAccuracy,
+                                    value: '${stats.onTimeRate.round()}%',
+                                    color: theme.successAccent,
+                                    subtitle:
+                                    l10n.analyticsTimingAccuracySubtitle,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _SummaryInfoCard(
+                                    icon: Icons.workspace_premium_rounded,
+                                    title: l10n.analyticsBestRoutine,
+                                    value: '${stats.longestStreak}',
+                                    color: theme.warningAccent,
+                                    subtitle: l10n.analyticsBestRoutineSubtitle,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _SummaryInfoCard(
+                                    icon: Icons.inventory_2_outlined,
+                                    title: l10n.analyticsRefillRisk,
+                                    value: stats.lowStockCourses.toString(),
+                                    color: theme.dangerAccent,
+                                    subtitle: l10n.analyticsRefillRiskSubtitle,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            GlassContainer(
+                              padding: const EdgeInsets.all(16),
+                              color: theme.colorScheme.surface.withValues(
+                                alpha: 0.42,
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: _MiniInsight(
+                                      label: l10n.analyticsAverageDelay,
+                                      value:
+                                      '${stats.averageDelayMinutes.round()} ${l10n.analyticsMinutesShort}',
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 1,
+                                    height: 36,
+                                    color: theme.dividerColor.withValues(
+                                      alpha: 0.25,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: _MiniInsight(
+                                      label: l10n.activeCourses,
+                                      value: stats.activeCourses.toString(),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 1,
+                                    height: 36,
+                                    color: theme.dividerColor.withValues(
+                                      alpha: 0.25,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: _MiniInsight(
+                                      label: l10n.analyticsMissedDoses,
+                                      value: stats.missedDoses.toString(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            _CoachCard(stats: stats),
+                          ],
+                        ),
+                      );
+                    },
+                    loading: () => const _SectionLoading(height: 320),
+                    error: (e, _) => _SectionError(
+                      title: l10n.failedToLoadAdherence,
+                      message: e.toString(),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 210),
+                    child: _SectionHeader(
+                      title: l10n.healthCorrelationTitle,
+                      subtitle: l10n.healthCorrelationSubtitle,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 250),
+                    child: _MetricSelector(
+                      selectedMetric: selectedMetric,
+                      getMetricName: getMetricName,
+                      onSelected: (type) {
+                        ref.read(selectedChartMetricProvider.notifier).state =
+                            type;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  AnimatedReveal(
+                    delay: const Duration(milliseconds: 300),
+                    child: GlassContainer(
+                      padding: const EdgeInsets.all(16),
+                      color: theme.colorScheme.surface.withValues(alpha: 0.45),
+                      child: correlationAsync.when(
+                        data: (summary) {
+                          if (summary.dailyData.isEmpty) {
+                            return _EmptyChartState(l10n: l10n);
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: [
+                                  _TopPillBadge(
+                                    label: l10n.last7Days,
+                                    icon: Icons.calendar_view_week_rounded,
+                                  ),
+                                  _TopPillBadge(
+                                    label: l10n.avgAdherence(
+                                      summary.avgAdherence.toStringAsFixed(0),
+                                    ),
+                                    icon: Icons.show_chart_rounded,
+                                  ),
+                                  if (summary.avgMeasurement != null)
+                                    _TopPillBadge(
+                                      label: l10n.avgMetric(
+                                        getMetricName(selectedMetric),
+                                        summary.avgMeasurement!.toStringAsFixed(
+                                          0,
+                                        ),
+                                      ),
+                                      icon: Icons.favorite_outline_rounded,
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                              // 🚀 ИСПРАВЛЕНИЕ: Используем Wrap вместо Row для легенды
+                              Center(
+                                child: Wrap(
+                                  alignment: WrapAlignment.center,
+                                  spacing: 18,
+                                  runSpacing: 8,
+                                  children: [
+                                    _LegendItem(
+                                      color: theme.successAccent,
+                                      label: l10n.pillsTaken,
+                                    ),
+                                    _LegendItem(
+                                      color: theme.colorScheme.primary,
+                                      label: getMetricName(selectedMetric),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _SummaryInfoCard(
-                                  icon: Icons.local_fire_department_rounded,
-                                  title: l10n.analyticsCurrentRoutine,
-                                  value: '${stats.currentStreak}',
-                                  color: theme.brandPrimary,
-                                  subtitle:
-                                      l10n.analyticsCurrentRoutineSubtitle,
-                                ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _SummaryInfoCard(
-                                  icon: Icons.timer_outlined,
-                                  title: l10n.analyticsTimingAccuracy,
-                                  value: '${stats.onTimeRate.round()}%',
-                                  color: theme.successAccent,
-                                  subtitle:
-                                      l10n.analyticsTimingAccuracySubtitle,
-                                ),
+                              const SizedBox(height: 22),
+                              _CorrelationChart(
+                                data: summary.dailyData,
+                                maxMeasurement: summary.maxMeasurement,
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _SummaryInfoCard(
-                                  icon: Icons.workspace_premium_rounded,
-                                  title: l10n.analyticsBestRoutine,
-                                  value: '${stats.longestStreak}',
-                                  color: theme.warningAccent,
-                                  subtitle: l10n.analyticsBestRoutineSubtitle,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _SummaryInfoCard(
-                                  icon: Icons.inventory_2_outlined,
-                                  title: l10n.analyticsRefillRisk,
-                                  value: stats.lowStockCourses.toString(),
-                                  color: theme.dangerAccent,
-                                  subtitle: l10n.analyticsRefillRiskSubtitle,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          GlassContainer(
-                            padding: const EdgeInsets.all(16),
-                            color: theme.colorScheme.surface.withValues(
-                              alpha: 0.42,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: _MiniInsight(
-                                    label: l10n.analyticsAverageDelay,
-                                    value:
-                                        '${stats.averageDelayMinutes.round()} ${l10n.analyticsMinutesShort}',
-                                  ),
-                                ),
-                                Container(
-                                  width: 1,
-                                  height: 36,
-                                  color: theme.dividerColor.withValues(
-                                    alpha: 0.25,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: _MiniInsight(
-                                    label: l10n.activeCourses,
-                                    value: stats.activeCourses.toString(),
-                                  ),
-                                ),
-                                Container(
-                                  width: 1,
-                                  height: 36,
-                                  color: theme.dividerColor.withValues(
-                                    alpha: 0.25,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: _MiniInsight(
-                                    label: l10n.analyticsMissedDoses,
-                                    value: stats.missedDoses.toString(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _CoachCard(stats: stats),
-                        ],
-                      ),
-                    );
-                  },
-                  loading: () => const _SectionLoading(height: 320),
-                  error: (e, _) => _SectionError(
-                    title: l10n.failedToLoadAdherence,
-                    message: e.toString(),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                AnimatedReveal(
-                  delay: const Duration(milliseconds: 210),
-                  child: _SectionHeader(
-                    title: l10n.healthCorrelationTitle,
-                    subtitle: l10n.healthCorrelationSubtitle,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                AnimatedReveal(
-                  delay: const Duration(milliseconds: 250),
-                  child: _MetricSelector(
-                    selectedMetric: selectedMetric,
-                    getMetricName: getMetricName,
-                    onSelected: (type) {
-                      ref.read(selectedChartMetricProvider.notifier).state =
-                          type;
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                AnimatedReveal(
-                  delay: const Duration(milliseconds: 300),
-                  child: GlassContainer(
-                    padding: const EdgeInsets.all(16),
-                    color: theme.colorScheme.surface.withValues(alpha: 0.45),
-                    child: correlationAsync.when(
-                      data: (summary) {
-                        if (summary.dailyData.isEmpty) {
-                          return _EmptyChartState(l10n: l10n);
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: [
-                                _TopPillBadge(
-                                  label: l10n.last7Days,
-                                  icon: Icons.calendar_view_week_rounded,
-                                ),
-                                _TopPillBadge(
-                                  label: l10n.avgAdherence(
-                                    summary.avgAdherence.toStringAsFixed(0),
-                                  ),
-                                  icon: Icons.show_chart_rounded,
-                                ),
-                                if (summary.avgMeasurement != null)
-                                  _TopPillBadge(
-                                    label: l10n.avgMetric(
-                                      getMetricName(selectedMetric),
-                                      summary.avgMeasurement!.toStringAsFixed(
-                                        0,
-                                      ),
-                                    ),
-                                    icon: Icons.favorite_outline_rounded,
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 18),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _LegendItem(
-                                  color: theme.successAccent,
-                                  label: l10n.pillsTaken,
-                                ),
-                                const SizedBox(width: 18),
-                                _LegendItem(
-                                  color: theme.colorScheme.primary,
-                                  label: getMetricName(selectedMetric),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 22),
-                            _CorrelationChart(
-                              data: summary.dailyData,
-                              maxMeasurement: summary.maxMeasurement,
-                            ),
-                          ],
-                        );
-                      },
-                      loading: () => const _SectionLoading(height: 250),
-                      error: (e, _) => _SectionError(
-                        title: l10n.failedToLoadChart,
-                        message: e.toString(),
+                          );
+                        },
+                        loading: () => const _SectionLoading(height: 250),
+                        error: (e, _) => _SectionError(
+                          title: l10n.failedToLoadChart,
+                          message: e.toString(),
+                        ),
                       ),
                     ),
                   ),
-                ),
                 ],
               ]),
             ),
@@ -546,7 +550,7 @@ class _CaregivingAnalyticsCard extends StatelessWidget {
           )
         else
           ...alerts.map(
-            (alert) => Padding(
+                (alert) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: GlassContainer(
                 padding: const EdgeInsets.all(16),
@@ -946,6 +950,8 @@ class _SummaryInfoCard extends StatelessWidget {
               fontWeight: FontWeight.w900,
               color: theme.colorScheme.onSurface,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
@@ -954,6 +960,8 @@ class _SummaryInfoCard extends StatelessWidget {
               fontWeight: FontWeight.w700,
               color: theme.colorScheme.onSurface,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 3),
           Text(
@@ -961,6 +969,8 @@ class _SummaryInfoCard extends StatelessWidget {
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -1066,6 +1076,8 @@ class _CourseTypeBreakdownCard extends StatelessWidget {
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 10),
           Text(
@@ -1074,6 +1086,8 @@ class _CourseTypeBreakdownCard extends StatelessWidget {
               fontWeight: FontWeight.w900,
               color: theme.colorScheme.onSurface,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 10),
           Text(
@@ -1083,6 +1097,8 @@ class _CourseTypeBreakdownCard extends StatelessWidget {
               height: 1.4,
               fontWeight: FontWeight.w600,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -1416,6 +1432,7 @@ class _EmptyChartState extends StatelessWidget {
   }
 }
 
+// 🚀 ИСПРАВЛЕНИЕ: Убрали Flexible внутри _LegendItem, чтобы он сам принимал нужный размер
 class _LegendItem extends StatelessWidget {
   final Color color;
   final String label;
@@ -1427,6 +1444,7 @@ class _LegendItem extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Row(
+      mainAxisSize: MainAxisSize.min, // Важно! Ограничиваем Row по контенту
       children: [
         Container(
           width: 12,

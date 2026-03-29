@@ -23,11 +23,6 @@
                                     <constraint firstAttribute="width" constant="220" id="orb-left-width"/>
                                     <constraint firstAttribute="height" constant="220" id="orb-left-height"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <real key="value" value="110"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="orb-right">
                                 <rect key="frame" x="255" y="662" width="180" height="180"/>
@@ -36,11 +31,6 @@
                                     <constraint firstAttribute="width" constant="180" id="orb-right-width"/>
                                     <constraint firstAttribute="height" constant="180" id="orb-right-height"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <real key="value" value="90"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mark-bg">
                                 <rect key="frame" x="130.5" y="308" width="132" height="132"/>
@@ -49,11 +39,6 @@
                                     <constraint firstAttribute="width" constant="132" id="mark-bg-width"/>
                                     <constraint firstAttribute="height" constant="132" id="mark-bg-height"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <real key="value" value="66"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mark-pill">
                                 <rect key="frame" x="154.5" y="344" width="84" height="60"/>
@@ -62,11 +47,6 @@
                                     <constraint firstAttribute="width" constant="84" id="mark-pill-width"/>
                                     <constraint firstAttribute="height" constant="60" id="mark-pill-height"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <real key="value" value="30"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mark-line">
                                 <rect key="frame" x="188.5" y="354" width="16" height="40"/>
@@ -75,11 +55,6 @@
                                     <constraint firstAttribute="width" constant="16" id="mark-line-width"/>
                                     <constraint firstAttribute="height" constant="40" id="mark-line-height"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <real key="value" value="8"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Pillora" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="title">
                                 <rect key="frame" x="127" y="472" width="139" height="34"/>

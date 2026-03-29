@@ -1,16 +1,21 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart'; // 🚀 ПАКЕТ ДЛЯ КАМЕРЫ
-import '../../../l10n/app_localizations.dart';
-import '../../home/providers/home_controller.dart';
-import '../../../data/local/entities/medicine_entity.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+
 import '../../../core/presentation/widgets/animated_reveal.dart';
-import '../../../core/presentation/widgets/gradient_scaffold.dart';
 import '../../../core/presentation/widgets/glass_container.dart';
+import '../../../core/presentation/widgets/gradient_scaffold.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../data/local/entities/medicine_entity.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../l10n/l10n_extensions.dart';
+import '../../home/presentation/widgets/pill_icon_widget.dart';
+import '../../home/providers/home_controller.dart';
 
 class AddMedicineScreen extends ConsumerStatefulWidget {
   final CourseKindEnum initialKind;
@@ -33,6 +38,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
   int _intervalDays = 2;
   int _prnMaxDoses = 4;
   bool _isLifetime = false;
+  bool _showAdvanced = false;
 
   late CourseKindEnum _selectedKind;
   MedicineFormEnum _selectedForm = MedicineFormEnum.pill;
@@ -43,12 +49,11 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
   final List<TimeOfDay> _selectedTimes = [const TimeOfDay(hour: 8, minute: 0)];
   final List<String> _units = ['mg', 'ml', 'pcs', 'drops', 'g', 'mcg', 'IU'];
 
-  // Стейт Визуального Конструктора
   PillShapeEnum _selectedShape = PillShapeEnum.circle;
   int _selectedColor = 0xFF2196F3;
-
-  // 🚀 НОВОЕ: Стейт для реального фото
   String? _pillImagePath;
+
+  int _dailyPreset = 1;
 
   final List<TaperingStep> _taperingSteps = [
     TaperingStep()
@@ -66,13 +71,14 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     0xFF00BCD4,
     0xFF795548,
     0xFF607D8B,
-    0xFF000000,
+    0xFF424242,
   ];
 
   @override
   void initState() {
     super.initState();
     _selectedKind = widget.initialKind;
+    _applyDailyPreset(1, triggerSetState: false);
   }
 
   @override
@@ -82,7 +88,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     super.dispose();
   }
 
-  // 🚀 НОВОЕ: Метод для работы с камерой
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
     try {
@@ -90,7 +95,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
         source: source,
         maxWidth: 800,
         maxHeight: 800,
-        imageQuality: 85, // Оптимизируем размер
+        imageQuality: 85,
       );
       if (pickedFile != null) {
         setState(() {
@@ -100,6 +105,98 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     } catch (e) {
       debugPrint("Image picker error: $e");
     }
+  }
+
+  void _applyDailyPreset(int preset, {bool triggerSetState = true}) {
+    final apply = () {
+      _selectedFrequency = FrequencyTypeEnum.daily;
+      _dailyPreset = preset;
+
+      switch (preset) {
+        case 1:
+          _selectedTimes
+            ..clear()
+            ..add(const TimeOfDay(hour: 8, minute: 0));
+          break;
+        case 2:
+          _selectedTimes
+            ..clear()
+            ..add(const TimeOfDay(hour: 8, minute: 0))
+            ..add(const TimeOfDay(hour: 20, minute: 0));
+          break;
+        case 3:
+          _selectedTimes
+            ..clear()
+            ..add(const TimeOfDay(hour: 8, minute: 0))
+            ..add(const TimeOfDay(hour: 14, minute: 0))
+            ..add(const TimeOfDay(hour: 20, minute: 0));
+          break;
+        default:
+          if (_selectedTimes.isEmpty) {
+            _selectedTimes.add(const TimeOfDay(hour: 8, minute: 0));
+          }
+      }
+    };
+
+    if (triggerSetState) {
+      setState(apply);
+    } else {
+      apply();
+    }
+  }
+
+  void _addSmartTime() {
+    setState(() {
+      if (_selectedTimes.length == 1) {
+        final first = _selectedTimes.first;
+        final secondHour = (first.hour + 12) % 24;
+        _selectedTimes.add(TimeOfDay(hour: secondHour, minute: first.minute));
+      } else if (_selectedTimes.length == 2) {
+        _selectedTimes.add(const TimeOfDay(hour: 14, minute: 0));
+      } else {
+        final last = _selectedTimes.last;
+        final newHour = (last.hour + 4) % 24;
+        _selectedTimes.add(TimeOfDay(hour: newHour, minute: last.minute));
+      }
+      _sortTimes();
+      _dailyPreset = 0;
+    });
+  }
+
+  void _addTime() {
+    setState(() {
+      _selectedTimes.add(const TimeOfDay(hour: 20, minute: 0));
+      _sortTimes();
+      _dailyPreset = 0;
+    });
+  }
+
+  void _removeTime(int index) {
+    if (_selectedTimes.length > 1) {
+      setState(() {
+        _selectedTimes.removeAt(index);
+        _dailyPreset = 0;
+      });
+    }
+  }
+
+  void _sortTimes() {
+    _selectedTimes.sort((a, b) {
+      final aMinutes = a.hour * 60 + a.minute;
+      final bMinutes = b.hour * 60 + b.minute;
+      return aMinutes.compareTo(bMinutes);
+    });
+  }
+
+  // 🚀 УМНАЯ ЛОГИКА ЕДИНИЦ ИЗМЕРЕНИЯ ИНВЕНТАРЯ
+  String _getInventoryUnit(AppLocalizations l10n) {
+    final unitLower = _selectedUnit.toLowerCase();
+    // Если дозировка в массе (мг/г), то в упаковке лежат таблетки (шт.)
+    if (['mg', 'g', 'mcg', 'мг', 'г', 'мкг'].contains(unitLower)) {
+      return l10n.pcsSuffix;
+    }
+    // Если дозировка в объеме/количестве (мл/капли/шт), то в упаковке тот же объем (мл)
+    return l10n.dosageUnitLabel(_selectedUnit);
   }
 
   Widget _buildPillShape(PillShapeEnum shape, Color color, double size) {
@@ -194,8 +291,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                           setState(() {
                             _selectedShape = tempShape;
                             _selectedColor = tempColor;
-                            _pillImagePath =
-                                null; // 🚀 Сбрасываем фото, если выбрали 3D-конструктор
+                            _pillImagePath = null;
                           });
                           Navigator.pop(ctx);
                         },
@@ -278,8 +374,8 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                               isSelected
                                   ? theme.primaryColor
                                   : theme.colorScheme.onSurface.withValues(
-                                      alpha: 0.3,
-                                    ),
+                                alpha: 0.3,
+                              ),
                               24,
                             ),
                           ),
@@ -429,15 +525,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     );
   }
 
-  void _addTime() =>
-      setState(() => _selectedTimes.add(const TimeOfDay(hour: 20, minute: 0)));
-  void _removeTime(int index) {
-    if (_selectedTimes.length > 1) {
-      setState(() => _selectedTimes.removeAt(index));
-    }
-  }
-
-  void _save() async {
+  Future<void> _save() async {
     final name = _nameController.text.trim();
     final l10n = AppLocalizations.of(context)!;
 
@@ -456,7 +544,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
       dosageToSave = _taperingSteps.first.dosage;
       durationToSave = _taperingSteps.fold(
         0,
-        (sum, step) => sum + step.durationDays,
+            (sum, step) => sum + step.durationDays,
       );
     } else {
       final dosageText = _dosageController.text.trim();
@@ -470,40 +558,51 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
       durationToSave = _isLifetime ? 3650 : _durationDays;
     }
 
+    // 🚀 ИСПРАВЛЕНИЕ: Интеллектуальный расчет запасов
+    final String unitLower = _selectedUnit.toLowerCase();
+    final bool isMassUnit = ['mg', 'g', 'mcg', 'мг', 'г', 'мкг'].contains(unitLower);
+
+    int inventoryToSave = _pillsInPackage;
+
+    // Если это масса (например 500 мг), юзер указал кол-во таблеток (например 30 шт).
+    // Запас вещества: 30 шт * 500 мг = 15000 мг.
+    if (isMassUnit && dosageToSave > 0) {
+      inventoryToSave = (_pillsInPackage * dosageToSave).round();
+    }
+    // Если это объем (мл/капли), юзер уже указал общий объем бутылки. Умножать не нужно!
+
     final title = l10n.notificationTitle(name);
     final body = l10n.notificationBody('$dosageToSave $_selectedUnit');
     final kindLabel = _selectedKind == CourseKindEnum.supplement
         ? l10n.courseKindSupplement
         : l10n.courseKindMedication;
 
-    await ref
-        .read(homeControllerProvider)
-        .addMedicineAndGenerateSchedule(
-          kind: _selectedKind,
-          name: name,
-          dosage: dosageToSave,
-          dosageUnit: _selectedUnit,
-          form: _selectedForm,
-          frequency: _selectedFrequency,
-          foodInstruction: _selectedFood,
-          times: _selectedTimes,
-          durationDays: durationToSave,
-          pillsInPackage: _pillsInPackage,
-          intervalDays: _selectedFrequency == FrequencyTypeEnum.interval
-              ? _intervalDays
-              : null,
-          prnMaxDailyDoses: _selectedFrequency == FrequencyTypeEnum.asNeeded
-              ? _prnMaxDoses
-              : null,
-          taperingSteps: _selectedFrequency == FrequencyTypeEnum.tapering
-              ? _taperingSteps
-              : null,
-          pillShape: _selectedShape,
-          pillColor: _selectedColor,
-          pillImagePath: _pillImagePath, // 🚀 ПЕРЕДАЕМ ФОТО В БАЗУ
-          notificationTitle: title,
-          notificationBody: body,
-        );
+    await ref.read(homeControllerProvider).addMedicineAndGenerateSchedule(
+      kind: _selectedKind,
+      name: name,
+      dosage: dosageToSave,
+      dosageUnit: _selectedUnit,
+      form: _selectedForm,
+      frequency: _selectedFrequency,
+      foodInstruction: _selectedFood,
+      times: _selectedTimes,
+      durationDays: durationToSave,
+      pillsInPackage: inventoryToSave, // 🚀 Сохраняем исправленный инвентарь
+      intervalDays: _selectedFrequency == FrequencyTypeEnum.interval
+          ? _intervalDays
+          : null,
+      prnMaxDailyDoses: _selectedFrequency == FrequencyTypeEnum.asNeeded
+          ? _prnMaxDoses
+          : null,
+      taperingSteps: _selectedFrequency == FrequencyTypeEnum.tapering
+          ? _taperingSteps
+          : null,
+      pillShape: _selectedShape,
+      pillColor: _selectedColor,
+      pillImagePath: _pillImagePath,
+      notificationTitle: title,
+      notificationBody: body,
+    );
 
     if (mounted) {
       Navigator.of(context).pop(l10n.courseAddedMessage(kindLabel, name));
@@ -535,11 +634,15 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
             ),
             const SizedBox(width: 10),
           ],
-          Text(
-            title,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: theme.colorScheme.onSurface,
+          Expanded(
+            child: Text(
+              title,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: theme.colorScheme.onSurface,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -626,14 +729,20 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w600,
+            Expanded(
+              child: Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+            const SizedBox(width: 12),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   valueText,
@@ -680,9 +789,13 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w600,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
                 onTap: onDecrement,
@@ -757,9 +870,13 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w600,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
                 onTap: onDecrement,
@@ -832,7 +949,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
               ),
               labelStyle: TextStyle(
                 color: isSelected
-                    ? Colors.white
+                    ? theme.colorScheme.onPrimary
                     : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               ),
@@ -849,6 +966,80 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     );
   }
 
+  Widget _buildQuickPresetChips(ThemeData theme, AppLocalizations l10n) {
+    final options = <_PresetOption>[
+      const _PresetOption(value: 1, label: '1x'),
+      const _PresetOption(value: 2, label: '2x'),
+      const _PresetOption(value: 3, label: '3x'),
+      _PresetOption(value: 0, label: l10n.customizePillTitle),
+    ];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.map((option) {
+        final isSelected = _dailyPreset == option.value;
+        return ChoiceChip(
+          label: Text(option.label),
+          selected: isSelected,
+          onSelected: (_) {
+            HapticFeedback.selectionClick();
+            if (option.value == 0) {
+              setState(() {
+                _dailyPreset = 0;
+                _selectedFrequency = FrequencyTypeEnum.daily;
+              });
+            } else {
+              _applyDailyPreset(option.value);
+            }
+          },
+          selectedColor: theme.primaryColor,
+          backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.45),
+          labelStyle: TextStyle(
+            color: isSelected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurface.withValues(alpha: 0.72),
+            fontWeight: FontWeight.w800,
+          ),
+          showCheckmark: false,
+          side: BorderSide.none,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _previewText(AppLocalizations l10n) {
+    final name = _nameController.text.trim().isEmpty
+        ? (_selectedKind == CourseKindEnum.supplement
+        ? l10n.courseKindSupplement
+        : l10n.courseKindMedication)
+        : _nameController.text.trim();
+
+    final dosage = _dosageController.text.trim().isEmpty
+        ? '--'
+        : _dosageController.text.trim();
+
+    final locale = Localizations.localeOf(context).languageCode;
+    final times = _selectedFrequency == FrequencyTypeEnum.asNeeded
+        ? l10n.frequencyLabel(_selectedFrequency)
+        : _selectedTimes
+        .map(
+          (e) => DateFormat.Hm(locale).format(
+        DateTime(2000, 1, 1, e.hour, e.minute),
+      ),
+    )
+        .join(', ');
+
+    final duration = _isLifetime
+        ? l10n.lifetimeCourse
+        : '$_durationDays ${l10n.daysSuffix}';
+
+    return '$name • $dosage ${l10n.dosageUnitLabel(_selectedUnit)}\n$times • $duration';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -859,6 +1050,9 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     final nameHint = _selectedKind == CourseKindEnum.supplement
         ? l10n.supplementNameHint
         : l10n.medicineNameHint;
+
+    // 🚀 Получаем правильную единицу измерения для инвентаря
+    final inventoryUnit = _getInventoryUnit(l10n);
 
     return GradientScaffold(
       extendBodyBehindAppBar: true,
@@ -902,7 +1096,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // 🚀 БЛОК: ФОТО ИЛИ КОНСТРУКТОР
                 AnimatedReveal(
                   delay: const Duration(milliseconds: 40),
                   child: Center(
@@ -932,27 +1125,26 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                         ),
                         child: _pillImagePath != null
                             ? ClipOval(
-                                child: Image.file(
-                                  File(_pillImagePath!),
-                                  width: 120,
-                                  height: 120,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
+                          child: Image.file(
+                            File(_pillImagePath!),
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          ),
+                        )
                             : Center(
-                                child: _buildPillShape(
-                                  _selectedShape,
-                                  Color(_selectedColor),
-                                  56,
-                                ),
-                              ),
+                          child: _buildPillShape(
+                            _selectedShape,
+                            Color(_selectedColor),
+                            56,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // 🚀 ДВЕ КНОПКИ: Конструктор ИЛИ Камера
                 AnimatedReveal(
                   delay: const Duration(milliseconds: 90),
                   child: Wrap(
@@ -977,7 +1169,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                           color: theme.primaryColor,
                         ),
                         label: Text(
-                          l10n.customizePill,
+                          l10n.customizePillTitle,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.primaryColor,
                             fontWeight: FontWeight.w800,
@@ -1012,7 +1204,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // --- BENTO БЛОК 1: ОСНОВНОЕ ---
                 AnimatedReveal(
                   delay: const Duration(milliseconds: 120),
                   child: _buildKindSelector(theme, l10n),
@@ -1066,9 +1257,9 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                                   label: l10n.dosageHint,
                                   theme: theme,
                                   keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -1092,7 +1283,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // --- BENTO БЛОК 2: ПРАВИЛА ---
                 _buildSectionHeader(l10n.scheduleAndRules, step: '2'),
                 GlassContainer(
                   padding: const EdgeInsets.all(20),
@@ -1167,20 +1357,20 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                               children: [
                                 Row(
                                   mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       l10n.stepNumber(index + 1),
                                       style: theme.textTheme.titleMedium
                                           ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            color: theme.primaryColor,
-                                          ),
+                                        fontWeight: FontWeight.w800,
+                                        color: theme.primaryColor,
+                                      ),
                                     ),
                                     if (_taperingSteps.length > 1)
                                       GestureDetector(
                                         onTap: () => setState(
-                                          () => _taperingSteps.removeAt(index),
+                                              () => _taperingSteps.removeAt(index),
                                         ),
                                         child: Icon(
                                           Icons.close_rounded,
@@ -1224,7 +1414,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                         }),
                         InkWell(
                           onTap: () => setState(
-                            () => _taperingSteps.add(
+                                () => _taperingSteps.add(
                               TaperingStep()
                                 ..durationDays = 3
                                 ..dosage = 1.0,
@@ -1289,7 +1479,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // --- BENTO БЛОК 3: ИНВЕНТАРЬ ---
                 _buildSectionHeader(l10n.inventory, step: '3'),
                 GlassContainer(
                   padding: const EdgeInsets.all(20),
@@ -1343,17 +1532,18 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                           ),
                         ),
                       ],
+                      // 🚀 ИСПОЛЬЗУЕМ УМНЫЙ СУФФИКС (мл/капли/шт)
                       _buildRouletteField(
                         label: l10n.pillsInPackage,
-                        valueText: '$_pillsInPackage ${l10n.pcsSuffix}',
+                        valueText: '$_pillsInPackage $inventoryUnit',
                         theme: theme,
                         onTap: () => _showRoulettePicker(
                           title: l10n.pillsInPackage,
                           l10n: l10n,
                           initialValue: _pillsInPackage,
                           min: 1,
-                          max: 1000,
-                          suffix: l10n.pcsSuffix,
+                          max: 5000, // Увеличили максимум, чтобы было удобно вводить мл (например 500 мл)
+                          suffix: inventoryUnit,
                           onChanged: (val) =>
                               setState(() => _pillsInPackage = val),
                         ),
@@ -1363,7 +1553,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // --- BENTO БЛОК 4: ВРЕМЯ ---
                 if (_selectedFrequency != FrequencyTypeEnum.asNeeded) ...[
                   _buildSectionHeader(l10n.reminders, step: '4'),
                   GlassContainer(
@@ -1385,7 +1574,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                                       );
                                       if (time != null) {
                                         setState(
-                                          () => _selectedTimes[index] = time,
+                                              () => _selectedTimes[index] = time,
                                         );
                                       }
                                     },
@@ -1402,7 +1591,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                                       ),
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                         children: [
                                           Row(
                                             children: [
@@ -1416,9 +1605,9 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                                                 l10n.doseNumber(index + 1),
                                                 style: theme.textTheme.bodyLarge
                                                     ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
+                                                  fontWeight:
+                                                  FontWeight.w700,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -1428,9 +1617,9 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                                             ),
                                             style: theme.textTheme.titleLarge
                                                 ?.copyWith(
-                                                  color: theme.primaryColor,
-                                                  fontWeight: FontWeight.w800,
-                                                ),
+                                              color: theme.primaryColor,
+                                              fontWeight: FontWeight.w800,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -1513,8 +1702,70 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
             ),
             child: Text(
               l10n.saveAction,
+              textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TimeChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final VoidCallback? onRemove;
+
+  const _TimeChip({
+    required this.label,
+    required this.onTap,
+    this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: theme.primaryColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.schedule_rounded,
+                size: 16,
+                color: theme.primaryColor,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (onRemove != null) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: onRemove,
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 16,
+                    color: theme.primaryColor.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
@@ -1583,4 +1834,14 @@ class _KindOptionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PresetOption {
+  final int value;
+  final String label;
+
+  const _PresetOption({
+    required this.value,
+    required this.label,
+  });
 }

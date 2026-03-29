@@ -932,7 +932,7 @@ abstract class AppLocalizations {
   /// **'Customize Appearance'**
   String get customizePill;
 
-  /// No description provided for @customizePillTitle.
+  /// Title for the modal to change pill color and shape
   ///
   /// In en, this message translates to:
   /// **'Customize Pill'**
@@ -1028,10 +1028,10 @@ abstract class AppLocalizations {
   /// **'Notifications'**
   String get notifications;
 
-  /// No description provided for @advancedFeatures.
+  /// Label for expanding the advanced options in add medicine screen
   ///
   /// In en, this message translates to:
-  /// **'Advanced Features'**
+  /// **'Advanced settings'**
   String get advancedFeatures;
 
   /// No description provided for @caregivers.
@@ -1130,22 +1130,22 @@ abstract class AppLocalizations {
   /// **'Take this supplement now'**
   String get homeTakeSupplementNow;
 
-  /// No description provided for @homeEmptyAllTitle.
+  /// Empty state title on home screen when there are no medicines or supplements
   ///
   /// In en, this message translates to:
-  /// **'You have a quiet moment'**
+  /// **'No medicines yet'**
   String get homeEmptyAllTitle;
 
-  /// No description provided for @homeEmptyMedicationsTitle.
+  /// Empty state title on home screen when there are no medications
   ///
   /// In en, this message translates to:
-  /// **'Medications are all set'**
+  /// **'No medications yet'**
   String get homeEmptyMedicationsTitle;
 
-  /// No description provided for @homeEmptySupplementsTitle.
+  /// Empty state title on home screen when there are no supplements
   ///
   /// In en, this message translates to:
-  /// **'Supplements are all set'**
+  /// **'No supplements yet'**
   String get homeEmptySupplementsTitle;
 
   /// No description provided for @homeEmptyAllSubtitle.
@@ -3257,6 +3257,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No food restriction'**
   String get pdfNoFoodRestriction;
+
+  /// Prompt shown on the home screen when the medicine list is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Add a new medication or supplement to see it here.'**
+  String get homeEmptyAddMedicinePrompt;
 }
 
 class _AppLocalizationsDelegate

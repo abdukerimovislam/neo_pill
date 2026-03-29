@@ -15,10 +15,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get todaySchedule => 'Расписание на сегодня';
 
   @override
-  String get architectureReady => 'Архитектура заложена. Все системы в норме.';
+  String get architectureReady => 'Архитектура готова. Все системы в норме.';
 
   @override
-  String get nextCreateHome => 'Далее: Создать Главный экран';
+  String get nextCreateHome => 'Далее: Создать главный экран';
 
   @override
   String get statusTaken => 'Принято';
@@ -27,13 +27,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get statusSkipped => 'Пропущено';
 
   @override
-  String get statusSnoozed => 'Отложить на 10 мин';
+  String get statusSnoozed => 'Отложено на 10 мин';
 
   @override
-  String get statusPending => 'Ожидается';
+  String get statusPending => 'Ожидает';
 
   @override
-  String get emptySchedule => 'На этот день лекарств не назначено';
+  String get emptySchedule => 'На этот день нет запланированных лекарств';
 
   @override
   String get takeAction => 'Принять';
@@ -48,10 +48,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dosageUnitMl => 'мл';
 
   @override
-  String get dosageUnitDrops => 'капель';
+  String get dosageUnitDrops => 'кап.';
 
   @override
-  String get dosageUnitPcs => 'шт';
+  String get dosageUnitPcs => 'шт.';
 
   @override
   String get dosageUnitG => 'г';
@@ -66,7 +66,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addMedicationTitle => 'Добавить лекарство';
 
   @override
-  String get medicineNameHint => 'Название (например, Витамин Д)';
+  String get medicineNameHint => 'Название (например, Витамин D)';
 
   @override
   String get dosageHint => 'Дозировка (например, 500)';
@@ -87,20 +87,20 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String notificationBody(String dosage) {
-    return 'Дозировка: $dosage. Пожалуйста, не пропустите.';
+    return 'Дозировка: $dosage. Пожалуйста, не пропускайте.';
   }
 
   @override
   String get analyticsTitle => 'Аналитика';
 
   @override
-  String get adherenceRate => 'Соблюдение курса';
+  String get adherenceRate => 'Уровень соблюдения';
 
   @override
-  String get dosesTaken => 'Принято доз';
+  String get dosesTaken => 'Принятые дозы';
 
   @override
-  String get dosesMissed => 'Пропущено доз';
+  String get dosesMissed => 'Пропущенные дозы';
 
   @override
   String get activeCourses => 'Активные курсы';
@@ -115,13 +115,14 @@ class AppLocalizationsRu extends AppLocalizations {
   String get keepItUp => 'Отличная работа! Так держать.';
 
   @override
-  String get needsAttention => 'Обратите внимание. Старайтесь не пропускать.';
+  String get needsAttention =>
+      'Требует внимания. Старайтесь не пропускать дозы.';
 
   @override
   String get medicineDetails => 'Детали лекарства';
 
   @override
-  String get pillsRemaining => 'Осталось в запасе';
+  String get pillsRemaining => 'Осталось в наличии';
 
   @override
   String get deleteCourse => 'Удалить курс';
@@ -132,17 +133,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String courseAddedMessage(String type, String name) {
-    return '$type «$name» добавлен.';
+    return '$type \"$name\" добавлено.';
   }
 
   @override
   String courseUpdatedMessage(String type, String name) {
-    return '$type «$name» обновлен.';
+    return '$type \"$name\" обновлено.';
   }
 
   @override
   String courseDeletedMessage(String type, String name) {
-    return '$type «$name» удален.';
+    return '$type \"$name\" удалено.';
   }
 
   @override
@@ -152,7 +153,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get delete => 'Удалить';
 
   @override
-  String get timeOfDay => 'Время приема';
+  String get timeOfDay => 'Время суток';
 
   @override
   String get courseDuration => 'Длительность курса (дней)';
@@ -187,7 +188,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addPhoto => 'Добавить фото';
 
   @override
-  String get takePhoto => 'Сделать снимок';
+  String get takePhoto => 'Сделать фото';
 
   @override
   String get chooseFromGallery => 'Выбрать из галереи';
@@ -196,7 +197,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get medicineInfo => 'Информация о лекарстве';
 
   @override
-  String get formTitle => 'Форма выпуска';
+  String get formTitle => 'Форма';
 
   @override
   String get scheduleTitle => 'Расписание';
@@ -211,11 +212,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get overdoseWarning => 'Для предотвращения случайной передозировки.';
 
   @override
-  String get foodInstructionTitle => 'Прием пищи';
+  String get foodInstructionTitle => 'Указания по приему пищи';
 
   @override
   String doseNumber(int number) {
-    return 'Прием $number';
+    return 'Доза $number';
   }
 
   @override
@@ -225,23 +226,23 @@ class AppLocalizationsRu extends AppLocalizations {
   String get resumeCourse => 'Возобновить';
 
   @override
-  String get pauseCourse => 'Пауза';
+  String get pauseCourse => 'Приостановить';
 
   @override
   String coursePausedMessage(String type, String name) {
-    return '$type «$name» приостановлен.';
+    return '$type \"$name\" приостановлено.';
   }
 
   @override
   String courseResumedMessage(String type, String name) {
-    return '$type «$name» возобновлен.';
+    return '$type \"$name\" возобновлено.';
   }
 
   @override
   String get doctorReport => 'Отчет для врача';
 
   @override
-  String get generatingReport => 'Создание отчета...';
+  String get generatingReport => 'Создание отчета для врача...';
 
   @override
   String errorGeneratingReport(String error) {
@@ -249,13 +250,13 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get editCourse => 'Изменить курс';
+  String get editCourse => 'Редактировать курс';
 
   @override
   String get saveChanges => 'Сохранить изменения';
 
   @override
-  String get editMedicineInfo => 'Изменить информацию';
+  String get editMedicineInfo => 'Редактировать информацию';
 
   @override
   String lowStockTitle(String name) {
@@ -264,26 +265,27 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String lowStockBody(int count, String unit) {
-    return 'Осталось всего $count $unit. Пора в аптеку!';
+    return 'Осталось только $count $unit. Время пополнить запасы!';
   }
 
   @override
-  String get lowStockBadge => 'Мало запасов';
+  String get lowStockBadge => 'Заканчивается';
 
   @override
-  String get snoozeAction => 'Отложить (30м)';
+  String get snoozeAction => 'Отложить (30 мин)';
 
   @override
   String get undoAction => 'Отменить';
 
   @override
-  String get sosPanelTitle => 'Экстренно (SOS)';
+  String get sosPanelTitle => 'По необходимости (SOS)';
 
   @override
-  String get takeNowAction => 'ПРИНЯТЬ СЕЙЧАС';
+  String get takeNowAction => 'Принять';
 
   @override
-  String get limitReachedAlert => 'Дневной лимит исчерпан! Обратитесь к врачу.';
+  String get limitReachedAlert =>
+      'Достигнут дневной лимит! Проконсультируйтесь с врачом.';
 
   @override
   String get addSosMedicine => 'Добавить SOS';
@@ -298,16 +300,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get noHistoryYet => 'Истории пока нет';
 
   @override
-  String get lifetimeCourse => 'Постоянный прием (Всю жизнь)';
+  String get lifetimeCourse => 'Постоянный (пожизненно)';
 
   @override
   String get doneAction => 'Готово';
 
   @override
-  String get addMeasurement => 'Новый замер';
+  String get addMeasurement => 'Добавить показатель';
 
   @override
-  String get bloodPressure => 'Давление';
+  String get bloodPressure => 'Артериальное давление';
 
   @override
   String get heartRate => 'Пульс';
@@ -316,16 +318,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get weight => 'Вес';
 
   @override
-  String get bloodSugar => 'Сахар';
+  String get bloodSugar => 'Уровень сахара';
 
   @override
-  String get systolic => 'Сист';
+  String get systolic => 'Вверх';
 
   @override
-  String get diastolic => 'Диаст';
+  String get diastolic => 'Вниз';
 
   @override
-  String get taperingDosing => 'Динамическая (Ступенчатая)';
+  String get taperingDosing => 'Динамическая дозировка (снижение)';
 
   @override
   String stepNumber(int number) {
@@ -339,7 +341,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get doseForStep => 'Доза для этого шага';
 
   @override
-  String get whatWouldYouLikeToDo => 'Что бы вы хотели сделать?';
+  String get whatWouldYouLikeToDo => 'Что вы хотите сделать?';
 
   @override
   String get scheduleNewTreatmentCourse => 'Запланировать новый курс лечения';
@@ -368,20 +370,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String get goodEvening => 'Добрый вечер';
 
   @override
-  String get dailyProgress => 'Прогресс за день';
+  String get dailyProgress => 'Ежедневный прогресс';
 
   @override
-  String get sosEmergency => 'Экстренная помощь';
+  String get sosEmergency => 'SOS экстренно';
 
   @override
-  String get adherenceSubtitle => 'Обзор регулярности приема лекарств';
+  String get adherenceSubtitle => 'Обзор соблюдения режима лечения';
 
   @override
   String get healthCorrelationTitle => 'Связь со здоровьем';
 
   @override
   String get healthCorrelationSubtitle =>
-      'Сравните прием лекарств с показателями вашего здоровья';
+      'Сравните соблюдение режима с показателями здоровья';
 
   @override
   String get last7Days => 'Последние 7 дней';
@@ -390,10 +392,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pillsTaken => 'Принято таблеток';
 
   @override
-  String get overallAdherence => 'Общий показатель';
+  String get overallAdherence => 'Общее соблюдение';
 
   @override
-  String get statusGood => 'Отлично';
+  String get statusGood => 'Хорошо';
 
   @override
   String get statusNeedsAttention => 'Требует внимания';
@@ -408,27 +410,28 @@ class AppLocalizationsRu extends AppLocalizations {
   String get statTotal => 'Всего';
 
   @override
-  String get completedDosesSubtitle => 'Завершенные приемы';
+  String get completedDosesSubtitle => 'Завершенные дозы';
 
   @override
-  String get missedDosesSubtitle => 'Пропущенные приемы';
+  String get missedDosesSubtitle => 'Пропущенные дозы';
 
   @override
   String get noDataYet => 'Пока нет данных';
 
   @override
   String get noDataDescription =>
-      'Начните регулярно принимать лекарства и вносить измерения,\nчтобы увидеть аналитику здесь.';
+      'Начните отслеживать показатели и регулярно принимать лекарства,\nчтобы увидеть здесь полезную статистику.';
 
   @override
-  String get failedToLoadAdherence => 'Не удалось загрузить данные';
+  String get failedToLoadAdherence =>
+      'Не удалось загрузить данные о соблюдении';
 
   @override
   String get failedToLoadChart => 'Не удалось загрузить график';
 
   @override
   String avgAdherence(String value) {
-    return 'Ср. показатель $value%';
+    return 'Ср. соблюдение $value%';
   }
 
   @override
@@ -437,7 +440,7 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get addAction => 'Добавить';
+  String get addAction => 'Добавить запись';
 
   @override
   String get frequency => 'Частота';
@@ -449,19 +452,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get inventory => 'Запасы';
 
   @override
-  String get lowStockAlert => 'МАЛО';
+  String get lowStockAlert => 'ЗАКАНЧИВАЕТСЯ';
 
   @override
-  String get asNeededFrequency => 'ПО ПОТРЕБНОСТИ';
+  String get asNeededFrequency => 'ПО НЕОБХОДИМОСТИ';
 
   @override
-  String get taperingFrequency => 'ТИТРАЦИЯ';
+  String get taperingFrequency => 'ПОСТЕПЕННАЯ ОТМЕНА';
 
   @override
-  String get customizePill => 'Настроить вид';
+  String get customizePill => 'Настроить внешний вид';
 
   @override
-  String get customizePillTitle => 'Внешний вид';
+  String get customizePillTitle => 'Настроить внешний вид';
 
   @override
   String get shape => 'Форма';
@@ -470,7 +473,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get color => 'Цвет';
 
   @override
-  String get overview => 'Основное';
+  String get overview => 'Обзор';
 
   @override
   String get scheduleAndRules => 'Расписание и правила';
@@ -482,16 +485,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reminders => 'Напоминания';
 
   @override
-  String get daysSuffix => 'дней';
+  String get daysSuffix => 'дн.';
 
   @override
-  String get pcsSuffix => 'шт';
+  String get pcsSuffix => 'шт.';
 
   @override
   String get details => 'Детали';
 
   @override
-  String get settingsTitle => 'Настройки и профиль';
+  String get settingsTitle => 'Настройки и Профиль';
 
   @override
   String get personalInfo => 'Личная информация';
@@ -500,7 +503,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get appPreferences => 'Настройки приложения';
 
   @override
-  String get darkMode => 'Темная тема';
+  String get darkMode => 'Темный режим';
 
   @override
   String get language => 'Язык';
@@ -509,19 +512,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get notifications => 'Уведомления';
 
   @override
-  String get advancedFeatures => 'Продвинутые функции';
+  String get advancedFeatures => 'Расширенные настройки';
 
   @override
-  String get caregivers => 'Мед-друзья и близкие';
+  String get caregivers => 'Близкие и Опекуны';
 
   @override
-  String get drugInteractions => 'Совместимость лекарств';
+  String get drugInteractions => 'Взаимодействие лекарств';
 
   @override
   String get comingSoon => 'СКОРО';
 
   @override
-  String get supportAndAbout => 'Поддержка и инфо';
+  String get supportAndAbout => 'Поддержка и О приложении';
 
   @override
   String get contactSupport => 'Связаться с поддержкой';
@@ -542,7 +545,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get courseKindMedication => 'Лекарство';
 
   @override
-  String get courseKindSupplement => 'БАД';
+  String get courseKindSupplement => 'Добавка';
 
   @override
   String get courseFilterAll => 'Все';
@@ -551,75 +554,75 @@ class AppLocalizationsRu extends AppLocalizations {
   String get courseFilterMedications => 'Лекарства';
 
   @override
-  String get courseFilterSupplements => 'БАДы';
+  String get courseFilterSupplements => 'Добавки';
 
   @override
-  String get homeTakeMedicationNow => 'Примите это лекарство сейчас';
+  String get homeTakeMedicationNow => 'Принять лекарство сейчас';
 
   @override
-  String get homeTakeSupplementNow => 'Примите этот БАД сейчас';
+  String get homeTakeSupplementNow => 'Принять добавку сейчас';
 
   @override
-  String get homeEmptyAllTitle => 'Сейчас все спокойно';
+  String get homeEmptyAllTitle => 'Пока нет лекарств';
 
   @override
-  String get homeEmptyMedicationsTitle => 'С лекарствами все в порядке';
+  String get homeEmptyMedicationsTitle => 'Пока нет лекарств';
 
   @override
-  String get homeEmptySupplementsTitle => 'С БАДами все в порядке';
+  String get homeEmptySupplementsTitle => 'Пока нет добавок';
 
   @override
   String get homeEmptyAllSubtitle =>
-      'Сейчас ничего не требует внимания. Можно проверить другой день или добавить новый курс, когда будете готовы.';
+      'Сейчас ничего не требует внимания. Вы можете проверить другой день или добавить новый курс, когда будете готовы.';
 
   @override
   String get homeEmptyMedicationsSubtitle =>
-      'На эту дату лекарства не требуют внимания. Можно просто следовать привычному режиму.';
+      'На этот день нет лекарств, требующих внимания. Отличный момент для спокойной паузы.';
 
   @override
   String get homeEmptySupplementsSubtitle =>
-      'На эту дату БАДы не требуют внимания. Можно спокойно продолжать привычный режим приема.';
+      'На этот день нет добавок, требующих внимания. Ваш режим оздоровления свободен.';
 
   @override
-  String get homeAddSupplementTitle => 'Добавить БАД';
+  String get homeAddSupplementTitle => 'Добавить добавку';
 
   @override
   String get homeAddSupplementSubtitle =>
-      'Запланируйте витамины и полезные добавки';
+      'Запланировать витамины и оздоровительные добавки';
 
   @override
   String get homeForThisDay => 'На этот день';
 
   @override
-  String get homeMorningRoutine => 'Утренние приемы';
+  String get homeMorningRoutine => 'Утренняя рутина';
 
   @override
-  String get homeAfternoonRoutine => 'Дневные приемы';
+  String get homeAfternoonRoutine => 'Дневная рутина';
 
   @override
-  String get homeEveningRoutine => 'Вечерние приемы';
+  String get homeEveningRoutine => 'Вечерняя рутина';
 
   @override
-  String get homeNightRoutine => 'Ночные приемы';
+  String get homeNightRoutine => 'Ночная рутина';
 
   @override
-  String get homeRoutineSupplementsOnly => 'только БАДы';
+  String get homeRoutineSupplementsOnly => 'только добавки';
 
   @override
   String get homeRoutineMedicationsOnly => 'только лекарства';
 
   @override
-  String get homeRoutineMixed => 'смешанные приемы';
+  String get homeRoutineMixed => 'смешанная рутина';
 
   @override
   String homeRoutineItemCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count пункта',
-      many: '$count пунктов',
-      few: '$count пункта',
-      one: '$count пункт',
+      other: '$count позиций',
+      many: '$count позиций',
+      few: '$count позиции',
+      one: '1 позиция',
     );
     return '$_temp0';
   }
@@ -633,17 +636,19 @@ class AppLocalizationsRu extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count запланированных пункта нужно принять или проверить сейчас.',
+          '$count запланированных позиций должны быть приняты или проверены сейчас.',
       many:
-          '$count запланированных пунктов нужно принять или проверить сейчас.',
-      few: '$count запланированных пункта нужно принять или проверить сейчас.',
-      one: '$count запланированный пункт нужно принять или проверить сейчас.',
+          '$count запланированных позиций должны быть приняты или проверены сейчас.',
+      few:
+          '$count запланированные позиции должны быть приняты или проверены сейчас.',
+      one:
+          '1 запланированная позиция должна быть принята или проверена сейчас.',
     );
     return '$_temp0';
   }
 
   @override
-  String get homeNextUpTitle => 'Дальше';
+  String get homeNextUpTitle => 'Следующее';
 
   @override
   String get homeRefillReminderTitle => 'Напоминание о пополнении';
@@ -653,23 +658,23 @@ class AppLocalizationsRu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count курсам скоро может понадобиться пополнение.',
-      many: '$count курсам скоро может понадобиться пополнение.',
-      few: '$count курсам скоро может понадобиться пополнение.',
-      one: '$count курсу скоро может понадобиться пополнение.',
+      other: '$count курсам скоро может потребоваться пополнение.',
+      many: '$count курсам скоро может потребоваться пополнение.',
+      few: '$count курсам скоро может потребоваться пополнение.',
+      one: '1 курсу скоро может потребоваться пополнение.',
     );
     return '$_temp0';
   }
 
   @override
-  String get homeEverythingCalmTitle => 'Сейчас все спокойно';
+  String get homeEverythingCalmTitle => 'Всё спокойно';
 
   @override
   String get homeEverythingCalmSubtitle =>
-      'Сейчас нет срочных задач по лекарствам или БАДам.';
+      'Прямо сейчас нет срочных задач по лекарствам или добавкам.';
 
   @override
-  String get homeNoUpcomingItem => 'Ближайший прием не запланирован.';
+  String get homeNoUpcomingItem => 'Нет предстоящих запланированных позиций.';
 
   @override
   String homeScheduledFor(String time) {
@@ -687,48 +692,47 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get calendarBrowseNearbyDays =>
-      'Прокручивайте колесо, чтобы посмотреть соседние дни';
+      'Прокрутите колесо, чтобы просмотреть ближайшие дни';
 
   @override
   String get calendarPreviewAnotherDay =>
-      'Колесо позволяет предварительно посмотреть другой день до обновления экрана.';
+      'Колесо позволяет предварительно просмотреть другой день перед обновлением экрана.';
 
   @override
   String get calendarDayWheelSemantics => 'Колесо дней';
 
   @override
-  String get analyticsCourseMix => 'Курсы по типам';
+  String get analyticsCourseMix => 'Смесь курсов';
 
   @override
   String get analyticsCourseMixSubtitle =>
-      'Лечение и БАДы отслеживаются вместе, но здесь считаются отдельно.';
+      'Лечебные курсы и добавки отслеживаются вместе, но измеряются здесь отдельно.';
 
   @override
-  String get analyticsCurrentRoutine => 'Текущая серия';
+  String get analyticsCurrentRoutine => 'Текущая рутина';
 
   @override
   String get analyticsCurrentRoutineSubtitle =>
-      'Дни подряд без пропущенных доз';
+      'Дней подряд без пропущенных доз';
 
   @override
-  String get analyticsTimingAccuracy => 'Точность по времени';
+  String get analyticsTimingAccuracy => 'Точность времени';
 
   @override
-  String get analyticsTimingAccuracySubtitle => 'Принято в пределах 30 минут';
+  String get analyticsTimingAccuracySubtitle => 'Принято в течение 30 минут';
 
   @override
-  String get analyticsBestRoutine => 'Лучшая серия';
+  String get analyticsBestRoutine => 'Лучшая рутина';
 
   @override
   String get analyticsBestRoutineSubtitle =>
       'Лучший результат за последние 90 дней';
 
   @override
-  String get analyticsRefillRisk => 'Риск пополнения';
+  String get analyticsRefillRisk => 'Риск нехватки';
 
   @override
-  String get analyticsRefillRiskSubtitle =>
-      'Курсы, близкие к порогу пополнения';
+  String get analyticsRefillRiskSubtitle => 'Курсы близки к порогу пополнения';
 
   @override
   String get analyticsAverageDelay => 'Средняя задержка';
@@ -737,19 +741,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get analyticsMinutesShort => 'мин';
 
   @override
-  String get analyticsCoachNote => 'Подсказка';
+  String get analyticsCoachNote => 'Заметка тренера';
 
   @override
   String get analyticsMissedDoses => 'Пропущенные дозы';
 
   @override
   String analyticsActiveShort(int count) {
-    return '$count активных';
+    return '$count активно';
   }
 
   @override
   String analyticsTakenMissed(int taken, int missed) {
-    return 'Принято: $taken  Пропущено: $missed';
+    return 'Принято: $taken Пропущено: $missed';
   }
 
   @override
@@ -757,28 +761,28 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsContactSupportBody =>
-      'Если что-то выглядит непонятно или работает не так, мы поможем. Укажите модель устройства, версию приложения и коротко опишите проблему.';
+      'Если что-то непонятно или работает не так, как ожидалось, мы можем помочь. Укажите модель вашего устройства, версию приложения и краткое описание проблемы.';
 
   @override
-  String get settingsSupportEmailCopied => 'Почта поддержки скопирована';
+  String get settingsSupportEmailCopied => 'Email поддержки скопирован';
 
   @override
-  String get settingsCopySupportEmail => 'Скопировать почту поддержки';
+  String get settingsCopySupportEmail => 'Скопировать email поддержки';
 
   @override
   String get settingsPrivacyTitle => 'Политика конфиденциальности';
 
   @override
   String get settingsPrivacyBodyPrimary =>
-      'Pillora хранит данные о курсах, настройках напоминаний и истории приемов на вашем устройстве, чтобы показывать расписание и формировать отчеты.';
+      'Pillora хранит данные ваших курсов, настройки напоминаний и историю приема на вашем устройстве, чтобы приложение могло показывать ваше расписание и создавать отчеты.';
 
   @override
   String get settingsPrivacyBodySecondary =>
-      'Фотографии лекарств и экспорт отчетов создаются только когда вы сами выбираете эти функции. Перед релизом замените это краткое описание внутри приложения на финальную ссылку на политику конфиденциальности.';
+      'Фотографии лекарств и экспорт отчетов создаются только тогда, когда вы решите их использовать. Перед запуском замените это резюме в приложении на окончательный URL-адрес вашей политики конфиденциальности.';
 
   @override
   String get settingsPrivacyLaunchNote =>
-      'Примечание к релизу: опубликуйте полную политику конфиденциальности на сайте или в карточке приложения до выпуска.';
+      'Примечание к запуску: перед релизом опубликуйте полную политику конфиденциальности на вашем сайте или на странице в магазине приложений.';
 
   @override
   String get settingsLanguageEnglish => 'Английский';
@@ -794,7 +798,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsComfortModeSubtitle =>
-      'Более крупный текст и меньше визуального шума';
+      'Увеличенный текст и более спокойный дизайн';
 
   @override
   String get settingsNotificationsEnabled =>
@@ -807,151 +811,149 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settingsSupportAndSafety => 'Поддержка и безопасность';
 
   @override
-  String get settingsShowOnboardingAgain =>
-      'Показать приветственное руководство снова';
+  String get settingsShowOnboardingAgain => 'Показать обучение снова';
 
   @override
   String get settingsShowOnboardingAgainSubtitle =>
-      'Снова открыть руководство по началу работы';
+      'Открыть руководство для первого запуска';
 
   @override
   String get settingsFeaturePolishing =>
-      'Эта функция дорабатывается к следующему релизу';
+      'Эта функция дорабатывается для будущих релизов';
 
   @override
-  String get settingsCaregiverTitle => 'Доступ для близкого человека';
+  String get settingsCaregiverTitle => 'Доступ для опекунов';
 
   @override
   String get settingsCaregiverDescription =>
-      'Добавьте доверенного человека, чтобы в отчетах были его контакты и совместная забота оставалась понятной.';
+      'Добавьте доверенное лицо, чтобы отчеты могли включать их контактные данные, а совместный уход оставался организованным.';
 
   @override
-  String get settingsCaregiverName => 'Имя близкого человека';
+  String get settingsCaregiverName => 'Имя опекуна';
 
   @override
-  String get settingsCaregiverRelation => 'Кто вам этот человек';
+  String get settingsCaregiverRelation => 'Кем приходится';
 
   @override
   String get settingsCaregiverPhone => 'Номер телефона';
 
   @override
-  String get settingsCaregiverShareReports =>
-      'Добавлять близкого человека в отчеты';
+  String get settingsCaregiverShareReports => 'Включать опекуна в отчеты';
 
   @override
   String get settingsCaregiverShareReportsSubtitle =>
-      'Контакты этого человека будут включаться в отчеты, которыми вы делитесь.';
+      'Отчеты для врача могут содержать контактные данные опекуна, когда вы ими делитесь.';
 
   @override
-  String get settingsCaregiverSaved => 'Данные близкого человека сохранены';
+  String get settingsCaregiverSaved => 'Настройки опекуна сохранены';
 
   @override
-  String get settingsCaregiverRemoved => 'Близкий человек удален';
+  String get settingsCaregiverRemoved => 'Опекун удален';
 
   @override
-  String get settingsCaregiverRemove => 'Удалить близкого человека';
+  String get settingsCaregiverRemove => 'Удалить опекуна';
 
   @override
   String get settingsCaregiverEmpty =>
-      'Добавьте доверенного человека для совместной заботы и отчетов';
+      'Добавьте доверенное лицо для совместного ухода и отчетов';
 
   @override
-  String get settingsCaregiverAlertsTitle => 'Оповещения для близкого человека';
+  String get settingsCaregiverAlertsTitle => 'Оповещения для опекуна';
 
   @override
   String get settingsCaregiverAlertsDescription =>
-      'Если важный прием просрочен или отмечен как пропущенный, Pillora подготовит на этом устройстве готовое сообщение для близкого человека.';
+      'Если важная доза просрочена или отмечена как пропущенная, Pillora может подготовить готовое оповещение для вашего опекуна на этом устройстве.';
 
   @override
   String get settingsCaregiverAlertsEmpty =>
-      'Сначала добавьте близкого человека, чтобы включить такие оповещения';
+      'Сначала добавьте опекуна, чтобы готовить оповещения о пропущенных дозах';
 
   @override
   String get settingsCaregiverAlertsDisabled =>
-      'Оповещения для близкого человека отключены';
+      'Оповещения для вашего опекуна отключены';
 
   @override
   String settingsCaregiverAlertsEnabledSummary(int minutes) {
-    return 'Сообщение готовится через $minutes мин., если приему требуется внимание';
+    return 'Оповещение подготавливается через $minutes минут, если требуется внимание';
   }
 
   @override
   String get settingsCaregiverAlertsSwitchTitle =>
-      'Готовить сообщения для близкого человека';
+      'Готовить оповещения для опекуна';
 
   @override
   String get settingsCaregiverAlertsSwitchSubtitle =>
-      'Когда прием требует внимания, Pillora подготовит сообщение, которое можно быстро скопировать и отправить.';
+      'Когда доза требует внимания, Pillora подготовит сообщение, которое вы сможете скопировать и отправить.';
 
   @override
-  String get settingsCaregiverAlertsGraceTitle => 'Пауза перед оповещением';
+  String get settingsCaregiverAlertsGraceTitle => 'Период ожидания';
 
   @override
   String settingsCaregiverAlertsGraceDescription(int minutes) {
-    return 'Подождать $minutes мин. перед подготовкой сообщения о просроченном приеме.';
+    return 'Подождать $minutes минут перед подготовкой оповещения о просроченной позиции.';
   }
 
   @override
   String settingsCaregiverAlertsGraceChip(int minutes) {
-    return '$minutes мин.';
+    return '$minutes мин';
   }
 
   @override
   String get settingsCaregiverAlertsOverdueTitle =>
-      'Учитывать просроченные приемы';
+      'Включать просроченные дозы';
 
   @override
   String get settingsCaregiverAlertsOverdueSubtitle =>
-      'Готовить сообщение, если прием все еще не отмечен после выбранной паузы.';
+      'Подготовить оповещение, когда запланированная доза все еще ожидается после периода ожидания.';
 
   @override
-  String get settingsCaregiverAlertsSkippedTitle =>
-      'Учитывать пропущенные приемы';
+  String get settingsCaregiverAlertsSkippedTitle => 'Включать пропущенные дозы';
 
   @override
   String get settingsCaregiverAlertsSkippedSubtitle =>
-      'Готовить сообщение, если прием явно отмечен как пропущенный.';
+      'Подготовить оповещение, когда доза явно отмечена как пропущенная.';
 
   @override
-  String get settingsCaregiverAlertsSupplementsTitle => 'Учитывать БАДы';
+  String get settingsCaregiverAlertsSupplementsTitle => 'Включать добавки';
 
   @override
   String get settingsCaregiverAlertsSupplementsSubtitle =>
-      'Использовать тот же сценарий не только для лекарств, но и для БАДов.';
+      'Использовать ту же логику оповещений для добавок, а не только для лекарств.';
 
   @override
   String get settingsCaregiverAlertsSaved =>
-      'Правила оповещений для близкого человека сохранены';
+      'Правила оповещений опекуна сохранены';
 
   @override
-  String get settingsCaregiverConnectedTitle => 'Связь с устройством близкого';
+  String get settingsCaregiverConnectedTitle => 'Подключенная доставка опекуну';
 
   @override
   String get settingsCaregiverConnectedDescription =>
-      'На стороне приложения уже подготовлены постоянный код связи и outbox для оповещений, чтобы прямую доставку на устройство близкого можно было аккуратно подключить через облачный слой.';
+      'Этот слой приложения поддерживает стабильный код связи и готовую к синхронизации папку исходящих сообщений, поэтому прямые оповещения на устройство опекуна могут быть легко подключены, когда включена облачная доставка.';
 
   @override
   String get settingsCaregiverConnectedReady =>
-      'Код связи уже готов. В outbox сейчас нет ожидающих оповещений.';
+      'Код, готовый к подключению, подготовлен. В исходящих нет ожидающих оповещений.';
 
   @override
   String settingsCaregiverConnectedPending(int count) {
-    return 'В outbox для связанной доставки ожидают $count оповещений.';
+    return '$count оповещений(е) ожидают в папке исходящих для подключенной доставки.';
   }
 
   @override
-  String get settingsCaregiverConnectedCodeTitle => 'Код связи для близкого';
+  String get settingsCaregiverConnectedCodeTitle => 'Код связи с опекуном';
 
   @override
   String get settingsCaregiverConnectedCodeSubtitle =>
-      'Сохраните этот код для будущей привязки устройства близкого, когда будет включена прямая доставка.';
+      'Держите этот код наготове для привязки устройства опекуна, когда включена прямая доставка.';
 
   @override
-  String get settingsCaregiverConnectedOutboxTitle => 'Outbox оповещений';
+  String get settingsCaregiverConnectedOutboxTitle =>
+      'Папка исходящих оповещений';
 
   @override
   String settingsCaregiverConnectedLastQueued(String value) {
-    return 'Последний раз добавлено: $value';
+    return 'Последнее в очереди: $value';
   }
 
   @override
@@ -959,108 +961,108 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsCaregiverConnectedCodeCopied =>
-      'Код связи для близкого скопирован';
+      'Код связи с опекуном скопирован';
 
   @override
-  String get settingsCaregiverConnectedClearOutbox => 'Очистить outbox';
+  String get settingsCaregiverConnectedClearOutbox => 'Очистить исходящие';
 
   @override
   String get settingsCaregiverConnectedOutboxCleared =>
-      'Outbox близкого очищен';
+      'Папка исходящих для опекуна очищена';
 
   @override
   String get settingsCaregiverConnectedCloudTitle => 'Режим облачной связи';
 
   @override
   String get settingsCaregiverConnectedModePatient =>
-      'Это устройство работает как устройство пациента и зеркалит оповещения в Firestore.';
+      'Это устройство действует как устройство пациента и зеркалирует оповещения в Firestore.';
 
   @override
   String settingsCaregiverConnectedModeCaregiver(String patientName) {
-    return 'Это устройство связано как устройство близкого человека для $patientName.';
+    return 'Это устройство привязано как устройство опекуна для $patientName.';
   }
 
   @override
   String get settingsCaregiverConnectedModeNone =>
-      'Это устройство пока не подключено к облачному caregiver-сценарию.';
+      'Это устройство еще не привязано к облачной системе опекуна.';
 
   @override
   String settingsCaregiverConnectedCloudCode(String code) {
-    return 'Связанный код: $code';
+    return 'Привязанный код: $code';
   }
 
   @override
   String get settingsCaregiverConnectedInboxTitle =>
-      'Предпросмотр caregiver inbox';
+      'Предпросмотр входящих опекуна';
 
   @override
   String get settingsCaregiverConnectedInboxEmpty =>
-      'Сейчас в облачном inbox нет ожидающих оповещений.';
+      'Сейчас нет ожидающих облачных оповещений.';
 
   @override
   String get settingsCaregiverConnectedUsePatientDevice =>
-      'Использовать это устройство как устройство пациента';
+      'Использовать это устройство как пациента';
 
   @override
   String get settingsCaregiverConnectedPatientModeSaved =>
-      'Это устройство теперь связано как устройство пациента';
+      'Это устройство теперь привязано как устройство пациента';
 
   @override
   String get settingsCaregiverConnectedUseCaregiverDevice =>
-      'Подключить это устройство как устройство близкого';
+      'Подключить это устройство как опекуна';
 
   @override
   String get settingsCaregiverConnectedJoinTitle =>
-      'Подключение устройства близкого';
+      'Присоединиться к связи с опекуном';
 
   @override
   String get settingsCaregiverConnectedJoinSubtitle =>
-      'Введите код связи с устройства пациента, чтобы получать оповещения в этом приложении, пока оно активно.';
+      'Введите код связи с опекуном с устройства пациента, чтобы получать оповещения в этом приложении, пока оно активно.';
 
   @override
   String get settingsCaregiverConnectedJoinAction =>
-      'Подключить устройство близкого';
+      'Подключить устройство опекуна';
 
   @override
   String get settingsCaregiverConnectedCaregiverModeSaved =>
-      'Это устройство теперь связано как устройство близкого человека';
+      'Это устройство теперь привязано как устройство опекуна';
 
   @override
   String get settingsCaregiverConnectedJoinFailed =>
-      'Код связи для близкого не найден';
+      'Код связи с опекуном не найден';
 
   @override
   String get settingsCaregiverConnectedDisconnect => 'Отключить облачную связь';
 
   @override
   String get settingsCaregiverConnectedDisconnected =>
-      'Это устройство отключено от облачного caregiver-сценария';
+      'Это устройство было отключено от облачной системы опекуна';
 
   @override
-  String get caregiverCloudNotificationTitle => 'Оповещение для близкого';
+  String get caregiverCloudNotificationTitle => 'Оповещение от опекуна';
 
   @override
-  String get caregiverAlertCardTitle => 'Сообщение для близкого уже готово';
+  String get caregiverAlertCardTitle => 'Оповещение для опекуна готово';
 
   @override
   String caregiverAlertCardSubtitle(String caregiverName, int count) {
-    return '$caregiverName можно быстро сообщить о $count пунктах, которым сегодня нужно внимание.';
+    return '$caregiverName может быть уведомлен о $count позиции(ях), требующих внимания сегодня.';
   }
 
   @override
-  String get caregiverAlertReviewAction => 'Открыть и скопировать';
+  String get caregiverAlertReviewAction => 'Посмотреть и скопировать';
 
   @override
-  String get caregiverAlertSheetTitle => 'Сообщение для близкого человека';
+  String get caregiverAlertSheetTitle => 'Оповещение опекуну';
 
   @override
   String caregiverAlertSheetSubtitle(String caregiverName, int count) {
-    return 'Pillora подготовил готовое сообщение для $caregiverName о $count пунктах, которым нужно внимание.';
+    return 'Pillora подготовила готовое сообщение для $caregiverName о $count позиции(ях), требующих внимания.';
   }
 
   @override
   String caregiverAlertReasonOverdue(int minutes) {
-    return 'Просрочено на $minutes мин.';
+    return 'Опаздывает на $minutes мин';
   }
 
   @override
@@ -1068,28 +1070,27 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String caregiverAlertItemSchedule(String time, String reason) {
-    return 'По плану в $time. $reason.';
+    return 'Запланировано на $time. $reason.';
   }
 
   @override
   String get caregiverAlertManualShareNote =>
-      'В этой версии Pillora готовит сообщение на вашем устройстве, чтобы вы могли быстро скопировать его и отправить близкому человеку.';
+      'Этот релиз подготавливает готовое оповещение на вашем устройстве, чтобы вы могли быстро скопировать его и отправить своему опекуну.';
 
   @override
-  String get caregiverAlertCopyMessage => 'Скопировать текст сообщения';
+  String get caregiverAlertCopyMessage => 'Скопировать текст оповещения';
 
   @override
-  String get caregiverAlertCopyPhone => 'Скопировать номер близкого';
+  String get caregiverAlertCopyPhone => 'Скопировать телефон опекуна';
 
   @override
-  String get caregiverAlertNoPhone => 'Добавьте номер близкого в настройках';
+  String get caregiverAlertNoPhone => 'Добавьте телефон опекуна в Настройках';
 
   @override
-  String get caregiverAlertMessageCopied =>
-      'Сообщение для близкого скопировано';
+  String get caregiverAlertMessageCopied => 'Оповещение опекуну скопировано';
 
   @override
-  String get caregiverAlertPhoneCopied => 'Номер близкого скопирован';
+  String get caregiverAlertPhoneCopied => 'Телефон опекуна скопирован';
 
   @override
   String caregiverAlertMessageGreeting(String caregiverName) {
@@ -1098,7 +1099,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String caregiverAlertMessageIntro(String patientName) {
-    return 'Pillora подготовил это обновление для $patientName. Сегодня внимания требуют следующие приемы:';
+    return 'Pillora подготовила это обновление для $patientName. Следующие дозы требуют внимания сегодня:';
   }
 
   @override
@@ -1107,28 +1108,28 @@ class AppLocalizationsRu extends AppLocalizations {
     String time,
     int minutes,
   ) {
-    return '$courseName — по плану в $time, сейчас просрочено на $minutes мин.';
+    return '$courseName — запланировано на $time, сейчас просрочено на $minutes мин';
   }
 
   @override
   String caregiverAlertMessageLineSkipped(String courseName, String time) {
-    return '$courseName — по плану в $time, отмечено как пропущенное';
+    return '$courseName — запланировано на $time, отмечено как пропущенное';
   }
 
   @override
   String get caregiverAlertMessageFooter =>
-      'Пожалуйста, свяжитесь с человеком, если нужна поддержка.';
+      'Пожалуйста, свяжитесь, если нужна поддержка.';
 
   @override
   String get settingsSupportEmailSubtitle =>
-      'Почта поддержки для вопросов и сообщений об ошибках';
+      'Email поддержки и контактные данные для запуска';
 
   @override
   String get settingsPrivacySubtitle =>
-      'Как обрабатываются данные напоминаний, фото и отчетов';
+      'Как обрабатываются данные напоминаний, фото и отчеты';
 
   @override
-  String get settingsExampleName => 'Например, Алексей';
+  String get settingsExampleName => 'Например, Александр';
 
   @override
   String get settingsSave => 'Сохранить';
@@ -1143,32 +1144,32 @@ class AppLocalizationsRu extends AppLocalizations {
   String get onboardingBack => 'Назад';
 
   @override
-  String get onboardingWelcomeTitle =>
-      'Pillora помогает держать лечение под контролем';
+  String get onboardingWelcomeTitle => 'Pillora помогает вам не сбиться с пути';
 
   @override
   String get onboardingWelcomeTagline => 'Спокойно, понятно и по делу.';
 
   @override
   String get onboardingWelcomeBody =>
-      'Сразу после открытия приложения вы увидите, что нужно принять сейчас и что будет дальше.';
+      'Сразу после открытия приложения вы увидите, какое лекарство нужно принять сейчас, а какое следующее.';
 
   @override
   String get onboardingFeatureEasyInterface =>
-      'Крупный и легко читаемый интерфейс';
+      'Крупный, легко читаемый интерфейс';
 
   @override
-  String get onboardingFeatureNextDose => 'Фокус на ближайшем приеме';
+  String get onboardingFeatureNextDose => 'Фокус на следующей дозе';
 
   @override
-  String get onboardingFeatureReminders => 'Напоминания и контроль запаса';
+  String get onboardingFeatureReminders => 'Напоминания и контроль запасов';
 
   @override
-  String get onboardingTailorTitle => 'Давайте настроим приложение под вас';
+  String get onboardingTailorTitle =>
+      'Позвольте нам настроить приложение для вас';
 
   @override
   String get onboardingTailorSubtitle =>
-      'Позже эти настройки можно изменить в профиле.';
+      'Вы сможете изменить эти настройки позже в Профиле.';
 
   @override
   String get onboardingNamePrompt => 'Как к вам обращаться?';
@@ -1184,22 +1185,22 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get onboardingComfortModeSubtitle =>
-      'Более крупный текст, большие кнопки и меньше визуального шума.';
+      'Увеличенный текст, большие кнопки и меньше визуального шума.';
 
   @override
-  String get onboardingReadyTitle => 'Все готово';
+  String get onboardingReadyTitle => 'Всё готово';
 
   @override
   String get onboardingReadyBanner =>
-      'Первый экран показывает, что и когда нужно принять.';
+      'Первый экран фокусируется на том, что и когда нужно принять.';
 
   @override
   String get onboardingReadyBody =>
-      'На главном экране сначала показываются самые важные приемы, а статистика остается на отдельной вкладке.';
+      'Главный экран показывает лекарства, требующие внимания в первую очередь, а статистика находится на отдельной вкладке.';
 
   @override
   String get onboardingReadySummaryHome =>
-      'Более простой главный экран без лишнего шума';
+      'Более простой главный экран без лишнего';
 
   @override
   String get onboardingReadySummaryActions =>
@@ -1210,10 +1211,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get onboardingReadySummaryComfortLater =>
-      'Комфортный режим можно включить позже в профиле';
+      'Комфортный режим можно включить позже в Профиле';
 
   @override
-  String get medicineStandardCourse => 'Обычный курс';
+  String get medicineStandardCourse => 'Стандартный курс';
 
   @override
   String get medicineComplexCourse => 'Сложный курс';
@@ -1228,55 +1229,56 @@ class AppLocalizationsRu extends AppLocalizations {
   String get courseTypeLabel => 'Тип курса';
 
   @override
-  String get addSupplementScreenTitle => 'Добавить БАД';
+  String get addSupplementScreenTitle => 'Добавить добавку';
 
   @override
-  String get editSupplementTitle => 'Редактировать БАД';
+  String get editSupplementTitle => 'Редактировать добавку';
 
   @override
   String get settingsLanguageChangeLater =>
-      'Позже это можно изменить в профиле';
+      'Вы можете изменить это позже в Профиле';
 
   @override
-  String get homeNothingDueTitle => 'Сейчас ничего не запланировано';
+  String get homeNothingDueTitle => 'Сейчас ничего не нужно принимать';
 
   @override
   String get homeUseDayWheelSubtitle =>
-      'Используйте колесо дней выше, если хотите посмотреть другой день.';
+      'Используйте колесо дней выше, если хотите проверить другой день.';
 
   @override
   String get homeNoAttentionRightNow =>
-      'Сейчас ни лекарства, ни БАДы не требуют внимания.';
+      'Нет запланированных лекарств или добавок, требующих внимания прямо сейчас.';
 
   @override
-  String get homeAddItemFab => 'Добавить лекарство, БАД или измерение';
+  String get homeAddItemFab => 'Добавить лекарство, добавку или показатель';
 
   @override
-  String get homeTimelineSubtitle => 'Лекарства и БАДы показаны по времени.';
+  String get homeTimelineSubtitle =>
+      'Лекарства и добавки показаны в хронологическом порядке.';
 
   @override
   String get analyticsCoachGreat =>
-      'У вас формируется надежный режим приема. Продолжайте в том же духе.';
+      'Вы выстраиваете надежный режим приема лекарств. Продолжайте в том же духе.';
 
   @override
   String get analyticsCoachMissed =>
-      'Большинство пропусков связано не с количеством, а с нерегулярностью. Сделайте первый прием дня своей опорной точкой.';
+      'Большинство пропусков происходит из-за непоследовательности, а не из-за объема. Сделайте первую дозу дня вашей опорой.';
 
   @override
   String get analyticsCoachTiming =>
-      'Ваш режим движется в правильную сторону. Следующий шаг — точнее соблюдать время.';
+      'Ваш режим движется в правильном направлении. Следующая победа — лучшая точность времени.';
 
   @override
   String get medicineFrequencyDaily => 'Ежедневно';
 
   @override
-  String get medicineFrequencySpecificDays => 'Определенные дни';
+  String get medicineFrequencySpecificDays => 'В определенные дни';
 
   @override
-  String get medicineFrequencyInterval => 'Интервал';
+  String get medicineFrequencyInterval => 'С интервалом';
 
   @override
-  String get medicineFrequencyCycle => 'Цикл';
+  String get medicineFrequencyCycle => 'Циклами';
 
   @override
   String get medicineFormTablet => 'Таблетка';
@@ -1288,7 +1290,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get medicineFormLiquid => 'Жидкость';
 
   @override
-  String get medicineFormInjection => 'Инъекция';
+  String get medicineFormInjection => 'Укол';
 
   @override
   String get medicineFormDrops => 'Капли';
@@ -1306,22 +1308,22 @@ class AppLocalizationsRu extends AppLocalizations {
   String get medicineFormPatch => 'Пластырь';
 
   @override
-  String get medicineFormSuppository => 'Суппозиторий';
+  String get medicineFormSuppository => 'Свечи';
 
   @override
   String get medicineTimelineSupplementInfo =>
-      'Этот БАД показывается в общей дневной ленте, но остается отдельным курсом.';
+      'Эта добавка отображается в общей ежедневной ленте, оставаясь при этом отдельным оздоровительным курсом.';
 
   @override
   String get medicineTimelineMedicationInfo =>
-      'Это лекарство показывается в общей дневной ленте и остается частью основного плана лечения.';
+      'Это лекарство отображается в общей ежедневной ленте и остается частью вашего основного плана лечения.';
 
   @override
-  String get medicineDoseScheduleTitle => 'Схема доз';
+  String get medicineDoseScheduleTitle => 'Расписание доз';
 
   @override
   String get medicineDoseScheduleSubtitle =>
-      'Следующий день курса с дозировкой по времени.';
+      'Следующий день лечения с дозировкой по времени.';
 
   @override
   String get medicineHistoryLoadError => 'Ошибка';
@@ -1330,71 +1332,71 @@ class AppLocalizationsRu extends AppLocalizations {
   String get scheduleDoseTabletsAtTime => 'Таблеток в это время';
 
   @override
-  String get scheduleDoseAmountAtTime => 'Доза в это время';
+  String get scheduleDoseAmountAtTime => 'Количество в это время';
 
   @override
   String get schedulePreviewFutureRebuilt =>
-      'Будущие дозы будут пересобраны по этому расписанию.';
+      'Будущие дозы будут перестроены с использованием этого расписания.';
 
   @override
   String get scheduleComplexTitle => 'Сложное расписание';
 
   @override
   String get scheduleComplexEditSubtitle =>
-      'Можно отдельно редактировать и время, и дозировку для каждой дозы.';
+      'Вы можете изменить время и дозировку для каждого приема.';
 
   @override
   String get courseTimelineSupplementInfo =>
-      'Этот БАД остается в своей категории, но показывается в общей ленте по времени.';
+      'Эта добавка остается в своей категории, но отображается в общей ленте по времени.';
 
   @override
   String get courseTimelineMedicationInfo =>
-      'Это лекарство остается в своей категории и показывается в общей ленте по времени.';
+      'Это лекарство остается в медицинской категории и отображается в общей ленте по времени.';
 
   @override
-  String get supplementNameHint => 'Название БАДа (например, Магний)';
+  String get supplementNameHint => 'Название (например, Магний)';
 
   @override
   String get addDoseAction => 'Добавить дозу';
 
   @override
-  String get addConditionSuggestionsTitle => 'Подсказки по заболеванию';
+  String get addConditionSuggestionsTitle => 'Предложения по заболеваниям';
 
   @override
   String get addConditionSuggestionsSubtitle =>
-      'Выберите заболевание, чтобы увидеть частые шаблоны курсов. Это только ориентиры, их нужно сверять с реальным назначением.';
+      'Выберите заболевание, чтобы увидеть общие шаблоны курсов. Это только отправные точки, и они должны совпадать с реальным рецептом.';
 
   @override
   String get addConditionSuggestionsEmpty =>
-      'Для этого заболевания больше нет видимых подсказок. Можно выбрать другое заболевание или продолжить вручную.';
+      'Для этого состояния больше нет доступных предложений. Вы можете выбрать другое заболевание или продолжить вручную.';
 
   @override
-  String get addFlowSupplementTitle => 'Как вы хотите добавить этот БАД?';
+  String get addFlowSupplementTitle => 'Как бы вы хотели добавить эту добавку?';
 
   @override
-  String get addFlowMedicationTitle => 'С чего начать?';
+  String get addFlowMedicationTitle => 'С чего начнем?';
 
   @override
   String get addFlowSupplementSubtitle =>
-      'БАДы чаще добавляют вручную, но можно выбрать и готовый шаблон, если он подходит.';
+      'Большинство людей добавляют добавки вручную, но вы все равно можете использовать быстрые шаблоны, если они подходят.';
 
   @override
   String get addFlowMedicationSubtitle =>
-      'Сначала выберите удобный способ добавления. Ниже все детали можно изменить вручную.';
+      'Выберите самый простой путь для начала. Вы сможете настроить каждую деталь на следующем шаге.';
 
   @override
   String get addFlowByConditionTitle => 'По заболеванию';
 
   @override
   String get addFlowByConditionSubtitle =>
-      'Посмотреть частые шаблоны для заболевания';
+      'Посмотреть самые частые шаблоны для конкретной проблемы';
 
   @override
   String get addFlowQuickTemplateTitle => 'Быстрый шаблон';
 
   @override
   String get addFlowQuickTemplateSubtitle =>
-      'Использовать один из частых готовых курсов';
+      'Использовать один из распространенных готовых курсов';
 
   @override
   String get addFlowManualTitle => 'Вручную';
@@ -1407,7 +1409,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get addAppearanceSubtitle =>
-      'Необязательный шаг. Добавьте фото или настройте вид таблетки, чтобы потом ее было легче узнать.';
+      'Необязательный шаг. Добавьте фото или настройте таблетку, чтобы её было легче узнать позже.';
 
   @override
   String get addPhotoLabel => 'Фото';
@@ -1417,48 +1419,47 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get addQuickStartSubtitle =>
-      'Используйте один из самых частых шаблонов курса одним нажатием.';
+      'Используйте один из самых частых шаблонов курса в одно касание.';
 
   @override
   String get addSkipTemplate => 'Пропустить';
 
   @override
-  String get addUseTemplate => 'Использовать шаблон';
+  String get addUseTemplate => 'Применить шаблон';
 
   @override
   String get addRecommendedMetricsTitle => 'Рекомендуемые показатели здоровья';
 
   @override
   String get addRecommendedMetricsSubtitle =>
-      'Эти измерения часто ведут вместе с этим заболеванием. Можно сразу внести первое значение.';
+      'Эти измерения часто отслеживают вместе с этим состоянием. Вы можете записать первые данные прямо сейчас.';
 
   @override
   String get addSupplementTimelineInfo =>
-      'Этот БАД будет показываться вместе с лекарствами в дневной ленте.';
+      'Эта добавка появится вместе с лекарствами в ежедневной ленте расписания.';
 
   @override
   String get addMedicationTimelineInfo =>
-      'Это лекарство будет показываться в общей дневной ленте вместе с другими курсами.';
+      'Это лекарство появится в общей ежедневной ленте с другими вашими курсами.';
 
   @override
-  String get conditionDiabetesTitle => 'Сахарный диабет';
+  String get conditionDiabetesTitle => 'Диабет';
 
   @override
-  String get conditionDiabetesSubtitle => 'Частые схемы длительной терапии';
+  String get conditionDiabetesSubtitle => 'Частые схемы долгосрочной терапии';
 
   @override
   String get conditionHypertensionTitle => 'Гипертония';
 
   @override
-  String get conditionHypertensionSubtitle =>
-      'Частые препараты для контроля давления';
+  String get conditionHypertensionSubtitle => 'Частые лекарства от давления';
 
   @override
   String get conditionCholesterolTitle => 'Высокий холестерин';
 
   @override
   String get conditionCholesterolSubtitle =>
-      'Частая вечерняя гиполипидемическая терапия';
+      'Частая вечерняя терапия по снижению липидов';
 
   @override
   String get conditionThyroidTitle => 'Гипотиреоз';
@@ -1468,28 +1469,27 @@ class AppLocalizationsRu extends AppLocalizations {
       'Типичная утренняя заместительная терапия';
 
   @override
-  String get conditionGerdTitle => 'Рефлюкс / ГЭРБ';
+  String get conditionGerdTitle => 'Кислотный рефлюкс / ГЭРБ';
 
   @override
-  String get conditionGerdSubtitle => 'Частый контроль симптомов кислотности';
+  String get conditionGerdSubtitle => 'Частый контроль симптомов кислоты';
 
   @override
   String get conditionAsthmaTitle => 'Астма';
 
   @override
   String get conditionAsthmaSubtitle =>
-      'Частые поддерживающие схемы и варианты для быстрого облегчения';
+      'Частые базисные и экстренные ингаляторы';
 
   @override
   String get conditionAllergyTitle => 'Аллергия';
 
   @override
   String get conditionAllergySubtitle =>
-      'Частый контроль симптомов антигистаминными';
+      'Частый антигистаминный контроль симптомов';
 
   @override
-  String get conditionHeartPreventionTitle =>
-      'Заболевания сердца / профилактика';
+  String get conditionHeartPreventionTitle => 'Болезни сердца / профилактика';
 
   @override
   String get conditionHeartPreventionSubtitle =>
@@ -1500,10 +1500,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get conditionHeartFailureSubtitle =>
-      'Частая поддерживающая терапия для жидкости и давления';
+      'Частая поддержка жидкости и давления';
 
   @override
-  String get conditionAtrialFibrillationTitle => 'Фибрилляция предсердий';
+  String get conditionAtrialFibrillationTitle => 'Мерцательная аритмия';
 
   @override
   String get conditionAtrialFibrillationSubtitle =>
@@ -1519,7 +1519,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get conditionBphTitle => 'Простата / ДГПЖ';
 
   @override
-  String get conditionBphSubtitle => 'Частый контроль мочевых симптомов';
+  String get conditionBphSubtitle => 'Частый контроль симптомов';
 
   @override
   String get conditionOsteoporosisTitle => 'Остеопороз / здоровье костей';
@@ -1538,54 +1538,53 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get suggestionMetforminNote =>
-      'Типичная таблетированная терапия. Точную дозу сверяйте с назначением.';
+      'Типичная пероральная терапия. Сверьте точную дозу с рецептом.';
 
   @override
   String get suggestionInsulinName => 'Инсулин';
 
   @override
   String get suggestionInsulinNote =>
-      'Шаблон для инъекций. Тип инсулина, дозу и время нужно подстроить под реальную схему.';
+      'Шаблон инъекции. Настройте тип инсулина, дозу и время под реальный режим.';
 
   @override
   String get suggestionAmlodipineName => 'Амлодипин';
 
   @override
   String get suggestionAmlodipineNote =>
-      'Частый прием один раз в день для контроля давления.';
+      'Частый контроль давления один раз в день.';
 
   @override
   String get suggestionLosartanName => 'Лозартан';
 
   @override
   String get suggestionLosartanNote =>
-      'Часто используется как ежедневная длительная терапия.';
+      'Часто используется как ежедневная долгосрочная терапия.';
 
   @override
   String get suggestionAtorvastatinName => 'Аторвастатин';
 
   @override
-  String get suggestionAtorvastatinNote =>
-      'Частый шаблон ежедневного приема статина.';
+  String get suggestionAtorvastatinNote => 'Частый ежедневный шаблон статина.';
 
   @override
   String get suggestionLevothyroxineName => 'Левотироксин';
 
   @override
-  String get suggestionLevothyroxineNote => 'Обычно принимается утром до еды.';
+  String get suggestionLevothyroxineNote => 'Обычно принимается утром натощак.';
 
   @override
   String get suggestionOmeprazoleName => 'Омепразол';
 
   @override
-  String get suggestionOmeprazoleNote => 'Часто принимается утром до еды.';
+  String get suggestionOmeprazoleNote => 'Часто принимается утром натощак.';
 
   @override
   String get suggestionFamotidineName => 'Фамотидин';
 
   @override
   String get suggestionFamotidineNote =>
-      'Используется при симптомах кислотности, часто вечером.';
+      'Используется при симптомах кислоты, часто вечером.';
 
   @override
   String get suggestionBudesonideFormoterolName => 'Будесонид/Формотерол';
@@ -1595,81 +1594,81 @@ class AppLocalizationsRu extends AppLocalizations {
       'Частый шаблон поддерживающего ингалятора.';
 
   @override
-  String get suggestionAlbuterolName => 'Альбутерол';
+  String get suggestionAlbuterolName => 'Сальбутамол';
 
   @override
   String get suggestionAlbuterolNote =>
-      'Частый ингалятор для быстрого облегчения по потребности.';
+      'Частый экстренный ингалятор по необходимости.';
 
   @override
   String get suggestionCetirizineName => 'Цетиризин';
 
   @override
   String get suggestionCetirizineNote =>
-      'Часто используется один раз в день при симптомах аллергии.';
+      'Часто используется раз в день от симптомов аллергии.';
 
   @override
   String get suggestionLoratadineName => 'Лоратадин';
 
   @override
   String get suggestionLoratadineNote =>
-      'Частый дневной шаблон антигистаминного.';
+      'Частый шаблон дневного антигистаминного средства.';
 
   @override
   String get suggestionAspirinName => 'Аспирин';
 
   @override
   String get suggestionAspirinNote =>
-      'Частый шаблон низкой дозы для кардиопрофилактики.';
+      'Частый шаблон низкодозированной профилактики сердечно-сосудистых заболеваний.';
 
   @override
   String get suggestionClopidogrelName => 'Клопидогрел';
 
   @override
   String get suggestionClopidogrelNote =>
-      'Часто используется как антиагрегант один раз в день.';
+      'Часто используется как ежедневная антитромбоцитарная терапия.';
 
   @override
   String get suggestionFurosemideName => 'Фуросемид';
 
   @override
   String get suggestionFurosemideNote =>
-      'Шаблон диуретика, который часто принимают в первой половине дня.';
+      'Шаблон диуретика, часто принимаемый в первой половине дня.';
 
   @override
   String get suggestionSpironolactoneName => 'Спиронолактон';
 
   @override
   String get suggestionSpironolactoneNote =>
-      'Частая поддерживающая терапия один раз в день.';
+      'Частая схема поддерживающей терапии раз в день.';
 
   @override
   String get suggestionApixabanName => 'Апиксабан';
 
   @override
   String get suggestionApixabanNote =>
-      'Частый режим антикоагулянта два раза в день.';
+      'Частая схема приема антикоагулянта два раза в день.';
 
   @override
   String get suggestionMetoprololName => 'Метопролол';
 
   @override
   String get suggestionMetoprololNote =>
-      'Часто используется для контроля частоты пульса.';
+      'Часто используется для контроля сердечного ритма.';
 
   @override
   String get suggestionIbuprofenName => 'Ибупрофен';
 
   @override
   String get suggestionIbuprofenNote =>
-      'Частый шаблон для кратковременного снятия боли.';
+      'Частый шаблон краткосрочного обезболивания.';
 
   @override
-  String get suggestionDiclofenacGelName => 'Гель диклофенак';
+  String get suggestionDiclofenacGelName => 'Диклофенак гель';
 
   @override
   String get suggestionDiclofenacGelNote =>
-      'Шаблон местного противовоспалительного средства для снятия симптомов.';
+      'Шаблон местного противовоспалительного средства.';
 
   @override
   String get suggestionTamsulosinName => 'Тамсулозин';
@@ -1682,44 +1681,44 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get suggestionFinasterideNote =>
-      'Частая долгосрочная поддержка один раз в день.';
+      'Частая долгосрочная поддержка раз в день.';
 
   @override
   String get suggestionAlendronateName => 'Алендронат';
 
   @override
   String get suggestionAlendronateNote =>
-      'Типичный утренний еженедельный шаблон до еды.';
+      'Типичный утренний еженедельный шаблон натощак.';
 
   @override
-  String get suggestionCalciumVitaminDName => 'Кальций + витамин D';
+  String get suggestionCalciumVitaminDName => 'Кальций + Витамин D';
 
   @override
   String get suggestionCalciumVitaminDNote =>
-      'Частый курс БАДов для поддержки костей.';
+      'Частая рутина добавок для поддержки костей.';
 
   @override
   String get suggestionFerrousSulfateName => 'Сульфат железа';
 
   @override
   String get suggestionFerrousSulfateNote =>
-      'Частый шаблон перорального восполнения железа.';
+      'Частый шаблон восполнения железа.';
 
   @override
   String get suggestionFolicAcidName => 'Фолиевая кислота';
 
   @override
   String get suggestionFolicAcidNote =>
-      'Частый шаблон поддерживающего витамина.';
+      'Частый шаблон поддерживающих витаминов.';
 
   @override
   String get pdfDoctorReportTitle => 'Отчет для врача';
 
   @override
-  String get pdfSupplementCourseSummary => 'Сводка по курсу БАДов';
+  String get pdfSupplementCourseSummary => 'Сводка курса добавок';
 
   @override
-  String get pdfMedicationCourseSummary => 'Сводка по курсу лечения';
+  String get pdfMedicationCourseSummary => 'Сводка курса лекарств';
 
   @override
   String get pdfCourseProfileTitle => 'Профиль курса';
@@ -1729,14 +1728,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get pdfScheduleSnapshotSubtitle =>
-      'Показательный день курса с временем и дозировкой.';
+      'Типичный день курса с указанием времени и дозировки.';
 
   @override
-  String get pdfAdministrationHistoryTitle => 'История приемов';
+  String get pdfAdministrationHistoryTitle => 'История приема';
 
   @override
   String get pdfAdministrationHistorySubtitle =>
-      'Показывает, что было принято и насколько это совпадало с планом.';
+      'Показывает, что было принято, и как это совпадает с планом.';
 
   @override
   String get pdfAdherenceLabel => 'Соблюдение';
@@ -1751,13 +1750,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pdfPatientLabel => 'Пациент';
 
   @override
-  String get pdfCaregiverLabel => 'Помогающий человек';
+  String get pdfCaregiverLabel => 'Опекун';
 
   @override
   String get pdfReportPeriodLabel => 'Период отчета';
 
   @override
-  String get pdfOnTimeRateLabel => 'Точность по времени';
+  String get pdfOnTimeRateLabel => 'Своевременность';
 
   @override
   String get pdfAverageDelayLabel => 'Средняя задержка';
@@ -1781,7 +1780,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pdfFrequencyLabel => 'Частота';
 
   @override
-  String get pdfStartedLabel => 'Начало';
+  String get pdfStartedLabel => 'Начато';
 
   @override
   String get pdfInstructionLabel => 'Инструкция';
@@ -1790,15 +1789,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pdfNotesLabel => 'Заметки';
 
   @override
-  String get pdfTimelineEmpty => 'Записанной истории приемов пока нет.';
+  String get pdfTimelineEmpty => 'Пока нет записей в истории приема.';
 
   @override
   String pdfTimelineTruncated(int visible, int total) {
-    return 'В PDF показаны последние $visible записей из $total.';
+    return 'Этот PDF показывает последние $visible записей из $total.';
   }
 
   @override
-  String get pdfTableScheduled => 'По плану';
+  String get pdfTableScheduled => 'Запланировано';
 
   @override
   String get pdfTableActual => 'Фактически';
@@ -1810,7 +1809,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pdfTableStatus => 'Статус';
 
   @override
-  String get pdfTableDelay => 'Отклонение';
+  String get pdfTableDelay => 'Задержка';
 
   @override
   String get pdfOnTime => 'Вовремя';
@@ -1820,4 +1819,8 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get pdfNoFoodRestriction => 'Без ограничений по еде';
+
+  @override
+  String get homeEmptyAddMedicinePrompt =>
+      'Добавьте новое лекарство или добавку, чтобы они появились здесь.';
 }

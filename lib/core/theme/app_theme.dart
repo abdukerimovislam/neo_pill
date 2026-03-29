@@ -8,6 +8,10 @@ class AppTheme {
   static const Color _danger = Color(0xFFF56565);
   static const Color _warning = Color(0xFFF6AD55);
 
+  // 🔥 Новые кастомные цвета уровня приложения (Premium Look)
+  static const Color _supplement = Color(0xFF6BBFB2); // Свежий мятный для БАДов
+  static const Color _success = Color(0xFF2C7A7B);    // Цвет успеха ("Принято")
+
   static const Color _backgroundLight = Color(0xFFFFFFFF);
   static const Color _surfaceLight = Color(0xFFF7FAFC);
   static const Color _surfaceVariantLight = Color(0xFFD0E0FF);
@@ -29,14 +33,16 @@ class AppTheme {
     final titleMediumSize = comfortMode ? 18.0 : 16.0;
     final titleSmallSize = comfortMode ? 16.0 : 14.0;
     final borderRadius = comfortMode ? 20.0 : 18.0;
+
+    // Внедряем _supplement в secondary (будет работать как акцент для БАДов)
     final scheme = const ColorScheme.light(
       primary: _primary,
-      secondary: _primaryLight,
+      secondary: _supplement,
       tertiary: _warning,
       error: _danger,
       surface: _surfaceLight,
       onPrimary: Colors.white,
-      onSecondary: _primary,
+      onSecondary: Colors.white,
       onTertiary: Colors.white,
       onError: Colors.white,
       onSurface: _textPrimaryLight,
@@ -217,14 +223,16 @@ class AppTheme {
     final titleMediumSize = comfortMode ? 18.0 : 16.0;
     final titleSmallSize = comfortMode ? 16.0 : 14.0;
     final borderRadius = comfortMode ? 20.0 : 18.0;
+
+    // В темной теме также используем новый цвет для добавок
     final scheme = const ColorScheme.dark(
       primary: _primary,
-      secondary: _primaryLight,
+      secondary: _supplement,
       tertiary: _warning,
       error: _danger,
       surface: _surfaceDark,
       onPrimary: Colors.white,
-      onSecondary: _primary,
+      onSecondary: Colors.white,
       onTertiary: Colors.white,
       onError: Colors.white,
       onSurface: _textPrimaryDark,

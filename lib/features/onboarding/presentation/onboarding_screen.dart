@@ -42,9 +42,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     if (_currentPage == _pageCount - 1) {
       await ref.read(onboardingCompleteProvider.notifier).complete();
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
@@ -71,10 +69,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         child: Column(
           children: [
+            // Индикатор прогресса (Dots)
             Row(
               children: List.generate(
                 _pageCount,
-                (index) => Expanded(
+                    (index) => Expanded(
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     height: 6,
@@ -92,6 +91,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
             const SizedBox(height: 20),
+
+            // Основной контент
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -109,7 +110,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ],
               ),
             ),
+
             const SizedBox(height: 20),
+
+            // Кнопки управления
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -151,82 +155,96 @@ class _WelcomeStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Spacer(),
-        AnimatedReveal(
-          delay: const Duration(milliseconds: 40),
-          child: Container(
-            width: 88,
-            height: 88,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: IntrinsicHeight(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Spacer(),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 40),
+                  child: Container(
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.medication_liquid_rounded,
+                      size: 42,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 100),
+                  child: Text(
+                    l10n.onboardingWelcomeTitle,
+                    style: theme.textTheme.displayLarge?.copyWith(
+                      height: 1.1,
+                      fontSize: 34,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 150),
+                  child: Text(
+                    l10n.onboardingWelcomeTagline,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 190),
+                  child: Text(
+                    l10n.onboardingWelcomeBody,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 240),
+                  child: _FeatureChip(
+                    icon: Icons.visibility_rounded,
+                    label: l10n.onboardingFeatureEasyInterface,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 290),
+                  child: _FeatureChip(
+                    icon: Icons.schedule_rounded,
+                    label: l10n.onboardingFeatureNextDose,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 340),
+                  child: _FeatureChip(
+                    icon: Icons.notifications_active_rounded,
+                    label: l10n.onboardingFeatureReminders,
+                  ),
+                ),
+                const Spacer(flex: 2),
+                const SizedBox(height: 20),
+              ],
             ),
-            child: Icon(
-              Icons.medication_liquid_rounded,
-              size: 42,
-              color: theme.colorScheme.primary,
-            ),
           ),
         ),
-        const SizedBox(height: 24),
-        AnimatedReveal(
-          delay: const Duration(milliseconds: 100),
-          child: Text(
-            l10n.onboardingWelcomeTitle,
-            style: theme.textTheme.displayLarge?.copyWith(height: 1.1),
-          ),
-        ),
-        const SizedBox(height: 16),
-        AnimatedReveal(
-          delay: const Duration(milliseconds: 150),
-          child: Text(
-            l10n.onboardingWelcomeTagline,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        AnimatedReveal(
-          delay: const Duration(milliseconds: 190),
-          child: Text(
-            l10n.onboardingWelcomeBody,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
-              height: 1.5,
-            ),
-          ),
-        ),
-        const SizedBox(height: 28),
-        AnimatedReveal(
-          delay: const Duration(milliseconds: 240),
-          child: _FeatureChip(
-            icon: Icons.visibility_rounded,
-            label: l10n.onboardingFeatureEasyInterface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        AnimatedReveal(
-          delay: const Duration(milliseconds: 290),
-          child: _FeatureChip(
-            icon: Icons.schedule_rounded,
-            label: l10n.onboardingFeatureNextDose,
-          ),
-        ),
-        const SizedBox(height: 12),
-        AnimatedReveal(
-          delay: const Duration(milliseconds: 340),
-          child: _FeatureChip(
-            icon: Icons.notifications_active_rounded,
-            label: l10n.onboardingFeatureReminders,
-          ),
-        ),
-        const Spacer(flex: 2),
-      ],
+      ),
     );
   }
 }
@@ -247,12 +265,26 @@ class _PersonalizeStep extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    const languageOptions = <Locale>[Locale('en'), Locale('ru')];
+
+    const languageOptions = <Locale>[
+      Locale('en'),
+      Locale('ru'),
+      Locale('es'),
+      Locale('fr'),
+      Locale('de'),
+      Locale('ky'),
+      Locale('kk'),
+    ];
 
     String languageLabel(Locale locale) {
       return switch (locale.languageCode) {
-        'ru' => l10n.settingsLanguageRussian,
-        _ => l10n.settingsLanguageEnglish,
+        'ru' => 'Русский',
+        'es' => 'Español',
+        'fr' => 'Français',
+        'de' => 'Deutsch',
+        'ky' => 'Кыргызча',
+        'kk' => 'Қазақша',
+        _ => 'English',
       };
     }
 
@@ -279,9 +311,47 @@ class _PersonalizeStep extends ConsumerWidget {
             ),
           ),
         ),
+
+        // 🚀 ВЫБОР ЯЗЫКА (ПЕРВЫМ)
         const SizedBox(height: 24),
         AnimatedReveal(
           delay: const Duration(milliseconds: 140),
+          child: Text(
+            l10n.onboardingLanguageTitle,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        AnimatedReveal(
+          delay: const Duration(milliseconds: 170),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final itemWidth = (constraints.maxWidth - 12) / 2;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: languageOptions.map((option) {
+                  return SizedBox(
+                    width: itemWidth,
+                    child: _OptionButton(
+                      label: languageLabel(option),
+                      selected: locale.languageCode == option.languageCode,
+                      onTap: () =>
+                          ref.read(localeProvider.notifier).setLocale(option),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ),
+
+        // 🚀 ИМЯ (ВТОРЫМ)
+        const SizedBox(height: 24),
+        AnimatedReveal(
+          delay: const Duration(milliseconds: 210),
           child: TextField(
             controller: nameController,
             textCapitalization: TextCapitalization.words,
@@ -291,47 +361,21 @@ class _PersonalizeStep extends ConsumerWidget {
             ),
           ),
         ),
+
+        // 🚀 РЕЖИМ КОМФОРТА (ТРЕТЬИМ)
         const SizedBox(height: 24),
-        Text(
-          l10n.onboardingLanguageTitle,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
+        AnimatedReveal(
+          delay: const Duration(milliseconds: 250),
+          child: Text(
+            l10n.onboardingReadingComfort,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
         const SizedBox(height: 12),
         AnimatedReveal(
-          delay: const Duration(milliseconds: 190),
-          child: Row(
-            children: [
-              ...languageOptions.indexed.expand((entry) {
-                final index = entry.$1;
-                final option = entry.$2;
-                return [
-                  Expanded(
-                    child: _OptionButton(
-                      label: languageLabel(option),
-                      selected: locale.languageCode == option.languageCode,
-                      onTap: () =>
-                          ref.read(localeProvider.notifier).setLocale(option),
-                    ),
-                  ),
-                  if (index != languageOptions.length - 1)
-                    const SizedBox(width: 12),
-                ];
-              }),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          l10n.onboardingReadingComfort,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 12),
-        AnimatedReveal(
-          delay: const Duration(milliseconds: 240),
+          delay: const Duration(milliseconds: 280),
           child: Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
@@ -390,6 +434,7 @@ class _PersonalizeStep extends ConsumerWidget {
             ),
           ),
         ),
+        const SizedBox(height: 32),
       ],
     );
   }
@@ -405,56 +450,70 @@ class _ReadyStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Spacer(),
-        Text(
-          l10n.onboardingReadyTitle,
-          style: theme.textTheme.displayLarge?.copyWith(height: 1.1),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            l10n.onboardingReadyBanner,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w800,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: IntrinsicHeight(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Spacer(),
+                Text(
+                  l10n.onboardingReadyTitle,
+                  style: theme.textTheme.displayLarge?.copyWith(
+                    height: 1.1,
+                    fontSize: 34,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    l10n.onboardingReadyBanner,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.onboardingReadyBody,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                _SummaryRow(
+                  icon: Icons.check_circle_rounded,
+                  text: l10n.onboardingReadySummaryHome,
+                ),
+                const SizedBox(height: 14),
+                _SummaryRow(
+                  icon: Icons.notifications_none_rounded,
+                  text: l10n.onboardingReadySummaryActions,
+                ),
+                const SizedBox(height: 14),
+                _SummaryRow(
+                  icon: Icons.text_increase_rounded,
+                  text: comfortMode
+                      ? l10n.onboardingReadySummaryComfortOn
+                      : l10n.onboardingReadySummaryComfortLater,
+                ),
+                const Spacer(flex: 2),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        Text(
-          l10n.onboardingReadyBody,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 28),
-        _SummaryRow(
-          icon: Icons.check_circle_rounded,
-          text: l10n.onboardingReadySummaryHome,
-        ),
-        const SizedBox(height: 14),
-        _SummaryRow(
-          icon: Icons.notifications_none_rounded,
-          text: l10n.onboardingReadySummaryActions,
-        ),
-        const SizedBox(height: 14),
-        _SummaryRow(
-          icon: Icons.text_increase_rounded,
-          text: comfortMode
-              ? l10n.onboardingReadySummaryComfortOn
-              : l10n.onboardingReadySummaryComfortLater,
-        ),
-        const Spacer(flex: 2),
-      ],
+      ),
     );
   }
 }
@@ -543,19 +602,27 @@ class _OptionButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(18),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         decoration: BoxDecoration(
           color: selected
               ? theme.colorScheme.primary
               : theme.colorScheme.surface.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected
+                ? Colors.transparent
+                : theme.dividerColor.withValues(alpha: 0.1),
+          ),
         ),
         child: Center(
           child: Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.titleMedium?.copyWith(
               color: selected ? Colors.white : theme.colorScheme.onSurface,
               fontWeight: FontWeight.w800,
+              fontSize: 14,
             ),
           ),
         ),

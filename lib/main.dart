@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/presentation/main_navigation_screen.dart';
@@ -22,6 +25,12 @@ import 'features/splash/presentation/animated_splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isIOS) {
+    await Purchases.setLogLevel(LogLevel.info);
+
+    PurchasesConfiguration configuration = PurchasesConfiguration("appl_WMkizInBRTsDbHFrewAyqCeiYvo");
+    await Purchases.configure(configuration);
+  }
   final preferences = await SharedPreferences.getInstance();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);

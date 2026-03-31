@@ -19,6 +19,7 @@ exports.sendCaregiverAlert = onDocumentCreated(
     const alert = snapshot.data();
     const shareCode = event.params.shareCode;
 
+    // 1. Находим всех опекунов для этой сети
     const membersSnapshot = await admin
       .firestore()
       .collection("care_networks")
@@ -27,9 +28,16 @@ exports.sendCaregiverAlert = onDocumentCreated(
       .where("role", "==", "caregiver")
       .get();
 
-    const tokens = membersSnapshot.docs
-      .map((doc) => doc.data().fcmToken)
-      .filter((token) => typeof token === "string" && token.trim().length > 0);
+    const tokens = [];
+    const validDocs = []; // Сохраняем ссылки на документы, чтобы потом удалить битые токены
+
+    membersSnapshot.docs.forEach((doc) => {
+      const token = doc.data().fcmToken;
+      if (typeof token === "string" && token.trim().length > 0) {
+        tokens.push(token);
+        validDocs.push(doc);
+      }
+    });
 
     if (tokens.length === 0) {
       logger.info("No caregiver FCM tokens found", { shareCode });
@@ -43,10 +51,11 @@ exports.sendCaregiverAlert = onDocumentCreated(
       return;
     }
 
-    const title = "Caregiver alert";
+    // 2. Формируем универсальное сообщение
+    const title = "Внимание: Pillora";
     const body = alert.patientName
-      ? `${alert.patientName}: medication routine needs attention`
-      : "Medication routine needs attention";
+      ? `${alert.patientName}: пропуск или задержка приема`
+      : "Режим лечения требует внимания";
 
     const message = {
       tokens,
@@ -64,7 +73,7 @@ exports.sendCaregiverAlert = onDocumentCreated(
       android: {
         priority: "high",
         notification: {
-          channelId: "caregiver_alerts",
+          channelId: "caregiver_alerts", // Важно для Android!
           priority: "max",
         },
       },
@@ -77,8 +86,10 @@ exports.sendCaregiverAlert = onDocumentCreated(
       },
     };
 
+    // 3. Отправляем пуши сразу всем
     const response = await admin.messaging().sendEachForMulticast(message);
 
+    // 4. Очищаем невалидные токены (если кто-то удалил приложение)
     const invalidTokens = [];
     response.responses.forEach((result, index) => {
       if (!result.success) {
@@ -98,7 +109,7 @@ exports.sendCaregiverAlert = onDocumentCreated(
     });
 
     if (invalidTokens.length > 0) {
-      const cleanupWrites = membersSnapshot.docs
+      const cleanupWrites = validDocs
         .filter((doc) => invalidTokens.includes(doc.data().fcmToken))
         .map((doc) =>
           doc.ref.set(
@@ -112,10 +123,10 @@ exports.sendCaregiverAlert = onDocumentCreated(
       await Promise.all(cleanupWrites);
     }
 
+    // 5. Отмечаем статус в самом алерте
     await snapshot.ref.set(
       {
-        dispatchStatus:
-          response.successCount > 0 ? "sent" : "failed",
+        dispatchStatus: response.successCount > 0 ? "sent" : "failed",
         dispatchAttemptedAt: admin.firestore.FieldValue.serverTimestamp(),
         dispatchSuccessCount: response.successCount,
         dispatchFailureCount: response.failureCount,

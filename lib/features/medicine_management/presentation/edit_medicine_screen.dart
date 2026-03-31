@@ -91,6 +91,15 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
     }
   }
 
+  // 🚀 УМНАЯ ЛОГИКА ЕДИНИЦ ИЗМЕРЕНИЯ (Перенесена из AddMedicineScreen)
+  String _getInventoryUnit(AppLocalizations l10n) {
+    final unitLower = _selectedUnit.toLowerCase();
+    if (['mg', 'g', 'mcg', 'мг', 'г', 'мкг'].contains(unitLower)) {
+      return l10n.pcsSuffix;
+    }
+    return l10n.dosageUnitLabel(_selectedUnit);
+  }
+
   Widget _buildPillShape(PillShapeEnum shape, Color color, double size) {
     switch (shape) {
       case PillShapeEnum.circle:
@@ -265,8 +274,8 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
                               isSelected
                                   ? theme.primaryColor
                                   : theme.colorScheme.onSurface.withValues(
-                                      alpha: 0.3,
-                                    ),
+                                alpha: 0.3,
+                              ),
                               24,
                             ),
                           ),
@@ -421,15 +430,19 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
     final name = _nameController.text.trim();
     final dosageText = _dosageController.text.trim();
     final l10n = AppLocalizations.of(context)!;
+    final isTapering = widget.medicine.frequency == FrequencyTypeEnum.tapering;
 
-    if (name.isEmpty || dosageText.isEmpty) {
+    // Проверяем заполненность (если курс сложный, dosageText может быть пустым, это ок)
+    if (name.isEmpty || (!isTapering && dosageText.isEmpty)) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.errorEmptyFields)));
       return;
     }
 
-    final dosage = double.tryParse(dosageText) ?? 0.0;
+    // Если курс сложный, оставляем старую дозу (так как она регулируется шагами)
+    final dosage = isTapering ? widget.medicine.dosage : (double.tryParse(dosageText) ?? 0.0);
+
     final title = l10n.notificationTitle(name);
     final body = l10n.notificationBody('$dosage $_selectedUnit');
     final kindLabel = widget.medicine.kind == CourseKindEnum.supplement
@@ -439,20 +452,20 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
     await ref
         .read(homeControllerProvider)
         .updateMedicineDetails(
-          medicine: widget.medicine,
-          newName: name,
-          newDosage: dosage,
-          newDosageUnit: _selectedUnit,
-          newKind: widget.medicine.kind,
-          newForm: _selectedForm,
-          newFoodInstruction: _selectedFood,
-          newPillsRemaining: _pillsRemaining,
-          newPillImagePath: _pillImagePath,
-          newNotificationTitle: title,
-          newNotificationBody: body,
-          newPillShape: _selectedShape,
-          newPillColor: _selectedColor,
-        );
+      medicine: widget.medicine,
+      newName: name,
+      newDosage: dosage,
+      newDosageUnit: _selectedUnit,
+      newKind: widget.medicine.kind,
+      newForm: _selectedForm,
+      newFoodInstruction: _selectedFood,
+      newPillsRemaining: _pillsRemaining,
+      newPillImagePath: _pillImagePath,
+      newNotificationTitle: title,
+      newNotificationBody: body,
+      newPillShape: _selectedShape,
+      newPillColor: _selectedColor,
+    );
 
     if (mounted) {
       Navigator.of(context).pop(l10n.courseUpdatedMessage(kindLabel, name));
@@ -597,12 +610,17 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isSupplement = widget.medicine.kind == CourseKindEnum.supplement;
+    final isTapering = widget.medicine.frequency == FrequencyTypeEnum.tapering;
+
     final screenTitle = isSupplement
         ? l10n.editSupplementTitle
         : l10n.editCourse;
     final nameHint = isSupplement
         ? l10n.supplementNameHint
         : l10n.medicineNameHint;
+
+    // 🚀 Получаем актуальную единицу измерения инвентаря
+    final inventoryUnit = _getInventoryUnit(l10n);
 
     return GradientScaffold(
       extendBodyBehindAppBar: true,
@@ -675,28 +693,28 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
                         ),
                         child: _pillImagePath != null
                             ? ClipOval(
-                                child: Image.file(
-                                  File(_pillImagePath!),
-                                  width: 110,
-                                  height: 110,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Center(
-                                        child: PillIconWidget(
-                                          shape: _selectedShape,
-                                          colorHex: _selectedColor,
-                                          size: 48,
-                                        ),
-                                      ),
+                          child: Image.file(
+                            File(_pillImagePath!),
+                            width: 110,
+                            height: 110,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Center(
+                                  child: PillIconWidget(
+                                    shape: _selectedShape,
+                                    colorHex: _selectedColor,
+                                    size: 48,
+                                  ),
                                 ),
-                              )
+                          ),
+                        )
                             : Center(
-                                child: _buildPillShape(
-                                  _selectedShape,
-                                  Color(_selectedColor),
-                                  48,
-                                ),
-                              ),
+                          child: _buildPillShape(
+                            _selectedShape,
+                            Color(_selectedColor),
+                            48,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -781,21 +799,53 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
                         ),
                         const SizedBox(height: 16),
 
+                        // 🚀 ЗАЩИТА СЛОЖНЫХ КУРСОВ
+                        if (isTapering) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.route_rounded, color: theme.primaryColor),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Сложный курс: дозировка настроена по этапам. Здесь можно изменить только единицы.',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.primaryColor,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
                         Row(
                           children: [
-                            Expanded(
-                              flex: 2,
-                              child: _buildPremiumTextField(
-                                controller: _dosageController,
-                                label: l10n.dosageHint,
-                                theme: theme,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
+                            // Если курс не сложный, разрешаем редактировать дозировку
+                            if (!isTapering) ...[
+                              Expanded(
+                                flex: 2,
+                                child: _buildPremiumTextField(
+                                  controller: _dosageController,
+                                  label: l10n.dosageHint,
+                                  theme: theme,
+                                  keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
+                              const SizedBox(width: 12),
+                            ],
+
+                            // Единицы измерения можно редактировать всегда
                             Expanded(
                               flex: 3,
                               child: _buildScrollableChips<String>(
@@ -842,17 +892,18 @@ class _EditMedicineScreenState extends ConsumerState<EditMedicineScreen> {
                       ),
                       const SizedBox(height: 16),
 
+                      // 🚀 УМНАЯ РУЛЕТКА ОСТАТКОВ
                       _buildRouletteField(
                         label: l10n.pillsRemaining,
-                        valueText: '$_pillsRemaining ${l10n.pcsSuffix}',
+                        valueText: '$_pillsRemaining $inventoryUnit',
                         theme: theme,
                         onTap: () => _showRoulettePicker(
                           title: l10n.pillsRemaining,
                           l10n: l10n,
                           initialValue: _pillsRemaining,
                           min: 0,
-                          max: 1000,
-                          suffix: l10n.pcsSuffix,
+                          max: 5000, // Увеличили максимум, как на экране добавления
+                          suffix: inventoryUnit,
                           onChanged: (val) =>
                               setState(() => _pillsRemaining = val),
                         ),

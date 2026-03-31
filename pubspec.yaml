@@ -57,6 +57,9 @@ dependencies:
   flutter_timezone: ^4.0.0
   shared_preferences: ^2.5.3
   flutter_launcher_icons: ^0.14.4
+  purchases_flutter: ^9.15.1
+  url_launcher: ^6.3.2
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -91,6 +94,27 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/images/app_icon.png"
   min_sdk_android: 21 # Рекомендуется для адаптивных иконок
+
+
+flutter_native_splash:
+  # Цвет фона для светлой и темной темы
+  color: "#F5F5F5"
+  color_dark: "#121212"
+
+  # Путь к твоему логотипу (лучше использовать PNG с прозрачным фоном)
+  image: assets/images/app_icon.png
+  # image_dark: assets/images/logo_dark.png # Раскомментируй, если для темной темы нужен другой логотип
+
+  # Настройки для Android 12+ (у них новый стандарт сплеш-скринов)
+  android_12:
+    image: assets/images/app_icon.png
+    # image_dark: assets/images/logo_dark.png
+    color: "#F5F5F5"
+    color_dark: "#121212"
+
+  # На каких платформах генерировать
+  android: true
+  ios: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:

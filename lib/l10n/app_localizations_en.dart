@@ -1800,4 +1800,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeEmptyAddMedicinePrompt =>
       'Add a new medication or supplement to see it here.';
+
+  @override
+  String get tabScanner => 'Scanner';
+
+  @override
+  String get scannerComingSoonTitle => 'Smart Scanner';
+
+  @override
+  String get scannerComingSoonText =>
+      'Point your camera at a medicine box to automatically fill in the details. This feature is coming in the next update!';
+
+  @override
+  String get premiumTitle => 'Pillora Pro';
+
+  @override
+  String get premiumSubtitle =>
+      'Unlock the full potential of your health routine';
+
+  @override
+  String get premiumFeatureCaregiver =>
+      'Unlimited caregivers & real-time alerts';
+
+  @override
+  String get premiumFeatureScanner => 'Smart scanner for quick adding';
+
+  @override
+  String get premiumFeatureSchedules => 'Complex schedules (Tapering, Cycles)';
+
+  @override
+  String get premiumFeatureReports => 'Export PDF reports for your doctor';
+
+  @override
+  String get premiumSubscribeYearly => 'Unlock Pro for \$29.99 / year';
+
+  @override
+  String get premiumSubscribeMonthly => 'or \$4.99 / month';
+
+  @override
+  String get premiumRestorePurchases => 'Restore purchases';
 }

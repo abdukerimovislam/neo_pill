@@ -21,14 +21,13 @@ enum FrequencyTypeEnum {
   specificDays,
   interval,
   cycle,
-  tapering, // 🚀 НОВОЕ: Динамическая дозировка (Титрация)
+  tapering, // 🚀 Динамическая дозировка / Сложный поэтапный курс
 }
 
 enum CourseKindEnum { medication, supplement }
 
 enum FoodInstructionEnum { noMatter, beforeFood, withFood, afterFood }
 
-// Перечисление для формы таблетки в визуальном конструкторе
 enum PillShapeEnum {
   circle, // Круглая таблетка
   capsule, // Капсула (двухцветная)
@@ -37,11 +36,15 @@ enum PillShapeEnum {
   square, // Квадратная
 }
 
-// 🚀 НОВОЕ: Класс, описывающий один шаг титрации
+// 🚀 ОБНОВЛЕНО: Класс, описывающий один шаг поэтапного курса
 @embedded
 class TaperingStep {
   int durationDays = 1; // Сколько дней длится этот шаг
   double dosage = 0.0; // Какая доза на этом шаге
+
+  // 🚀 НОВОЕ: Список времени приема для этого этапа
+  // Так как Isar не поддерживает TimeOfDay, храним время в формате "HH:mm" (например: "08:30", "20:00")
+  List<String> timeStrings = [];
 }
 
 @collection
@@ -70,12 +73,17 @@ class MedicineEntity {
   int? cycleOnDays;
   int? cycleOffDays;
 
-  // 🚀 НОВОЕ: Список шагов для сложных курсов (tapering)
+  // 🚀 ОБНОВЛЕНО: Список шагов для сложных курсов (tapering/titration)
   List<TaperingStep>? taperingSteps;
 
   late int timesPerDay;
   late DateTime startDate;
   DateTime? endDate;
+
+  // 🚀 НОВОЕ: Сохраняем исходное время для обычных курсов.
+  // Это нужно, чтобы если юзер нажмет "Пауза", а через месяц "Возобновить",
+  // мы знали, на какое время заново создавать локальные уведомления и ScheduleEntity
+  List<String>? regularTimeStrings;
 
   // --- УМНЫЙ СКЛАД И БЕЗОПАСНОСТЬ ---
   late int pillsInPackage;

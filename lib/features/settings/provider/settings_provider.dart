@@ -164,18 +164,39 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 }
 
 class LocaleNotifier extends Notifier<Locale> {
+  // 🚀 ЕДИНЫЙ СПИСОК ВСЕХ ЯЗЫКОВ ПРИЛОЖЕНИЯ
+  static const supportedLocales = [
+    Locale('en'), // Английский (По умолчанию)
+    Locale('ru'), // Русский
+    Locale('es'), // Испанский
+    Locale('fr'), // Французский
+    Locale('de'), // Немецкий
+    Locale('ky'), // Кыргызский
+    Locale('kk'),
+  ];
+
   @override
   Locale build() {
     final rawValue = ref.read(sharedPreferencesProvider).getString(_localeKey);
-    if (rawValue == 'ru') {
-      return const Locale('ru');
-    }
-    if (rawValue == 'en') {
-      return const Locale('en');
+
+    // 1. Проверяем сохраненный кэш
+    if (rawValue != null) {
+      final savedLocale = Locale(rawValue);
+      if (supportedLocales.contains(savedLocale)) {
+        return savedLocale;
+      }
     }
 
+    // 2. Проверяем язык системы
     final systemLanguage = PlatformDispatcher.instance.locale.languageCode;
-    return systemLanguage == 'ru' ? const Locale('ru') : const Locale('en');
+    final systemLocale = Locale(systemLanguage);
+
+    if (supportedLocales.contains(systemLocale)) {
+      return systemLocale;
+    }
+
+    // 3. Фолбэк на английский, если язык системы не поддерживается
+    return const Locale('en');
   }
 
   Future<void> setLocale(Locale locale) async {

@@ -17,8 +17,16 @@ const MeasurementEntitySchema = CollectionSchema(
   name: r'MeasurementEntity',
   id: -5374057524743983956,
   properties: {
-    r'notes': PropertySchema(id: 0, name: r'notes', type: IsarType.string),
-    r'syncId': PropertySchema(id: 1, name: r'syncId', type: IsarType.string),
+    r'notes': PropertySchema(
+      id: 0,
+      name: r'notes',
+      type: IsarType.string,
+    ),
+    r'syncId': PropertySchema(
+      id: 1,
+      name: r'syncId',
+      type: IsarType.string,
+    ),
     r'timestamp': PropertySchema(
       id: 2,
       name: r'timestamp',
@@ -30,9 +38,21 @@ const MeasurementEntitySchema = CollectionSchema(
       type: IsarType.byte,
       enumMap: _MeasurementEntitytypeEnumValueMap,
     ),
-    r'unit': PropertySchema(id: 4, name: r'unit', type: IsarType.string),
-    r'value1': PropertySchema(id: 5, name: r'value1', type: IsarType.double),
-    r'value2': PropertySchema(id: 6, name: r'value2', type: IsarType.double),
+    r'unit': PropertySchema(
+      id: 4,
+      name: r'unit',
+      type: IsarType.string,
+    ),
+    r'value1': PropertySchema(
+      id: 5,
+      name: r'value1',
+      type: IsarType.double,
+    ),
+    r'value2': PropertySchema(
+      id: 6,
+      name: r'value2',
+      type: IsarType.double,
+    )
   },
   estimateSize: _measurementEntityEstimateSize,
   serialize: _measurementEntitySerialize,
@@ -50,7 +70,7 @@ const MeasurementEntitySchema = CollectionSchema(
           name: r'syncId',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
+        )
       ],
     ),
     r'timestamp': IndexSchema(
@@ -63,9 +83,9 @@ const MeasurementEntitySchema = CollectionSchema(
           name: r'timestamp',
           type: IndexType.value,
           caseSensitive: false,
-        ),
+        )
       ],
-    ),
+    )
   },
   links: {},
   embeddedSchemas: {},
@@ -120,7 +140,7 @@ MeasurementEntity _measurementEntityDeserialize(
   object.timestamp = reader.readDateTime(offsets[2]);
   object.type =
       _MeasurementEntitytypeValueEnumMap[reader.readByteOrNull(offsets[3])] ??
-      MeasurementTypeEnum.bloodPressure;
+          MeasurementTypeEnum.bloodPressure;
   object.unit = reader.readString(offsets[4]);
   object.value1 = reader.readDouble(offsets[5]);
   object.value2 = reader.readDoubleOrNull(offsets[6]);
@@ -141,11 +161,9 @@ P _measurementEntityDeserializeProp<P>(
     case 2:
       return (reader.readDateTime(offset)) as P;
     case 3:
-      return (_MeasurementEntitytypeValueEnumMap[reader.readByteOrNull(
-                offset,
-              )] ??
-              MeasurementTypeEnum.bloodPressure)
-          as P;
+      return (_MeasurementEntitytypeValueEnumMap[
+              reader.readByteOrNull(offset)] ??
+          MeasurementTypeEnum.bloodPressure) as P;
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
@@ -179,16 +197,12 @@ Id _measurementEntityGetId(MeasurementEntity object) {
 }
 
 List<IsarLinkBase<dynamic>> _measurementEntityGetLinks(
-  MeasurementEntity object,
-) {
+    MeasurementEntity object) {
   return [];
 }
 
 void _measurementEntityAttach(
-  IsarCollection<dynamic> col,
-  Id id,
-  MeasurementEntity object,
-) {
+    IsarCollection<dynamic> col, Id id, MeasurementEntity object) {
   object.id = id;
 }
 
@@ -241,10 +255,8 @@ extension MeasurementEntityByIndex on IsarCollection<MeasurementEntity> {
     return putAllByIndex(r'syncId', objects);
   }
 
-  List<Id> putAllBySyncIdSync(
-    List<MeasurementEntity> objects, {
-    bool saveLinks = true,
-  }) {
+  List<Id> putAllBySyncIdSync(List<MeasurementEntity> objects,
+      {bool saveLinks = true}) {
     return putAllByIndexSync(r'syncId', objects, saveLinks: saveLinks);
   }
 }
@@ -258,7 +270,7 @@ extension MeasurementEntityQueryWhereSort
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhere>
-  anyTimestamp() {
+      anyTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         const IndexWhereClause.any(indexName: r'timestamp'),
@@ -270,14 +282,17 @@ extension MeasurementEntityQueryWhereSort
 extension MeasurementEntityQueryWhere
     on QueryBuilder<MeasurementEntity, MeasurementEntity, QWhereClause> {
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  idEqualTo(Id id) {
+      idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  idNotEqualTo(Id id) {
+      idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -300,7 +315,7 @@ extension MeasurementEntityQueryWhere
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  idGreaterThan(Id id, {bool include = false}) {
+      idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -309,7 +324,7 @@ extension MeasurementEntityQueryWhere
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  idLessThan(Id id, {bool include = false}) {
+      idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -318,173 +333,157 @@ extension MeasurementEntityQueryWhere
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  idBetween(
+      idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(
-          lower: lowerId,
-          includeLower: includeLower,
-          upper: upperId,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  syncIdEqualTo(String syncId) {
+      syncIdEqualTo(String syncId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'syncId', value: [syncId]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'syncId',
+        value: [syncId],
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  syncIdNotEqualTo(String syncId) {
+      syncIdNotEqualTo(String syncId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'syncId',
-                lower: [],
-                upper: [syncId],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'syncId',
-                lower: [syncId],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncId',
+              lower: [],
+              upper: [syncId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncId',
+              lower: [syncId],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'syncId',
-                lower: [syncId],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'syncId',
-                lower: [],
-                upper: [syncId],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncId',
+              lower: [syncId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncId',
+              lower: [],
+              upper: [syncId],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  timestampEqualTo(DateTime timestamp) {
+      timestampEqualTo(DateTime timestamp) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'timestamp', value: [timestamp]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'timestamp',
+        value: [timestamp],
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  timestampNotEqualTo(DateTime timestamp) {
+      timestampNotEqualTo(DateTime timestamp) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'timestamp',
-                lower: [],
-                upper: [timestamp],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'timestamp',
-                lower: [timestamp],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'timestamp',
-                lower: [timestamp],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'timestamp',
-                lower: [],
-                upper: [timestamp],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ));
       }
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  timestampGreaterThan(DateTime timestamp, {bool include = false}) {
+      timestampGreaterThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'timestamp',
-          lower: [timestamp],
-          includeLower: include,
-          upper: [],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [timestamp],
+        includeLower: include,
+        upper: [],
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  timestampLessThan(DateTime timestamp, {bool include = false}) {
+      timestampLessThan(
+    DateTime timestamp, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'timestamp',
-          lower: [],
-          upper: [timestamp],
-          includeUpper: include,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [],
+        upper: [timestamp],
+        includeUpper: include,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterWhereClause>
-  timestampBetween(
+      timestampBetween(
     DateTime lowerTimestamp,
     DateTime upperTimestamp, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'timestamp',
-          lower: [lowerTimestamp],
-          includeLower: includeLower,
-          upper: [upperTimestamp],
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [lowerTimestamp],
+        includeLower: includeLower,
+        upper: [upperTimestamp],
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
@@ -492,129 +491,127 @@ extension MeasurementEntityQueryWhere
 extension MeasurementEntityQueryFilter
     on QueryBuilder<MeasurementEntity, MeasurementEntity, QFilterCondition> {
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  idEqualTo(Id value) {
+      idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  idGreaterThan(Id value, {bool include = false}) {
+      idGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  idLessThan(Id value, {bool include = false}) {
+      idLessThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  idBetween(
+      idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'id',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesIsNull() {
+      notesIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'notes'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'notes',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesIsNotNull() {
+      notesIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'notes'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'notes',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesEqualTo(String? value, {bool caseSensitive = true}) {
+      notesEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'notes',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'notes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesGreaterThan(
+      notesGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'notes',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'notes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesLessThan(
+      notesLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'notes',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'notes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesBetween(
+      notesBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -622,140 +619,135 @@ extension MeasurementEntityQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'notes',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'notes',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesStartsWith(String value, {bool caseSensitive = true}) {
+      notesStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'notes',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'notes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesEndsWith(String value, {bool caseSensitive = true}) {
+      notesEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'notes',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'notes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesContains(String value, {bool caseSensitive = true}) {
+      notesContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'notes',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'notes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesMatches(String pattern, {bool caseSensitive = true}) {
+      notesMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'notes',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'notes',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesIsEmpty() {
+      notesIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'notes', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'notes',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  notesIsNotEmpty() {
+      notesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'notes', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'notes',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdEqualTo(String value, {bool caseSensitive = true}) {
+      syncIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'syncId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdGreaterThan(
+      syncIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'syncId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdLessThan(
+      syncIdLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'syncId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdBetween(
+      syncIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -763,250 +755,247 @@ extension MeasurementEntityQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'syncId',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'syncId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdStartsWith(String value, {bool caseSensitive = true}) {
+      syncIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'syncId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdEndsWith(String value, {bool caseSensitive = true}) {
+      syncIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'syncId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdContains(String value, {bool caseSensitive = true}) {
+      syncIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'syncId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdMatches(String pattern, {bool caseSensitive = true}) {
+      syncIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'syncId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'syncId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdIsEmpty() {
+      syncIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'syncId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncId',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  syncIdIsNotEmpty() {
+      syncIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'syncId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'syncId',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  timestampEqualTo(DateTime value) {
+      timestampEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'timestamp', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'timestamp',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  timestampGreaterThan(DateTime value, {bool include = false}) {
+      timestampGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'timestamp',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'timestamp',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  timestampLessThan(DateTime value, {bool include = false}) {
+      timestampLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'timestamp',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'timestamp',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  timestampBetween(
+      timestampBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'timestamp',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'timestamp',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  typeEqualTo(MeasurementTypeEnum value) {
+      typeEqualTo(MeasurementTypeEnum value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'type', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'type',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  typeGreaterThan(MeasurementTypeEnum value, {bool include = false}) {
+      typeGreaterThan(
+    MeasurementTypeEnum value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'type',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'type',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  typeLessThan(MeasurementTypeEnum value, {bool include = false}) {
+      typeLessThan(
+    MeasurementTypeEnum value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'type',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'type',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  typeBetween(
+      typeBetween(
     MeasurementTypeEnum lower,
     MeasurementTypeEnum upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'type',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'type',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitEqualTo(String value, {bool caseSensitive = true}) {
+      unitEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'unit',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'unit',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitGreaterThan(
+      unitGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'unit',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'unit',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitLessThan(
+      unitLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'unit',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'unit',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitBetween(
+      unitBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1014,140 +1003,135 @@ extension MeasurementEntityQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'unit',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'unit',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitStartsWith(String value, {bool caseSensitive = true}) {
+      unitStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'unit',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'unit',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitEndsWith(String value, {bool caseSensitive = true}) {
+      unitEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'unit',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'unit',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitContains(String value, {bool caseSensitive = true}) {
+      unitContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'unit',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'unit',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitMatches(String pattern, {bool caseSensitive = true}) {
+      unitMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'unit',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'unit',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitIsEmpty() {
+      unitIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'unit', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'unit',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  unitIsNotEmpty() {
+      unitIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'unit', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'unit',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value1EqualTo(double value, {double epsilon = Query.epsilon}) {
+      value1EqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'value1',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'value1',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value1GreaterThan(
+      value1GreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'value1',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'value1',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value1LessThan(
+      value1LessThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'value1',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'value1',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value1Between(
+      value1Between(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -1155,88 +1139,83 @@ extension MeasurementEntityQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'value1',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'value1',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value2IsNull() {
+      value2IsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'value2'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'value2',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value2IsNotNull() {
+      value2IsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'value2'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'value2',
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value2EqualTo(double? value, {double epsilon = Query.epsilon}) {
+      value2EqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'value2',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'value2',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value2GreaterThan(
+      value2GreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'value2',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'value2',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value2LessThan(
+      value2LessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'value2',
-          value: value,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'value2',
+        value: value,
+        epsilon: epsilon,
+      ));
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterFilterCondition>
-  value2Between(
+      value2Between(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1244,16 +1223,14 @@ extension MeasurementEntityQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'value2',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          epsilon: epsilon,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'value2',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
     });
   }
 }
@@ -1267,98 +1244,98 @@ extension MeasurementEntityQueryLinks
 extension MeasurementEntityQuerySortBy
     on QueryBuilder<MeasurementEntity, MeasurementEntity, QSortBy> {
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByNotes() {
+      sortByNotes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByNotesDesc() {
+      sortByNotesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortBySyncId() {
+      sortBySyncId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncId', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortBySyncIdDesc() {
+      sortBySyncIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncId', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByTimestamp() {
+      sortByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByTimestampDesc() {
+      sortByTimestampDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByType() {
+      sortByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByTypeDesc() {
+      sortByTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByUnit() {
+      sortByUnit() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'unit', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByUnitDesc() {
+      sortByUnitDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'unit', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByValue1() {
+      sortByValue1() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'value1', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByValue1Desc() {
+      sortByValue1Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'value1', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByValue2() {
+      sortByValue2() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'value2', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  sortByValue2Desc() {
+      sortByValue2Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'value2', Sort.desc);
     });
@@ -1374,105 +1351,105 @@ extension MeasurementEntityQuerySortThenBy
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByIdDesc() {
+      thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByNotes() {
+      thenByNotes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByNotesDesc() {
+      thenByNotesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenBySyncId() {
+      thenBySyncId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncId', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenBySyncIdDesc() {
+      thenBySyncIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'syncId', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByTimestamp() {
+      thenByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByTimestampDesc() {
+      thenByTimestampDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByType() {
+      thenByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByTypeDesc() {
+      thenByTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByUnit() {
+      thenByUnit() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'unit', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByUnitDesc() {
+      thenByUnitDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'unit', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByValue1() {
+      thenByValue1() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'value1', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByValue1Desc() {
+      thenByValue1Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'value1', Sort.desc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByValue2() {
+      thenByValue2() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'value2', Sort.asc);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QAfterSortBy>
-  thenByValue2Desc() {
+      thenByValue2Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'value2', Sort.desc);
     });
@@ -1481,51 +1458,50 @@ extension MeasurementEntityQuerySortThenBy
 
 extension MeasurementEntityQueryWhereDistinct
     on QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct> {
-  QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct>
-  distinctByNotes({bool caseSensitive = true}) {
+  QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct> distinctByNotes(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'notes', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct>
-  distinctBySyncId({bool caseSensitive = true}) {
+      distinctBySyncId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'syncId', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct>
-  distinctByTimestamp() {
+      distinctByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'timestamp');
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct>
-  distinctByType() {
+      distinctByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'type');
     });
   }
 
-  QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct> distinctByUnit({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct> distinctByUnit(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'unit', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct>
-  distinctByValue1() {
+      distinctByValue1() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'value1');
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementEntity, QDistinct>
-  distinctByValue2() {
+      distinctByValue2() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'value2');
     });
@@ -1553,14 +1529,14 @@ extension MeasurementEntityQueryProperty
   }
 
   QueryBuilder<MeasurementEntity, DateTime, QQueryOperations>
-  timestampProperty() {
+      timestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'timestamp');
     });
   }
 
   QueryBuilder<MeasurementEntity, MeasurementTypeEnum, QQueryOperations>
-  typeProperty() {
+      typeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'type');
     });

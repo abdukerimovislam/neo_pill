@@ -13,16 +13,60 @@ final firebaseFirestoreProvider = Provider<FirebaseFirestore>((ref) {
 });
 
 final caregiverCloudRepositoryProvider = Provider<CaregiverCloudRepository>((
-  ref,
-) {
+    ref,
+    ) {
   return CaregiverCloudRepository(
     auth: ref.read(firebaseAuthProvider),
     firestore: ref.read(firebaseFirestoreProvider),
   );
 });
 
+// 🔥 НОВАЯ МОДЕЛЬ: "Слепок" дозы для передачи опекуну
+class CaregiverSharedDose {
+  final String id;
+  final String medicineName;
+  final DateTime scheduledTime;
+  final String status; // pending, taken, skipped
+  final double dosage;
+  final String unit;
+  final String kind;
+
+  const CaregiverSharedDose({
+    required this.id,
+    required this.medicineName,
+    required this.scheduledTime,
+    required this.status,
+    required this.dosage,
+    required this.unit,
+    required this.kind,
+  });
+
+  factory CaregiverSharedDose.fromFirestore(Map<String, dynamic> data) {
+    return CaregiverSharedDose(
+      id: data['id'] as String? ?? '',
+      medicineName: data['medicineName'] as String? ?? 'Unknown',
+      scheduledTime: DateTime.tryParse(data['scheduledTime'] as String? ?? '') ?? DateTime.now(),
+      status: data['status'] as String? ?? 'pending',
+      dosage: (data['dosage'] as num?)?.toDouble() ?? 0.0,
+      unit: data['unit'] as String? ?? '',
+      kind: data['kind'] as String? ?? 'medication',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'medicineName': medicineName,
+    'scheduledTime': scheduledTime.toIso8601String(),
+    'status': status,
+    'dosage': dosage,
+    'unit': unit,
+    'kind': kind,
+  };
+}
+
 class CaregiverCloudAlert {
   final String id;
+  final String shareCode;
   final String message;
   final String patientName;
   final int itemCount;
@@ -31,6 +75,7 @@ class CaregiverCloudAlert {
 
   const CaregiverCloudAlert({
     required this.id,
+    required this.shareCode,
     required this.message,
     required this.patientName,
     required this.itemCount,
@@ -39,11 +84,13 @@ class CaregiverCloudAlert {
   });
 
   factory CaregiverCloudAlert.fromFirestore(
-    QueryDocumentSnapshot<Map<String, dynamic>> doc,
-  ) {
+      QueryDocumentSnapshot<Map<String, dynamic>> doc,
+      String shareCode,
+      ) {
     final data = doc.data();
     return CaregiverCloudAlert(
       id: doc.id,
+      shareCode: shareCode,
       message: data['message'] as String? ?? '',
       patientName: data['patientName'] as String? ?? '',
       itemCount: data['itemCount'] as int? ?? 0,
@@ -67,9 +114,9 @@ class CaregiverNetworkRecord {
   });
 
   factory CaregiverNetworkRecord.fromFirestore(
-    String shareCode,
-    Map<String, dynamic> data,
-  ) {
+      String shareCode,
+      Map<String, dynamic> data,
+      ) {
     final caregiver = data['caregiver'] as Map<String, dynamic>? ?? const {};
     return CaregiverNetworkRecord(
       shareCode: shareCode,
@@ -106,11 +153,11 @@ class CaregiverCloudRepository {
     final caregiverMap = caregiver == null
         ? null
         : {
-            'name': caregiver.name,
-            'relation': caregiver.relation,
-            'phone': caregiver.phone,
-            'shareReports': caregiver.shareReports,
-          };
+      'name': caregiver.name,
+      'relation': caregiver.relation,
+      'phone': caregiver.phone,
+      'shareReports': caregiver.shareReports,
+    };
 
     await networkRef.set({
       'shareCode': shareCode,
@@ -169,12 +216,12 @@ class CaregiverCloudRepository {
         .collection('alerts')
         .doc(alertId)
         .set({
-          'patientName': patientName,
-          'message': message,
-          'itemCount': itemCount,
-          'seen': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+      'patientName': patientName,
+      'message': message,
+      'itemCount': itemCount,
+      'seen': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   Future<void> removeCurrentMember(String shareCode) async {
@@ -195,10 +242,10 @@ class CaregiverCloudRepository {
         .collection('members')
         .doc(user.uid)
         .set({
-          'uid': user.uid,
-          'fcmToken': null,
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+      'uid': user.uid,
+      'fcmToken': null,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   Stream<List<CaregiverCloudAlert>> watchAlerts(String shareCode) {
@@ -211,10 +258,10 @@ class CaregiverCloudRepository {
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
-              .map(CaregiverCloudAlert.fromFirestore)
-              .where((alert) => !alert.seen)
-              .toList(),
-        );
+          .map((doc) => CaregiverCloudAlert.fromFirestore(doc, shareCode))
+          .where((alert) => !alert.seen)
+          .toList(),
+    );
   }
 
   Future<void> markAlertSeen({
@@ -242,11 +289,52 @@ class CaregiverCloudRepository {
         .collection('members')
         .doc(user.uid)
         .set({
-          'uid': user.uid,
-          'role': role,
-          'displayName': displayName,
-          'fcmToken': fcmToken,
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+      'uid': user.uid,
+      'role': role,
+      'displayName': displayName,
+      'fcmToken': fcmToken,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  // 🚀 НОВОЕ: Отправка расписания (вызывается пациентом)
+  Future<void> syncTodaySchedule({
+    required String shareCode,
+    required String dateString, // Формат: 'yyyy-MM-dd'
+    required List<CaregiverSharedDose> doses,
+  }) async {
+    await ensureSignedIn();
+    await firestore
+        .collection('care_networks')
+        .doc(shareCode)
+        .collection('daily_schedules')
+        .doc(dateString)
+        .set({
+      'updatedAt': FieldValue.serverTimestamp(),
+      'items': doses.map((d) => d.toJson()).toList(),
+    }, SetOptions(merge: true));
+  }
+
+  // 🚀 НОВОЕ: Прослушивание расписания (вызывается опекуном)
+  Stream<List<CaregiverSharedDose>> watchTodaySchedule({
+    required String shareCode,
+    required String dateString,
+  }) {
+    return firestore
+        .collection('care_networks')
+        .doc(shareCode)
+        .collection('daily_schedules')
+        .doc(dateString)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists || snapshot.data() == null) return [];
+
+      final data = snapshot.data()!;
+      final itemsList = data['items'] as List<dynamic>? ?? [];
+
+      return itemsList
+          .map((item) => CaregiverSharedDose.fromFirestore(item as Map<String, dynamic>))
+          .toList();
+    });
   }
 }

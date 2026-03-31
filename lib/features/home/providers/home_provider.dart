@@ -2,10 +2,14 @@ import 'dart:ui';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
+import 'package:intl/intl.dart'; // 🚀 Добавлен импорт для форматирования даты
 
+import '../../../core/firebase/caregiver_cloud_repository.dart'; // 🚀 Добавлен импорт
 import '../../../data/local/entities/dose_log_entity.dart';
 import '../../../data/local/entities/medicine_entity.dart';
 import '../../../data/local/isar_service.dart';
+import '../../settings/provider/care_context_provider.dart'; // 🚀 Добавлен импорт
+import '../../settings/provider/caregiver_cloud_provider.dart'; // 🚀 Добавлен импорт
 import '../../settings/provider/settings_provider.dart';
 
 enum CourseFilterType { all, medications, supplements }
@@ -19,8 +23,31 @@ final selectedDateProvider = StateProvider<DateTime>((ref) {
 });
 
 final selectedHomeCourseFilterProvider = StateProvider<CourseFilterType>(
-  (ref) => CourseFilterType.all,
+      (ref) => CourseFilterType.all,
 );
+
+// 🚀 НОВОЕ: Выбранный пациент для просмотра (для опекуна)
+final selectedCaregiverPatientProvider = StateProvider<LinkedPatient?>((ref) {
+  final cloudState = ref.watch(caregiverCloudProvider);
+  return cloudState.linkedPatients.isNotEmpty ? cloudState.linkedPatients.first : null;
+});
+
+// 🚀 НОВОЕ: Стрим расписания подопечного из Firebase
+final remotePatientScheduleProvider = StreamProvider.autoDispose<List<CaregiverSharedDose>>((ref) {
+  final selectedContext = ref.watch(selectedCareContextProvider);
+  final selectedPatient = ref.watch(selectedCaregiverPatientProvider);
+
+  if (selectedContext == AppCareContext.myCare || selectedPatient == null) {
+    return Stream.value([]);
+  }
+
+  // Пока смотрим только на "сегодняшнее" расписание пациента
+  final dateString = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  return ref.read(caregiverCloudRepositoryProvider).watchTodaySchedule(
+    shareCode: selectedPatient.shareCode,
+    dateString: dateString,
+  );
+});
 
 class DoseScheduleItem {
   final DoseLogEntity doseLog;
@@ -108,31 +135,31 @@ class CaregiverAlertSummary {
 }
 
 final dailyScheduleProvider =
-    FutureProvider.autoDispose<List<DoseScheduleItem>>((ref) async {
-      final isarService = ref.read(localDbProvider);
-      final isar = await isarService.db;
-      final selectedDate = ref.watch(selectedDateProvider);
+FutureProvider.autoDispose<List<DoseScheduleItem>>((ref) async {
+  final isarService = ref.read(localDbProvider);
+  final isar = await isarService.db;
+  final selectedDate = ref.watch(selectedDateProvider);
 
-      final logs = await isarService.getLogsForDate(selectedDate);
-      return _mapDoseScheduleItems(isar: isar, logs: logs);
-    });
+  final logs = await isarService.getLogsForDate(selectedDate);
+  return _mapDoseScheduleItems(isar: isar, logs: logs);
+});
 
 final filteredDailyScheduleProvider =
-    FutureProvider.autoDispose<List<DoseScheduleItem>>((ref) async {
-      final items = await ref.watch(dailyScheduleProvider.future);
-      final filter = ref.watch(selectedHomeCourseFilterProvider);
-      return _filterItemsByCourseType(items, filter);
-    });
+FutureProvider.autoDispose<List<DoseScheduleItem>>((ref) async {
+  final items = await ref.watch(dailyScheduleProvider.future);
+  final filter = ref.watch(selectedHomeCourseFilterProvider);
+  return _filterItemsByCourseType(items, filter);
+});
 
 final homeRoutineBundlesProvider =
-    FutureProvider.autoDispose<List<HomeRoutineBundle>>((ref) async {
-      final items = await ref.watch(filteredDailyScheduleProvider.future);
-      return buildRoutineBundles(items);
-    });
+FutureProvider.autoDispose<List<HomeRoutineBundle>>((ref) async {
+  final items = await ref.watch(filteredDailyScheduleProvider.future);
+  return buildRoutineBundles(items);
+});
 
 final homeDashboardProvider = FutureProvider.autoDispose<HomeDashboardSummary>((
-  ref,
-) async {
+    ref,
+    ) async {
   final isarService = ref.read(localDbProvider);
   final isar = await isarService.db;
   final selectedDate = ref.watch(selectedDateProvider);
@@ -160,9 +187,9 @@ final homeDashboardProvider = FutureProvider.autoDispose<HomeDashboardSummary>((
       .length;
   final overdueDoses = isTodaySelected
       ? items.where((item) {
-          return item.doseLog.status == DoseStatusEnum.pending &&
-              item.doseLog.scheduledTime.isBefore(now);
-        }).length
+    return item.doseLog.status == DoseStatusEnum.pending &&
+        item.doseLog.scheduledTime.isBefore(now);
+  }).length
       : 0;
 
   final todayProgress = totalDoses > 0 ? takenDoses / totalDoses : 0.0;
@@ -172,9 +199,9 @@ final homeDashboardProvider = FutureProvider.autoDispose<HomeDashboardSummary>((
     return switch (selectedFilter) {
       CourseFilterType.all => true,
       CourseFilterType.medications =>
-        medicine.kind == CourseKindEnum.medication,
+      medicine.kind == CourseKindEnum.medication,
       CourseFilterType.supplements =>
-        medicine.kind == CourseKindEnum.supplement,
+      medicine.kind == CourseKindEnum.supplement,
     };
   }).toList();
   final activeMedicines = filteredCourses
@@ -183,24 +210,24 @@ final homeDashboardProvider = FutureProvider.autoDispose<HomeDashboardSummary>((
   final lowStockMedicines = filteredCourses
       .where(
         (medicine) => medicine.pillsRemaining <= medicine.refillAlertThreshold,
-      )
+  )
       .length;
 
   final startOfToday = DateTime(now.year, now.month, now.day);
   final nextPendingDose = isTodaySelected
       ? items
-            .where((item) => item.doseLog.status == DoseStatusEnum.pending)
-            .where((item) => item.doseLog.scheduledTime.isAfter(now))
-            .cast<DoseScheduleItem?>()
-            .fold<DoseScheduleItem?>(null, (previous, item) {
-              if (item == null) return previous;
-              if (previous == null) return item;
-              return item.doseLog.scheduledTime.isBefore(
-                    previous.doseLog.scheduledTime,
-                  )
-                  ? item
-                  : previous;
-            })
+      .where((item) => item.doseLog.status == DoseStatusEnum.pending)
+      .where((item) => item.doseLog.scheduledTime.isAfter(now))
+      .cast<DoseScheduleItem?>()
+      .fold<DoseScheduleItem?>(null, (previous, item) {
+    if (item == null) return previous;
+    if (previous == null) return item;
+    return item.doseLog.scheduledTime.isBefore(
+      previous.doseLog.scheduledTime,
+    )
+        ? item
+        : previous;
+  })
       : null;
 
   final weeklyLogs = await isar.doseLogEntitys
@@ -223,8 +250,8 @@ final homeDashboardProvider = FutureProvider.autoDispose<HomeDashboardSummary>((
     if (overdueDoses > 0)
       _isRussianLocale
           ? overdueDoses == 1
-                ? '1 \u0437\u0430\u043f\u043b\u0430\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u043f\u0443\u043d\u043a\u0442 \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0432\u043d\u0438\u043c\u0430\u043d\u0438\u044f \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441.'
-                : '$overdueDoses \u0437\u0430\u043f\u043b\u0430\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u043f\u0443\u043d\u043a\u0442\u043e\u0432 \u0442\u0440\u0435\u0431\u0443\u044e\u0442 \u0432\u043d\u0438\u043c\u0430\u043d\u0438\u044f \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441.'
+          ? '1 \u0437\u0430\u043f\u043b\u0430\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u043f\u0443\u043d\u043a\u0442 \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0432\u043d\u0438\u043c\u0430\u043d\u0438\u044f \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441.'
+          : '$overdueDoses \u0437\u0430\u043f\u043b\u0430\u043d\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u043f\u0443\u043d\u043a\u0442\u043e\u0432 \u0442\u0440\u0435\u0431\u0443\u044e\u0442 \u0432\u043d\u0438\u043c\u0430\u043d\u0438\u044f \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441.'
           : '$overdueDoses scheduled item${overdueDoses == 1 ? '' : 's'} need attention right now.',
     if (weeklyAdherence >= 85)
       _isRussianLocale
@@ -237,8 +264,8 @@ final homeDashboardProvider = FutureProvider.autoDispose<HomeDashboardSummary>((
     if (lowStockMedicines > 0)
       _isRussianLocale
           ? lowStockMedicines == 1
-                ? '1 \u043a\u0443\u0440\u0441 \u0431\u043b\u0438\u0437\u043e\u043a \u043a \u0443\u0440\u043e\u0432\u043d\u044e \u043f\u043e\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f.'
-                : '$lowStockMedicines \u043a\u0443\u0440\u0441\u043e\u0432 \u0431\u043b\u0438\u0437\u043a\u0438 \u043a \u0443\u0440\u043e\u0432\u043d\u044e \u043f\u043e\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f.'
+          ? '1 \u043a\u0443\u0440\u0441 \u0431\u043b\u0438\u0437\u043e\u043a \u043a \u0443\u0440\u043e\u0432\u043d\u044e \u043f\u043e\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f.'
+          : '$lowStockMedicines \u043a\u0443\u0440\u0441\u043e\u0432 \u0431\u043b\u0438\u0437\u043a\u0438 \u043a \u0443\u0440\u043e\u0432\u043d\u044e \u043f\u043e\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f.'
           : '$lowStockMedicines course${lowStockMedicines == 1 ? '' : 's'} are close to refill level.',
     if (totalDoses == 0)
       _isRussianLocale
@@ -263,8 +290,8 @@ final homeDashboardProvider = FutureProvider.autoDispose<HomeDashboardSummary>((
 });
 
 final heroDoseProvider = FutureProvider.autoDispose<DoseScheduleItem?>((
-  ref,
-) async {
+    ref,
+    ) async {
   final selectedDate = ref.watch(selectedDateProvider);
   final now = DateTime.now();
   final pureSelected = DateTime(
@@ -280,51 +307,51 @@ final heroDoseProvider = FutureProvider.autoDispose<DoseScheduleItem?>((
   final windowEnd = now.add(const Duration(minutes: 30));
 
   final candidates =
-      items
-          .where((item) => item.doseLog.status == DoseStatusEnum.pending)
-          .where((item) => !item.doseLog.scheduledTime.isBefore(pureToday))
-          .where((item) => item.doseLog.scheduledTime.isBefore(windowEnd))
-          .toList()
-        ..sort(
+  items
+      .where((item) => item.doseLog.status == DoseStatusEnum.pending)
+      .where((item) => !item.doseLog.scheduledTime.isBefore(pureToday))
+      .where((item) => item.doseLog.scheduledTime.isBefore(windowEnd))
+      .toList()
+    ..sort(
           (a, b) => a.doseLog.scheduledTime.compareTo(b.doseLog.scheduledTime),
-        );
+    );
 
   return candidates.isEmpty ? null : candidates.first;
 });
 
 final caregiverAlertSummaryProvider =
-    FutureProvider.autoDispose<CaregiverAlertSummary?>((ref) async {
-      final items = await ref.watch(dailyScheduleProvider.future);
-      final caregiver = ref.watch(caregiverProfileProvider);
-      final settings = ref.watch(caregiverAlertSettingsProvider);
-      final selectedDate = ref.watch(selectedDateProvider);
+FutureProvider.autoDispose<CaregiverAlertSummary?>((ref) async {
+  final items = await ref.watch(dailyScheduleProvider.future);
+  final caregiver = ref.watch(caregiverProfileProvider);
+  final settings = ref.watch(caregiverAlertSettingsProvider);
+  final selectedDate = ref.watch(selectedDateProvider);
 
-      return buildCaregiverAlertSummary(
-        items: items,
-        caregiver: caregiver,
-        settings: settings,
-        selectedDate: selectedDate,
-      );
-    });
+  return buildCaregiverAlertSummary(
+    items: items,
+    caregiver: caregiver,
+    settings: settings,
+    selectedDate: selectedDate,
+  );
+});
 
 List<DoseScheduleItem> _filterItemsByCourseType(
-  List<DoseScheduleItem> items,
-  CourseFilterType filter,
-) {
+    List<DoseScheduleItem> items,
+    CourseFilterType filter,
+    ) {
   return switch (filter) {
     CourseFilterType.all => items,
     CourseFilterType.medications =>
-      items
-          .where(
-            (item) =>
-                (item.medicine?.kind ?? CourseKindEnum.medication) ==
-                CourseKindEnum.medication,
-          )
-          .toList(),
+        items
+            .where(
+              (item) =>
+          (item.medicine?.kind ?? CourseKindEnum.medication) ==
+              CourseKindEnum.medication,
+        )
+            .toList(),
     CourseFilterType.supplements =>
-      items
-          .where((item) => item.medicine?.kind == CourseKindEnum.supplement)
-          .toList(),
+        items
+            .where((item) => item.medicine?.kind == CourseKindEnum.supplement)
+            .toList(),
   };
 }
 
@@ -364,18 +391,18 @@ List<HomeRoutineBundle> buildRoutineBundles(List<DoseScheduleItem> items) {
     final label = _bundleLabelForTime(start);
     final itemCount = group.length;
     final bundleType =
-        group.every((item) => item.medicine?.kind == CourseKindEnum.supplement)
-        ? (_isRussianLocale ? 'Ð‘ÐÐ”Ñ‹' : 'supplements')
+    group.every((item) => item.medicine?.kind == CourseKindEnum.supplement)
+        ? (_isRussianLocale ? 'БАДы' : 'supplements')
         : group.every(
-            (item) =>
-                (item.medicine?.kind ?? CourseKindEnum.medication) ==
-                CourseKindEnum.medication,
-          )
-        ? (_isRussianLocale ? 'Ð»ÐµÐºÐ°Ñ€ÑÑ‚Ð²Ð°' : 'medications')
-        : (_isRussianLocale ? 'ÑÐ¼ÐµÑˆÐ°Ð½Ð½Ñ‹Ð¹ Ñ€ÐµÐ¶Ð¸Ð¼' : 'mixed');
+          (item) =>
+      (item.medicine?.kind ?? CourseKindEnum.medication) ==
+          CourseKindEnum.medication,
+    )
+        ? (_isRussianLocale ? 'лекарства' : 'medications')
+        : (_isRussianLocale ? 'смешанный режим' : 'mixed');
     final subtitle = _isRussianLocale
-        ? '$itemCount ${_russianItemWord(itemCount)} â€¢ ${_formatBundleTime(start)}-${_formatBundleTime(end)} â€¢ $bundleType'
-        : '$itemCount ${itemCount == 1 ? 'item' : 'items'} â€¢ ${_formatBundleTime(start)}-${_formatBundleTime(end)} â€¢ $bundleType';
+        ? '$itemCount ${_russianItemWord(itemCount)} • ${_formatBundleTime(start)}-${_formatBundleTime(end)} • $bundleType'
+        : '$itemCount ${itemCount == 1 ? 'item' : 'items'} • ${_formatBundleTime(start)}-${_formatBundleTime(end)} • $bundleType';
 
     return HomeRoutineBundle(
       id: '${start.toIso8601String()}_${group.length}',
@@ -455,7 +482,7 @@ CaregiverAlertSummary? buildCaregiverAlertSummary({
   }
 
   alertItems.sort(
-    (a, b) =>
+        (a, b) =>
         a.item.doseLog.scheduledTime.compareTo(b.item.doseLog.scheduledTime),
   );
 
@@ -470,32 +497,32 @@ String _bundleLabelForTime(DateTime time) {
   final hour = time.hour;
   if (hour >= 5 && hour < 12) {
     return _isRussianLocale
-        ? '\u0423\u0442\u0440\u0435\u043d\u043d\u0438\u0439 \u0440\u0435\u0436\u0438\u043c'
+        ? 'Утренний режим'
         : 'Morning routine';
   }
   if (hour >= 12 && hour < 17) {
     return _isRussianLocale
-        ? '\u0414\u043d\u0435\u0432\u043d\u043e\u0439 \u0440\u0435\u0436\u0438\u043c'
+        ? 'Дневной режим'
         : 'Afternoon routine';
   }
   if (hour >= 17 && hour < 22) {
     return _isRussianLocale
-        ? '\u0412\u0435\u0447\u0435\u0440\u043d\u0438\u0439 \u0440\u0435\u0436\u0438\u043c'
+        ? 'Вечерний режим'
         : 'Evening routine';
   }
   return _isRussianLocale
-      ? '\u041d\u043e\u0447\u043d\u043e\u0439 \u0440\u0435\u0436\u0438\u043c'
+      ? 'Ночной режим'
       : 'Night routine';
 }
 
 String _russianItemWord(int count) {
   final mod10 = count % 10;
   final mod100 = count % 100;
-  if (mod10 == 1 && mod100 != 11) return '\u043f\u0443\u043d\u043a\u0442';
+  if (mod10 == 1 && mod100 != 11) return 'пункт';
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
-    return '\u043f\u0443\u043d\u043a\u0442\u0430';
+    return 'пункта';
   }
-  return '\u043f\u0443\u043d\u043a\u0442\u043e\u0432';
+  return 'пунктов';
 }
 
 String _formatBundleTime(DateTime time) {
@@ -512,9 +539,9 @@ Future<List<DoseScheduleItem>> _mapDoseScheduleItems({
   final medicines = medicineIds.isEmpty
       ? <MedicineEntity>[]
       : await isar.medicineEntitys
-            .filter()
-            .anyOf(medicineIds, (q, String id) => q.syncIdEqualTo(id))
-            .findAll();
+      .filter()
+      .anyOf(medicineIds, (q, String id) => q.syncIdEqualTo(id))
+      .findAll();
 
   final medicineMap = {
     for (final medicine in medicines) medicine.syncId: medicine,
@@ -523,10 +550,10 @@ Future<List<DoseScheduleItem>> _mapDoseScheduleItems({
   return logs
       .map(
         (log) => DoseScheduleItem(
-          doseLog: log,
-          medicine: medicineMap[log.medicineSyncId],
-        ),
-      )
+      doseLog: log,
+      medicine: medicineMap[log.medicineSyncId],
+    ),
+  )
       .toList();
 }
 
@@ -562,7 +589,7 @@ Future<int> _calculateCurrentStreak(Isar isar, DateTime now) async {
     }
 
     final allTaken = finishedLogs.every(
-      (log) => log.status == DoseStatusEnum.taken,
+          (log) => log.status == DoseStatusEnum.taken,
     );
     if (!allTaken) {
       break;

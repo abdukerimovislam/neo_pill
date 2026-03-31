@@ -1823,4 +1823,43 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get homeEmptyAddMedicinePrompt =>
       'Добавьте новое лекарство или добавку, чтобы они появились здесь.';
+
+  @override
+  String get tabScanner => 'Сканер';
+
+  @override
+  String get scannerComingSoonTitle => 'Умный сканер';
+
+  @override
+  String get scannerComingSoonText =>
+      'Наведите камеру на упаковку лекарства, чтобы автоматически заполнить данные. Функция появится в следующем обновлении!';
+
+  @override
+  String get premiumTitle => 'Pillora Pro';
+
+  @override
+  String get premiumSubtitle => 'Раскройте весь потенциал заботы о здоровье';
+
+  @override
+  String get premiumFeatureCaregiver =>
+      'Безлимитные опекуны и моментальные оповещения';
+
+  @override
+  String get premiumFeatureScanner => 'Умный сканер для быстрого добавления';
+
+  @override
+  String get premiumFeatureSchedules =>
+      'Сложные расписания (циклы, снижение дозы)';
+
+  @override
+  String get premiumFeatureReports => 'PDF-отчеты для лечащего врача';
+
+  @override
+  String get premiumSubscribeYearly => 'Разблокировать Pro за \$29.99 / год';
+
+  @override
+  String get premiumSubscribeMonthly => 'или \$4.99 / месяц';
+
+  @override
+  String get premiumRestorePurchases => 'Восстановить покупки';
 }

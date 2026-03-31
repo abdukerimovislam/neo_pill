@@ -179,7 +179,8 @@ class HomeScreen extends ConsumerWidget {
                       timeFormat.format(alert.item.doseLog.scheduledTime);
                       final reason = switch (alert.reason) {
                         CaregiverAlertReason.overdue =>
-                            l10n.caregiverAlertReasonOverdue(alert.delayMinutes),
+                            l10n.caregiverAlertReasonOverdue(
+                                alert.delayMinutes),
                         CaregiverAlertReason.skipped =>
                         l10n.caregiverAlertReasonSkipped,
                       };
@@ -204,8 +205,8 @@ class HomeScreen extends ConsumerWidget {
                                     ? Icons.schedule_rounded
                                     : Icons.close_rounded,
                                 size: 18,
-                                color: alert.reason ==
-                                    CaregiverAlertReason.overdue
+                                color:
+                                alert.reason == CaregiverAlertReason.overdue
                                     ? theme.warningAccent
                                     : theme.dangerAccent,
                               ),
@@ -336,15 +337,21 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
 
     final scheduleAsyncValue = ref.watch(filteredDailyScheduleProvider);
     final heroAsyncValue = ref.watch(heroDoseProvider);
     final dashboardAsyncValue = ref.watch(homeDashboardProvider);
     final caregiverAlertAsyncValue = ref.watch(caregiverAlertSummaryProvider);
+
+    // 🚀 Стримы для опекуна
     final caregiverCloudState = ref.watch(caregiverCloudProvider);
     final caregiverCloudAlerts =
         ref.watch(caregiverCloudAlertsProvider).valueOrNull ??
             const <CaregiverCloudAlert>[];
+    final remoteScheduleAsyncValue = ref.watch(remotePatientScheduleProvider);
+    final selectedPatient = ref.watch(selectedCaregiverPatientProvider);
+
     final userName = ref.watch(userNameProvider);
     final comfortMode = ref.watch(comfortModeProvider);
     final selectedFilter = ref.watch(selectedHomeCourseFilterProvider);
@@ -480,7 +487,8 @@ class HomeScreen extends ConsumerWidget {
                 );
               },
               loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+              error: (_, __) =>
+              const SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
 
           if (selectedAudience == AppCareContext.caregiving)
@@ -490,7 +498,7 @@ class HomeScreen extends ConsumerWidget {
                   left: 16,
                   right: 16,
                   top: availableCaregivingContext ? 16 : 12,
-                  bottom: 24,
+                  bottom: 16, // Немного уменьшили отступ перед расписанием
                 ),
                 child: AnimatedReveal(
                   delay: const Duration(milliseconds: 90),
@@ -502,8 +510,50 @@ class HomeScreen extends ConsumerWidget {
                     onMarkSeen: (alertId) {
                       ref
                           .read(caregiverCloudProvider.notifier)
-                          .markAlertSeen(alertId);
+                          .markAlertSeen(alertId: alertId, shareCode: selectedPatient!.shareCode);
                     },
+                  ),
+                ),
+              ),
+            ),
+
+          // 🚀 НОВОЕ: ОТОБРАЖЕНИЕ РАСПИСАНИЯ ПАЦИЕНТА ДЛЯ ОПЕКУНА
+          if (selectedAudience == AppCareContext.caregiving)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: AnimatedReveal(
+                  delay: const Duration(milliseconds: 150),
+                  child: remoteScheduleAsyncValue.when(
+                    data: (doses) {
+                      final title = isRu ? 'План на сегодня' : 'Today\'s Plan';
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _SectionTitle(
+                            title: '$title: ${selectedPatient?.patientName ?? ""}',
+                          ),
+                          const SizedBox(height: 12),
+                          if (doses.isEmpty)
+                            StateCard(
+                              icon: Icons.cloud_sync_rounded,
+                              title: isRu ? 'Нет данных' : 'No data',
+                              subtitle: isRu
+                                  ? 'Пациент еще не синхронизировал расписание'
+                                  : 'Patient hasn\'t synced their schedule yet',
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                            )
+                          else
+                            ...doses.map((dose) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _RemoteDoseCard(dose: dose),
+                            )),
+                        ],
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Ошибка: $e')),
                   ),
                 ),
               ),
@@ -604,20 +654,23 @@ class HomeScreen extends ConsumerWidget {
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  color: theme.primaryColor.withValues(alpha: 0.05),
+                                  color: theme.primaryColor
+                                      .withValues(alpha: 0.05),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
                                   Icons.task_alt_rounded,
                                   size: 36,
-                                  color: theme.primaryColor.withValues(alpha: 0.5),
+                                  color: theme.primaryColor
+                                      .withValues(alpha: 0.5),
                                 ),
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 _emptyStateTitle(context, selectedFilter),
                                 style: theme.textTheme.titleMedium?.copyWith(
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.5),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -625,7 +678,8 @@ class HomeScreen extends ConsumerWidget {
                               Text(
                                 l10n.homeNoAttentionRightNow,
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.4),
                                 ),
                               ),
                             ],
@@ -713,6 +767,89 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 }
+
+// 🚀 НОВЫЙ ВИДЖЕТ: Карточка для отображения удаленной дозы (для Опекуна)
+class _RemoteDoseCard extends StatelessWidget {
+  final CaregiverSharedDose dose;
+  const _RemoteDoseCard({required this.dose});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final locale = Localizations.localeOf(context).languageCode;
+    final timeFormat = DateFormat.Hm(locale);
+    final timeString = timeFormat.format(dose.scheduledTime);
+
+    Color statusColor;
+    IconData statusIcon;
+
+    if (dose.status == 'taken') {
+      statusColor = theme.successAccent;
+      statusIcon = Icons.check_circle_rounded;
+    } else if (dose.status == 'skipped') {
+      statusColor = theme.dangerAccent;
+      statusIcon = Icons.cancel_rounded;
+    } else {
+      final isOverdue = dose.scheduledTime.isBefore(DateTime.now());
+      statusColor = isOverdue ? theme.warningAccent : theme.primaryColor;
+      statusIcon = isOverdue ? Icons.warning_rounded : Icons.schedule_rounded;
+    }
+
+    final displayDosage = dose.dosage % 1 == 0
+        ? dose.dosage.toInt().toString()
+        : dose.dosage.toString();
+
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      borderRadius: 20,
+      color: statusColor.withValues(alpha: 0.08),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(statusIcon, color: statusColor, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dose.medicineName,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$displayDosage ${dose.unit}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            timeString,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+              color: statusColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ... (остальные вспомогательные классы ниже остаются без изменений)
 
 class _HomeTopHeader extends StatelessWidget {
   final String greeting;
@@ -1470,7 +1607,8 @@ class _RoutineBundleCard extends StatelessWidget {
                     Text(
                       _bundleSubtitle(context),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.58),
+                        color: theme.colorScheme.onSurface
+                            .withValues(alpha: 0.58),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1479,7 +1617,8 @@ class _RoutineBundleCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface.withValues(alpha: 0.88),
                   borderRadius: BorderRadius.circular(14),
@@ -1854,7 +1993,8 @@ class _HeroMedicationCard extends ConsumerWidget {
                     Text(
                       '$dosage ${medicine != null ? l10n.dosageUnitLabel(medicine.dosageUnit) : ''}',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurface
+                            .withValues(alpha: 0.6),
                         fontWeight: FontWeight.w600,
                       ),
                     ),

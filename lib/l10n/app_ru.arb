@@ -827,5 +827,17 @@
     "description": "Empty state title on home screen when there are no supplements"
   },
   "advancedFeatures": "Расширенные настройки",
-    "customizePillTitle": "Настроить внешний вид"
+    "customizePillTitle": "Настроить внешний вид",
+    "tabScanner": "Сканер",
+      "scannerComingSoonTitle": "Умный сканер",
+      "scannerComingSoonText": "Наведите камеру на упаковку лекарства, чтобы автоматически заполнить данные. Функция появится в следующем обновлении!",
+      "premiumTitle": "Pillora Pro",
+        "premiumSubtitle": "Раскройте весь потенциал заботы о здоровье",
+        "premiumFeatureCaregiver": "Безлимитные опекуны и моментальные оповещения",
+        "premiumFeatureScanner": "Умный сканер для быстрого добавления",
+        "premiumFeatureSchedules": "Сложные расписания (циклы, снижение дозы)",
+        "premiumFeatureReports": "PDF-отчеты для лечащего врача",
+        "premiumSubscribeYearly": "Разблокировать Pro за $29.99 / год",
+        "premiumSubscribeMonthly": "или $4.99 / месяц",
+        "premiumRestorePurchases": "Восстановить покупки"
 }

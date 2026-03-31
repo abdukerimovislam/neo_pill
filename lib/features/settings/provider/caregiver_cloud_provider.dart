@@ -9,80 +9,135 @@ import 'settings_provider.dart';
 
 const _caregiverCloudStateKey = 'settings.caregiver_cloud_state';
 
+// 🔥 ДОБАВЛЕНО: Модель привязанного пациента (позволяет следить за несколькими)
+class LinkedPatient {
+  final String shareCode;
+  final String patientName;
+
+  const LinkedPatient({required this.shareCode, required this.patientName});
+
+  Map<String, dynamic> toJson() => {
+    'shareCode': shareCode,
+    'patientName': patientName,
+  };
+
+  factory LinkedPatient.fromJson(Map<String, dynamic> json) {
+    return LinkedPatient(
+      shareCode: json['shareCode'] as String,
+      patientName: json['patientName'] as String,
+    );
+  }
+}
+
 class CaregiverCloudState {
   final String? patientShareCode;
-  final String? caregiverShareCode;
-  final String? caregiverLinkedPatientName;
+  final List<LinkedPatient> linkedPatients; // 🔥 Множество пациентов
 
   const CaregiverCloudState({
     this.patientShareCode,
-    this.caregiverShareCode,
-    this.caregiverLinkedPatientName,
+    this.linkedPatients = const [],
   });
 
   factory CaregiverCloudState.initial() => const CaregiverCloudState();
 
   bool get hasPatientLink => patientShareCode != null;
-  bool get hasCaregiverLink => caregiverShareCode != null;
+  bool get hasCaregiverLink => linkedPatients.isNotEmpty;
   bool get isConnected => hasPatientLink || hasCaregiverLink;
+
+  // Для обратной совместимости с UI (берем первого пациента, пока не сделаем Дашборд)
+  String? get caregiverLinkedPatientName =>
+      linkedPatients.isNotEmpty ? linkedPatients.first.patientName : null;
 
   Map<String, dynamic> toJson() => {
     'patientShareCode': patientShareCode,
-    'caregiverShareCode': caregiverShareCode,
-    'caregiverLinkedPatientName': caregiverLinkedPatientName,
+    'linkedPatients': linkedPatients.map((p) => p.toJson()).toList(),
   };
 
   factory CaregiverCloudState.fromJson(Map<String, dynamic> json) {
+    // Поддержка миграции старого стейта с одним пациентом
+    List<LinkedPatient> patients = [];
+    if (json.containsKey('linkedPatients')) {
+      patients = (json['linkedPatients'] as List)
+          .map((e) => LinkedPatient.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else if (json.containsKey('caregiverShareCode') &&
+        json['caregiverShareCode'] != null) {
+      patients.add(
+        LinkedPatient(
+          shareCode: json['caregiverShareCode'],
+          patientName: json['caregiverLinkedPatientName'] ?? 'Unknown',
+        ),
+      );
+    }
+
     return CaregiverCloudState(
       patientShareCode: json['patientShareCode'] as String?,
-      caregiverShareCode: json['caregiverShareCode'] as String?,
-      caregiverLinkedPatientName: json['caregiverLinkedPatientName'] as String?,
+      linkedPatients: patients,
     );
   }
 
   CaregiverCloudState copyWith({
     String? patientShareCode,
     bool clearPatientShareCode = false,
-    String? caregiverShareCode,
-    bool clearCaregiverShareCode = false,
-    String? caregiverLinkedPatientName,
-    bool clearCaregiverLinkedPatientName = false,
+    List<LinkedPatient>? linkedPatients,
   }) {
     return CaregiverCloudState(
       patientShareCode: clearPatientShareCode
           ? null
           : (patientShareCode ?? this.patientShareCode),
-      caregiverShareCode: clearCaregiverShareCode
-          ? null
-          : (caregiverShareCode ?? this.caregiverShareCode),
-      caregiverLinkedPatientName: clearCaregiverLinkedPatientName
-          ? null
-          : (caregiverLinkedPatientName ?? this.caregiverLinkedPatientName),
+      linkedPatients: linkedPatients ?? this.linkedPatients,
     );
   }
 }
 
 final caregiverCloudProvider =
-    NotifierProvider<CaregiverCloudNotifier, CaregiverCloudState>(
-      CaregiverCloudNotifier.new,
-    );
+NotifierProvider<CaregiverCloudNotifier, CaregiverCloudState>(
+  CaregiverCloudNotifier.new,
+);
 
+// 🚀 Вспомогательный провайдер для прослушивания 1 пациента
+final _patientAlertsProvider = StreamProvider.family
+    .autoDispose<List<CaregiverCloudAlert>, String>((ref, shareCode) {
+  return ref.read(caregiverCloudRepositoryProvider).watchAlerts(shareCode);
+});
+
+// 🚀 Магический провайдер, который собирает алерты от ВСЕХ пациентов в одну ленту
 final caregiverCloudAlertsProvider =
-    StreamProvider.autoDispose<List<CaregiverCloudAlert>>((ref) {
-      final state = ref.watch(caregiverCloudProvider);
-      final shareCode = state.caregiverShareCode;
-      if (shareCode == null) {
-        return const Stream<List<CaregiverCloudAlert>>.empty();
-      }
-      return ref.read(caregiverCloudRepositoryProvider).watchAlerts(shareCode);
-    });
+Provider.autoDispose<AsyncValue<List<CaregiverCloudAlert>>>((ref) {
+  final state = ref.watch(caregiverCloudProvider);
+
+  if (state.linkedPatients.isEmpty) {
+    return const AsyncValue.data([]);
+  }
+
+  List<CaregiverCloudAlert> allAlerts = [];
+  bool isLoading = false;
+  bool hasError = false;
+
+  for (final patient in state.linkedPatients) {
+    final alertsAsync = ref.watch(_patientAlertsProvider(patient.shareCode));
+    alertsAsync.when(
+      data: (alerts) => allAlerts.addAll(alerts),
+      loading: () => isLoading = true,
+      error: (e, s) => hasError = true,
+    );
+  }
+
+  if (isLoading && allAlerts.isEmpty) return const AsyncValue.loading();
+  if (hasError && allAlerts.isEmpty) {
+    return AsyncValue.error('Error loading alerts', StackTrace.current);
+  }
+
+  // Сортируем все алерты от самых новых к старым
+  allAlerts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  return AsyncValue.data(allAlerts);
+});
 
 class CaregiverCloudNotifier extends Notifier<CaregiverCloudState> {
   @override
   CaregiverCloudState build() {
-    final raw = ref
-        .read(sharedPreferencesProvider)
-        .getString(_caregiverCloudStateKey);
+    final raw =
+    ref.read(sharedPreferencesProvider).getString(_caregiverCloudStateKey);
     if (raw == null || raw.isEmpty) {
       return CaregiverCloudState.initial();
     }
@@ -100,14 +155,12 @@ class CaregiverCloudNotifier extends Notifier<CaregiverCloudState> {
     required CaregiverProfile? caregiver,
   }) async {
     final token = await ref.read(firebaseMessagingServiceProvider).getToken();
-    await ref
-        .read(caregiverCloudRepositoryProvider)
-        .upsertPatientNetwork(
-          shareCode: shareCode,
-          patientName: patientName,
-          caregiver: caregiver,
-          fcmToken: token,
-        );
+    await ref.read(caregiverCloudRepositoryProvider).upsertPatientNetwork(
+      shareCode: shareCode,
+      patientName: patientName,
+      caregiver: caregiver,
+      fcmToken: token,
+    );
 
     state = state.copyWith(patientShareCode: shareCode);
     await _persist();
@@ -117,22 +170,32 @@ class CaregiverCloudNotifier extends Notifier<CaregiverCloudState> {
     required String shareCode,
     required String deviceName,
   }) async {
-    final token = await ref.read(firebaseMessagingServiceProvider).getToken();
-    final record = await ref
-        .read(caregiverCloudRepositoryProvider)
-        .connectAsCaregiver(
-          shareCode: shareCode,
-          deviceName: deviceName,
-          fcmToken: token,
-        );
-    if (record == null) {
-      return false;
+    // Не подключаемся повторно, если уже есть в списке
+    if (state.linkedPatients.any((p) => p.shareCode == shareCode)) {
+      return true;
     }
 
-    state = state.copyWith(
-      caregiverShareCode: record.shareCode,
-      caregiverLinkedPatientName: record.patientName,
+    final token = await ref.read(firebaseMessagingServiceProvider).getToken();
+    final record =
+    await ref.read(caregiverCloudRepositoryProvider).connectAsCaregiver(
+      shareCode: shareCode,
+      deviceName: deviceName,
+      fcmToken: token,
     );
+
+    if (record == null) {
+      return false; // Код не найден или попытка добавить себя
+    }
+
+    final newPatients = [
+      ...state.linkedPatients,
+      LinkedPatient(
+        shareCode: record.shareCode,
+        patientName: record.patientName,
+      ),
+    ];
+
+    state = state.copyWith(linkedPatients: newPatients);
     await _persist();
     return true;
   }
@@ -148,23 +211,32 @@ class CaregiverCloudNotifier extends Notifier<CaregiverCloudState> {
     await _persist();
   }
 
-  Future<void> disconnectCaregiverMode() async {
-    final shareCode = state.caregiverShareCode;
-    if (shareCode != null) {
-      await ref.read(caregiverCloudRepositoryProvider).removeCurrentMember(
-        shareCode,
-      );
+  // Отключаемся от одного конкретного пациента
+  Future<void> disconnectFromPatient(String shareCode) async {
+    await ref
+        .read(caregiverCloudRepositoryProvider)
+        .removeCurrentMember(shareCode);
+
+    final newPatients =
+    state.linkedPatients.where((p) => p.shareCode != shareCode).toList();
+    state = state.copyWith(linkedPatients: newPatients);
+    await _persist();
+  }
+
+  // Отключаемся от ВСЕХ пациентов разом (используется при полном выходе)
+  Future<void> disconnectAllCaregiverModes() async {
+    for (final patient in state.linkedPatients) {
+      await ref
+          .read(caregiverCloudRepositoryProvider)
+          .removeCurrentMember(patient.shareCode);
     }
-    state = state.copyWith(
-      clearCaregiverShareCode: true,
-      clearCaregiverLinkedPatientName: true,
-    );
+    state = state.copyWith(linkedPatients: []);
     await _persist();
   }
 
   Future<void> disconnect() async {
     await disconnectPatientMode();
-    await disconnectCaregiverMode();
+    await disconnectAllCaregiverModes();
     state = CaregiverCloudState.initial();
     await ref.read(sharedPreferencesProvider).remove(_caregiverCloudStateKey);
   }
@@ -178,22 +250,19 @@ class CaregiverCloudNotifier extends Notifier<CaregiverCloudState> {
       return;
     }
 
-    await ref
-        .read(caregiverCloudRepositoryProvider)
-        .enqueueAlert(
-          shareCode: shareCode,
-          alertId: event.id,
-          patientName: patientName,
-          message: event.message,
-          itemCount: event.itemCount,
-        );
+    await ref.read(caregiverCloudRepositoryProvider).enqueueAlert(
+      shareCode: shareCode,
+      alertId: event.id,
+      patientName: patientName,
+      message: event.message,
+      itemCount: event.itemCount,
+    );
   }
 
-  Future<void> markAlertSeen(String alertId) async {
-    final shareCode = state.caregiverShareCode;
-    if (shareCode == null) {
-      return;
-    }
+  Future<void> markAlertSeen({
+    required String shareCode,
+    required String alertId,
+  }) async {
     await ref
         .read(caregiverCloudRepositoryProvider)
         .markAlertSeen(shareCode: shareCode, alertId: alertId);
@@ -214,9 +283,9 @@ class CaregiverCloudNotifier extends Notifier<CaregiverCloudState> {
       );
     }
 
-    if (state.caregiverShareCode != null) {
+    for (final patient in state.linkedPatients) {
       await repository.updateCurrentMemberToken(
-        shareCode: state.caregiverShareCode!,
+        shareCode: patient.shareCode,
         role: 'caregiver',
         displayName: displayName,
         fcmToken: token,

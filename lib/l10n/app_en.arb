@@ -842,6 +842,18 @@
                                                 "customizePillTitle": "Customize Pill",
                                                 "@customizePillTitle": {
                                                   "description": "Title for the modal to change pill color and shape"
-                                                }
+                                                },
+                                                "tabScanner": "Scanner",
+                                                  "scannerComingSoonTitle": "Smart Scanner",
+                                                  "scannerComingSoonText": "Point your camera at a medicine box to automatically fill in the details. This feature is coming in the next update!",
+                                                  "premiumTitle": "Pillora Pro",
+                                                    "premiumSubtitle": "Unlock the full potential of your health routine",
+                                                    "premiumFeatureCaregiver": "Unlimited caregivers & real-time alerts",
+                                                    "premiumFeatureScanner": "Smart scanner for quick adding",
+                                                    "premiumFeatureSchedules": "Complex schedules (Tapering, Cycles)",
+                                                    "premiumFeatureReports": "Export PDF reports for your doctor",
+                                                    "premiumSubscribeYearly": "Unlock Pro for $29.99 / year",
+                                                    "premiumSubscribeMonthly": "or $4.99 / month",
+                                                    "premiumRestorePurchases": "Restore purchases"
 
 }

@@ -5,7 +5,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_kk.dart';
+import 'app_localizations_ky.dart';
 import 'app_localizations_ru.dart';
 
 // ignore_for_file: type=lint
@@ -94,7 +99,12 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('de'),
     Locale('en'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('kk'),
+    Locale('ky'),
     Locale('ru'),
   ];
 
@@ -3263,6 +3273,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a new medication or supplement to see it here.'**
   String get homeEmptyAddMedicinePrompt;
+
+  /// No description provided for @tabScanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanner'**
+  String get tabScanner;
+
+  /// No description provided for @scannerComingSoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Scanner'**
+  String get scannerComingSoonTitle;
+
+  /// No description provided for @scannerComingSoonText.
+  ///
+  /// In en, this message translates to:
+  /// **'Point your camera at a medicine box to automatically fill in the details. This feature is coming in the next update!'**
+  String get scannerComingSoonText;
+
+  /// No description provided for @premiumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pillora Pro'**
+  String get premiumTitle;
+
+  /// No description provided for @premiumSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock the full potential of your health routine'**
+  String get premiumSubtitle;
+
+  /// No description provided for @premiumFeatureCaregiver.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited caregivers & real-time alerts'**
+  String get premiumFeatureCaregiver;
+
+  /// No description provided for @premiumFeatureScanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart scanner for quick adding'**
+  String get premiumFeatureScanner;
+
+  /// No description provided for @premiumFeatureSchedules.
+  ///
+  /// In en, this message translates to:
+  /// **'Complex schedules (Tapering, Cycles)'**
+  String get premiumFeatureSchedules;
+
+  /// No description provided for @premiumFeatureReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDF reports for your doctor'**
+  String get premiumFeatureReports;
+
+  /// No description provided for @premiumSubscribeYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Pro for \$29.99 / year'**
+  String get premiumSubscribeYearly;
+
+  /// No description provided for @premiumSubscribeMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'or \$4.99 / month'**
+  String get premiumSubscribeMonthly;
+
+  /// No description provided for @premiumRestorePurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get premiumRestorePurchases;
 }
 
 class _AppLocalizationsDelegate
@@ -3275,8 +3357,15 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'ru'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'de',
+    'en',
+    'es',
+    'fr',
+    'kk',
+    'ky',
+    'ru',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -3285,8 +3374,18 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'de':
+      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'kk':
+      return AppLocalizationsKk();
+    case 'ky':
+      return AppLocalizationsKy();
     case 'ru':
       return AppLocalizationsRu();
   }

@@ -17,6 +17,40 @@ import '../../../l10n/l10n_extensions.dart';
 import '../../home/presentation/widgets/pill_icon_widget.dart';
 import '../../home/providers/home_controller.dart';
 
+// 🚀 КЛАСС ДЛЯ ШАБЛОНОВ ЗАБОЛЕВАНИЙ
+class _TemplateOption {
+  final String name;
+  final String note;
+  final double dosage;
+  final String unit;
+  final CourseKindEnum kind;
+  final FrequencyTypeEnum freq;
+  final IconData icon;
+
+  const _TemplateOption({
+    required this.name,
+    required this.note,
+    required this.dosage,
+    required this.unit,
+    required this.kind,
+    required this.freq,
+    required this.icon,
+  });
+}
+
+// 🚀 ВНУТРЕННИЙ КЛАСС ДЛЯ ПОЭТАПНОГО КУРСА
+class _ComplexCourseStep {
+  int durationDays;
+  double dosage;
+  List<TimeOfDay> times;
+
+  _ComplexCourseStep({
+    required this.durationDays,
+    required this.dosage,
+    required this.times,
+  });
+}
+
 class AddMedicineScreen extends ConsumerStatefulWidget {
   final CourseKindEnum initialKind;
 
@@ -38,7 +72,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
   int _intervalDays = 2;
   int _prnMaxDoses = 4;
   bool _isLifetime = false;
-  bool _showAdvanced = false;
 
   late CourseKindEnum _selectedKind;
   MedicineFormEnum _selectedForm = MedicineFormEnum.pill;
@@ -55,10 +88,12 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
 
   int _dailyPreset = 1;
 
-  final List<TaperingStep> _taperingSteps = [
-    TaperingStep()
-      ..durationDays = 3
-      ..dosage = 1.0,
+  final List<_ComplexCourseStep> _complexSteps = [
+    _ComplexCourseStep(
+      durationDays: 3,
+      dosage: 1.0,
+      times: [const TimeOfDay(hour: 8, minute: 0)],
+    ),
   ];
 
   final List<int> _availableColors = [
@@ -86,6 +121,93 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     _nameController.dispose();
     _dosageController.dispose();
     super.dispose();
+  }
+
+  // 🚀 ГЕНЕРАТОР ШАБЛОНОВ НА ОСНОВЕ ЛОКАЛИЗАЦИИ
+  List<_TemplateOption> _getTemplates(AppLocalizations l10n) {
+    return [
+      _TemplateOption(
+        name: l10n.suggestionIbuprofenName,
+        note: l10n.suggestionIbuprofenNote,
+        dosage: 400,
+        unit: 'mg',
+        kind: CourseKindEnum.medication,
+        freq: FrequencyTypeEnum.asNeeded,
+        icon: Icons.healing_rounded,
+      ),
+      _TemplateOption(
+        name: l10n.suggestionAmlodipineName,
+        note: l10n.suggestionAmlodipineNote,
+        dosage: 5,
+        unit: 'mg',
+        kind: CourseKindEnum.medication,
+        freq: FrequencyTypeEnum.daily,
+        icon: Icons.favorite_rounded,
+      ),
+      _TemplateOption(
+        name: l10n.suggestionOmeprazoleName,
+        note: l10n.suggestionOmeprazoleNote,
+        dosage: 20,
+        unit: 'mg',
+        kind: CourseKindEnum.medication,
+        freq: FrequencyTypeEnum.daily,
+        icon: Icons.local_drink_rounded,
+      ),
+      _TemplateOption(
+        name: l10n.suggestionCalciumVitaminDName,
+        note: l10n.suggestionCalciumVitaminDNote,
+        dosage: 1,
+        unit: 'pcs',
+        kind: CourseKindEnum.supplement,
+        freq: FrequencyTypeEnum.daily,
+        icon: Icons.spa_rounded,
+      ),
+      _TemplateOption(
+        name: l10n.suggestionFerrousSulfateName,
+        note: l10n.suggestionFerrousSulfateNote,
+        dosage: 325,
+        unit: 'mg',
+        kind: CourseKindEnum.supplement,
+        freq: FrequencyTypeEnum.daily,
+        icon: Icons.water_drop_rounded,
+      ),
+      _TemplateOption(
+        name: l10n.suggestionCetirizineName,
+        note: l10n.suggestionCetirizineNote,
+        dosage: 10,
+        unit: 'mg',
+        kind: CourseKindEnum.medication,
+        freq: FrequencyTypeEnum.daily,
+        icon: Icons.air_rounded,
+      ),
+    ];
+  }
+
+  void _applyTemplate(_TemplateOption template) {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _nameController.text = template.name;
+      _dosageController.text = template.dosage % 1 == 0
+          ? template.dosage.toInt().toString()
+          : template.dosage.toString();
+      _selectedUnit = template.unit;
+      _selectedFrequency = template.freq;
+
+      // Сбрасываем время на дефолтное утро (если это не SOS)
+      if (template.freq != FrequencyTypeEnum.asNeeded) {
+        _selectedTimes.clear();
+        _selectedTimes.add(const TimeOfDay(hour: 8, minute: 0));
+      }
+    });
+
+    // Показываем подтверждение
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Шаблон "${template.name}" применен'), // Тут можно добавить локализацию
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -145,28 +267,10 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     }
   }
 
-  void _addSmartTime() {
-    setState(() {
-      if (_selectedTimes.length == 1) {
-        final first = _selectedTimes.first;
-        final secondHour = (first.hour + 12) % 24;
-        _selectedTimes.add(TimeOfDay(hour: secondHour, minute: first.minute));
-      } else if (_selectedTimes.length == 2) {
-        _selectedTimes.add(const TimeOfDay(hour: 14, minute: 0));
-      } else {
-        final last = _selectedTimes.last;
-        final newHour = (last.hour + 4) % 24;
-        _selectedTimes.add(TimeOfDay(hour: newHour, minute: last.minute));
-      }
-      _sortTimes();
-      _dailyPreset = 0;
-    });
-  }
-
   void _addTime() {
     setState(() {
       _selectedTimes.add(const TimeOfDay(hour: 20, minute: 0));
-      _sortTimes();
+      _sortTimes(_selectedTimes);
       _dailyPreset = 0;
     });
   }
@@ -180,22 +284,19 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     }
   }
 
-  void _sortTimes() {
-    _selectedTimes.sort((a, b) {
+  void _sortTimes(List<TimeOfDay> times) {
+    times.sort((a, b) {
       final aMinutes = a.hour * 60 + a.minute;
       final bMinutes = b.hour * 60 + b.minute;
       return aMinutes.compareTo(bMinutes);
     });
   }
 
-  // 🚀 УМНАЯ ЛОГИКА ЕДИНИЦ ИЗМЕРЕНИЯ ИНВЕНТАРЯ
   String _getInventoryUnit(AppLocalizations l10n) {
     final unitLower = _selectedUnit.toLowerCase();
-    // Если дозировка в массе (мг/г), то в упаковке лежат таблетки (шт.)
     if (['mg', 'g', 'mcg', 'мг', 'г', 'мкг'].contains(unitLower)) {
       return l10n.pcsSuffix;
     }
-    // Если дозировка в объеме/количестве (мл/капли/шт), то в упаковке тот же объем (мл)
     return l10n.dosageUnitLabel(_selectedUnit);
   }
 
@@ -530,46 +631,53 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     if (name.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.errorEmptyFields)));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorEmptyFields)));
       return;
     }
 
     double dosageToSave = 0.0;
     int durationToSave = _durationDays;
+    List<TaperingStep>? taperingStepsToSave;
 
     if (_selectedFrequency == FrequencyTypeEnum.tapering) {
-      if (_taperingSteps.isEmpty) return;
-      dosageToSave = _taperingSteps.first.dosage;
-      durationToSave = _taperingSteps.fold(
-        0,
-            (sum, step) => sum + step.durationDays,
-      );
+      if (_complexSteps.isEmpty) return;
+
+      dosageToSave = _complexSteps.first.dosage;
+      durationToSave = _complexSteps.fold(0, (sum, step) => sum + step.durationDays);
+
+      taperingStepsToSave = _complexSteps.map((s) {
+        final step = TaperingStep();
+        step.durationDays = s.durationDays;
+        step.dosage = s.dosage;
+
+        step.timeStrings = s.times.map((t) {
+          final hh = t.hour.toString().padLeft(2, '0');
+          final mm = t.minute.toString().padLeft(2, '0');
+          return '$hh:$mm';
+        }).toList();
+
+        return step;
+      }).toList();
+
     } else {
       final dosageText = _dosageController.text.trim();
       if (dosageText.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorEmptyFields)));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.errorEmptyFields)));
         return;
       }
       dosageToSave = double.tryParse(dosageText) ?? 0.0;
       durationToSave = _isLifetime ? 3650 : _durationDays;
     }
 
-    // 🚀 ИСПРАВЛЕНИЕ: Интеллектуальный расчет запасов
     final String unitLower = _selectedUnit.toLowerCase();
     final bool isMassUnit = ['mg', 'g', 'mcg', 'мг', 'г', 'мкг'].contains(unitLower);
-
     int inventoryToSave = _pillsInPackage;
 
-    // Если это масса (например 500 мг), юзер указал кол-во таблеток (например 30 шт).
-    // Запас вещества: 30 шт * 500 мг = 15000 мг.
     if (isMassUnit && dosageToSave > 0) {
       inventoryToSave = (_pillsInPackage * dosageToSave).round();
     }
-    // Если это объем (мл/капли), юзер уже указал общий объем бутылки. Умножать не нужно!
 
     final title = l10n.notificationTitle(name);
     final body = l10n.notificationBody('$dosageToSave $_selectedUnit');
@@ -585,18 +693,18 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
       form: _selectedForm,
       frequency: _selectedFrequency,
       foodInstruction: _selectedFood,
-      times: _selectedTimes,
+      times: _selectedFrequency == FrequencyTypeEnum.tapering
+          ? _complexSteps.first.times
+          : _selectedTimes,
       durationDays: durationToSave,
-      pillsInPackage: inventoryToSave, // 🚀 Сохраняем исправленный инвентарь
+      pillsInPackage: inventoryToSave,
       intervalDays: _selectedFrequency == FrequencyTypeEnum.interval
           ? _intervalDays
           : null,
       prnMaxDailyDoses: _selectedFrequency == FrequencyTypeEnum.asNeeded
           ? _prnMaxDoses
           : null,
-      taperingSteps: _selectedFrequency == FrequencyTypeEnum.tapering
-          ? _taperingSteps
-          : null,
+      taperingSteps: taperingStepsToSave,
       pillShape: _selectedShape,
       pillColor: _selectedColor,
       pillImagePath: _pillImagePath,
@@ -679,6 +787,105 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // 🚀 НОВЫЙ ВЕРНУВШИЙСЯ БЛОК: ШАБЛОНЫ
+  Widget _buildTemplatesSection(ThemeData theme, AppLocalizations l10n) {
+    final allTemplates = _getTemplates(l10n);
+    // Фильтруем: показываем витамины, если выбраны витамины, и наоборот
+    final filteredTemplates = allTemplates.where((t) => t.kind == _selectedKind).toList();
+
+    if (filteredTemplates.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.bolt_rounded, color: theme.primaryColor, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              l10n.addQuickStartTitle,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          l10n.addQuickStartSubtitle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          clipBehavior: Clip.none,
+          child: Row(
+            children: filteredTemplates.map((template) {
+              return GestureDetector(
+                onTap: () => _applyTemplate(template),
+                child: Container(
+                  width: 160,
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: theme.dividerColor.withValues(alpha: 0.08),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.shadowColor.withValues(alpha: 0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: theme.primaryColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(template.icon, color: theme.primaryColor, size: 20),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        template.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        template.note,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -966,80 +1173,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
     );
   }
 
-  Widget _buildQuickPresetChips(ThemeData theme, AppLocalizations l10n) {
-    final options = <_PresetOption>[
-      const _PresetOption(value: 1, label: '1x'),
-      const _PresetOption(value: 2, label: '2x'),
-      const _PresetOption(value: 3, label: '3x'),
-      _PresetOption(value: 0, label: l10n.customizePillTitle),
-    ];
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: options.map((option) {
-        final isSelected = _dailyPreset == option.value;
-        return ChoiceChip(
-          label: Text(option.label),
-          selected: isSelected,
-          onSelected: (_) {
-            HapticFeedback.selectionClick();
-            if (option.value == 0) {
-              setState(() {
-                _dailyPreset = 0;
-                _selectedFrequency = FrequencyTypeEnum.daily;
-              });
-            } else {
-              _applyDailyPreset(option.value);
-            }
-          },
-          selectedColor: theme.primaryColor,
-          backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.45),
-          labelStyle: TextStyle(
-            color: isSelected
-                ? theme.colorScheme.onPrimary
-                : theme.colorScheme.onSurface.withValues(alpha: 0.72),
-            fontWeight: FontWeight.w800,
-          ),
-          showCheckmark: false,
-          side: BorderSide.none,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  String _previewText(AppLocalizations l10n) {
-    final name = _nameController.text.trim().isEmpty
-        ? (_selectedKind == CourseKindEnum.supplement
-        ? l10n.courseKindSupplement
-        : l10n.courseKindMedication)
-        : _nameController.text.trim();
-
-    final dosage = _dosageController.text.trim().isEmpty
-        ? '--'
-        : _dosageController.text.trim();
-
-    final locale = Localizations.localeOf(context).languageCode;
-    final times = _selectedFrequency == FrequencyTypeEnum.asNeeded
-        ? l10n.frequencyLabel(_selectedFrequency)
-        : _selectedTimes
-        .map(
-          (e) => DateFormat.Hm(locale).format(
-        DateTime(2000, 1, 1, e.hour, e.minute),
-      ),
-    )
-        .join(', ');
-
-    final duration = _isLifetime
-        ? l10n.lifetimeCourse
-        : '$_durationDays ${l10n.daysSuffix}';
-
-    return '$name • $dosage ${l10n.dosageUnitLabel(_selectedUnit)}\n$times • $duration';
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1051,7 +1184,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
         ? l10n.supplementNameHint
         : l10n.medicineNameHint;
 
-    // 🚀 Получаем правильную единицу измерения для инвентаря
     final inventoryUnit = _getInventoryUnit(l10n);
 
     return GradientScaffold(
@@ -1208,6 +1340,14 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                   delay: const Duration(milliseconds: 120),
                   child: _buildKindSelector(theme, l10n),
                 ),
+
+                // 🚀 ВЕРНУЛ БЛОК ШАБЛОНОВ СЮДА
+                const SizedBox(height: 24),
+                AnimatedReveal(
+                  delay: const Duration(milliseconds: 130),
+                  child: _buildTemplatesSection(theme, l10n),
+                ),
+
                 const SizedBox(height: 24),
                 AnimatedReveal(
                   delay: const Duration(milliseconds: 150),
@@ -1339,48 +1479,78 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
 
                       if (_selectedFrequency == FrequencyTypeEnum.tapering) ...[
                         const SizedBox(height: 16),
-                        ...List.generate(_taperingSteps.length, (index) {
-                          final step = _taperingSteps[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: theme.dividerColor.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: theme.dividerColor.withValues(
-                                  alpha: 0.1,
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.route_rounded, color: theme.primaryColor),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Сложный курс: настройте дозировку и время приема отдельно для каждого этапа.',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.primaryColor,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        ...List.generate(_complexSteps.length, (index) {
+                          final step = _complexSteps[index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: theme.primaryColor.withValues(alpha: 0.15),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.shadowColor.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      l10n.stepNumber(index + 1),
-                                      style: theme.textTheme.titleMedium
-                                          ?.copyWith(
-                                        fontWeight: FontWeight.w800,
-                                        color: theme.primaryColor,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: theme.primaryColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        l10n.stepNumber(index + 1),
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: theme.primaryColor,
+                                        ),
                                       ),
                                     ),
-                                    if (_taperingSteps.length > 1)
+                                    if (_complexSteps.length > 1)
                                       GestureDetector(
-                                        onTap: () => setState(
-                                              () => _taperingSteps.removeAt(index),
-                                        ),
-                                        child: Icon(
-                                          Icons.close_rounded,
-                                          color: theme.colorScheme.error,
-                                          size: 20,
-                                        ),
+                                        onTap: () => setState(() => _complexSteps.removeAt(index)),
+                                        child: Icon(Icons.close_rounded, color: theme.colorScheme.error, size: 24),
                                       ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 16),
                                 _buildSmartCounter(
                                   label: l10n.duration,
                                   value: step.durationDays,
@@ -1390,8 +1560,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                                       setState(() => step.durationDays--);
                                     }
                                   },
-                                  onIncrement: () =>
-                                      setState(() => step.durationDays++),
+                                  onIncrement: () => setState(() => step.durationDays++),
                                   theme: theme,
                                 ),
                                 const SizedBox(height: 8),
@@ -1404,9 +1573,63 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                                       setState(() => step.dosage -= 0.5);
                                     }
                                   },
-                                  onIncrement: () =>
-                                      setState(() => step.dosage += 0.5),
+                                  onIncrement: () => setState(() => step.dosage += 0.5),
                                   theme: theme,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Divider(color: theme.dividerColor.withValues(alpha: 0.1)),
+                                ),
+                                Text(
+                                  'Время приема на этом этапе',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    ...List.generate(step.times.length, (timeIndex) {
+                                      final time = step.times[timeIndex];
+                                      return _TimeChip(
+                                        label: time.format(context),
+                                        onTap: () async {
+                                          final newTime = await showTimePicker(
+                                            context: context,
+                                            initialTime: time,
+                                          );
+                                          if (newTime != null) {
+                                            setState(() => step.times[timeIndex] = newTime);
+                                          }
+                                        },
+                                        onRemove: step.times.length > 1
+                                            ? () => setState(() => step.times.removeAt(timeIndex))
+                                            : null,
+                                      );
+                                    }),
+                                    ActionChip(
+                                      label: Text(l10n.addTime),
+                                      avatar: Icon(Icons.add_rounded, size: 16, color: theme.colorScheme.onPrimary),
+                                      backgroundColor: theme.primaryColor,
+                                      labelStyle: TextStyle(color: theme.colorScheme.onPrimary, fontWeight: FontWeight.w700),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999), side: BorderSide.none),
+                                      onPressed: () async {
+                                        final newTime = await showTimePicker(
+                                          context: context,
+                                          initialTime: const TimeOfDay(hour: 8, minute: 0),
+                                        );
+                                        if (newTime != null) {
+                                          setState(() {
+                                            step.times.add(newTime);
+                                            _sortTimes(step.times);
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -1414,10 +1637,12 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                         }),
                         InkWell(
                           onTap: () => setState(
-                                () => _taperingSteps.add(
-                              TaperingStep()
-                                ..durationDays = 3
-                                ..dosage = 1.0,
+                                () => _complexSteps.add(
+                              _ComplexCourseStep(
+                                durationDays: 3,
+                                dosage: 1.0,
+                                times: [const TimeOfDay(hour: 8, minute: 0)],
+                              ),
                             ),
                           ),
                           borderRadius: BorderRadius.circular(16),
@@ -1427,14 +1652,12 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                             decoration: BoxDecoration(
                               color: theme.primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: theme.primaryColor.withValues(alpha: 0.2)),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  Icons.add_rounded,
-                                  color: theme.primaryColor,
-                                ),
+                                Icon(Icons.add_rounded, color: theme.primaryColor),
                                 const SizedBox(width: 8),
                                 Text(
                                   l10n.addStep,
@@ -1532,7 +1755,6 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                           ),
                         ),
                       ],
-                      // 🚀 ИСПОЛЬЗУЕМ УМНЫЙ СУФФИКС (мл/капли/шт)
                       _buildRouletteField(
                         label: l10n.pillsInPackage,
                         valueText: '$_pillsInPackage $inventoryUnit',
@@ -1542,7 +1764,7 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                           l10n: l10n,
                           initialValue: _pillsInPackage,
                           min: 1,
-                          max: 5000, // Увеличили максимум, чтобы было удобно вводить мл (например 500 мл)
+                          max: 5000,
                           suffix: inventoryUnit,
                           onChanged: (val) =>
                               setState(() => _pillsInPackage = val),
@@ -1553,7 +1775,8 @@ class _AddMedicineScreenState extends ConsumerState<AddMedicineScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                if (_selectedFrequency != FrequencyTypeEnum.asNeeded) ...[
+                if (_selectedFrequency != FrequencyTypeEnum.asNeeded &&
+                    _selectedFrequency != FrequencyTypeEnum.tapering) ...[
                   _buildSectionHeader(l10n.reminders, step: '4'),
                   GlassContainer(
                     padding: const EdgeInsets.all(20),
@@ -1834,14 +2057,4 @@ class _KindOptionButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PresetOption {
-  final int value;
-  final String label;
-
-  const _PresetOption({
-    required this.value,
-    required this.label,
-  });
 }
